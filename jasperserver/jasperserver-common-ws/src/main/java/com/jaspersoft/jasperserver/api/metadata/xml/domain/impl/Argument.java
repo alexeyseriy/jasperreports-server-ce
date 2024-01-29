@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -52,6 +52,7 @@ public class Argument {
     public static final String RUN_OUTPUT_FORMAT_RTF = "ODT";
     public static final String RUN_OUTPUT_FORMAT_PPTX = "PPTX";
     public static final String RUN_OUTPUT_FORMAT_DATA_CSV = "DATA_CSV";
+    public static final String RUN_OUTPUT_FORMAT_DATA_XLSX = "DATA_XLSX";
 
     
     public static final String RUN_OUTPUT_IMAGES_URI = "IMAGES_URI";

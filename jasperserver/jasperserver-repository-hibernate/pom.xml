@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -46,6 +46,10 @@
            <version>2.3.2</version>
             <exclusions>
                 <exclusion>
+                    <groupId>jakarta.xml.bind</groupId>
+                    <artifactId>jakarta.xml.bind-api</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>com.sun.xml.fastinfoset</groupId>
                     <artifactId>FastInfoset</artifactId>
                 </exclusion>
@@ -64,6 +68,16 @@
             <artifactId>hibernate-tools</artifactId>
             <version>${hibernate.tools.version}</version>
             <scope>provided</scope>
+            <exclusions>
+              <exclusion>
+                <groupId>org.osgi.service</groupId>
+                <artifactId>org.osgi.service.prefs</artifactId>
+              </exclusion>
+              <exclusion>
+                  <groupId>jdom</groupId>
+                  <artifactId>jdom</artifactId>
+              </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
     <build>

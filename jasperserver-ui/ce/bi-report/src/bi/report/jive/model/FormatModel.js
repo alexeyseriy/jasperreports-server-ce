@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved. Confidentiality & Proprietary.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved. Confidentiality & Proprietary.
  * Licensed pursuant to commercial TIBCO End User License Agreement.
  */
 
@@ -120,10 +120,10 @@ export default Backbone.Model.extend({
                     negativePart = negativePart.slice(0, index) + '#,' + negativePart.slice(index + 1);
                 }
                 if (patternObj.precision) {
-                    var index = positivePart.indexOf('##0');
-                    positivePart = positivePart.slice(0, index) + '##0' + ('.' + Array(patternObj.precision + 1).join('0')) + positivePart.slice(index + 3);
-                    index = negativePart.indexOf('##0');
-                    negativePart = negativePart.slice(0, index) + '##0' + ('.' + Array(patternObj.precision + 1).join('0')) + negativePart.slice(index + 3);
+                    var precisionIndex = positivePart.indexOf('##0');
+                    positivePart = positivePart.slice(0, precisionIndex) + '##0' + ('.' + Array(patternObj.precision + 1).join('0')) + positivePart.slice(precisionIndex + 3);
+                    precisionIndex = negativePart.indexOf('##0');
+                    negativePart = negativePart.slice(0, precisionIndex) + '##0' + ('.' + Array(patternObj.precision + 1).join('0')) + negativePart.slice(precisionIndex + 3);
                 }
                 return positivePart + ';' + negativePart;
             }

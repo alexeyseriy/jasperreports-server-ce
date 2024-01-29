@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -32,7 +32,7 @@ export default Dialog.extend({
             additionalCssClasses: options.additionalCssClasses || 'confirmationDialog',
             title: options.title || i18n['dialog.confirm.title'],
             content: this.confirmDialogTemplate({ text: options.text }),
-            buttons: [
+            buttons: options.buttons || [
                 {
                     label: options.yesLabel || i18n['button.yes'],
                     action: 'yes',

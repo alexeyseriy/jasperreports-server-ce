@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -48,6 +48,7 @@ public class DashboardExportExecution implements DeepCloneable<DashboardExportEx
     private ExportFormat format;
     private String uri;
     private String id;
+    private String dashboardExecutionID;
     private DashboardParameters parameters;
     private String markup;
     private List<String> jrStyle;
@@ -70,6 +71,7 @@ public class DashboardExportExecution implements DeepCloneable<DashboardExportEx
         format = other.format;
         uri = other.uri;
         id = other.id;
+        dashboardExecutionID = other.getDashboardExecutionID();
         parameters = copyOf(other.getParameters());
         markup = other.markup;
         jrStyle = copyOf(other.getJrStyle());
@@ -81,7 +83,17 @@ public class DashboardExportExecution implements DeepCloneable<DashboardExportEx
             owner = new ClientUser(other.owner);
         }
     }
-    
+
+    public String getDashboardExecutionID() {
+        return dashboardExecutionID;
+    }
+
+    public DashboardExportExecution setDashboardExecutionID(String dashboardExecutionID) {
+        this.dashboardExecutionID = dashboardExecutionID;
+        return  this;
+    }
+
+
     public Boolean getDetailed() {
     	return detailed;
     }

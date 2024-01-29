@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -54,6 +54,7 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import java.util.Collections;
+import java.util.UUID;
 
 import static com.jaspersoft.jasperserver.dto.resources.ResourceMediaType.DATA_TYPE_CLIENT_TYPE;
 import static org.mockito.ArgumentMatchers.isNull;
@@ -424,7 +425,7 @@ public class ResourceReferenceConverterTest {
         final ResourceReferenceConverter converterMock = mock(ResourceReferenceConverter.class);
         when(converterMock.toServerReference(CTX, reference, null, options)).thenCallRealMethod();
         converterMock.toServerReference(CTX, reference, null, options);
-        verify(converterMock).validateAndGetReference(CTX, referenceUri, options.getOwnersUri());
+        verify(converterMock).validateAndGetReference(CTX, referenceUri, options.getOwnersUri(), options);
     }
 
     @Test
@@ -656,6 +657,23 @@ public class ResourceReferenceConverterTest {
         assertNull(exception);
     }
 
+
+    private void getUUIDFromUri_NULL() {
+        assertNull(ResourceReferenceConverter.getUUIDFromUri(null));
+    }
+
+    private void getUUIDFromUri_noProtocol() {
+        assertNull(ResourceReferenceConverter.getUUIDFromUri(UUID.randomUUID().toString()));
+    }
+
+    private void getUUIDFromUri_withProtocol() {
+        assertNotNull(ResourceReferenceConverter.getUUIDFromUri("uuid:" + UUID.randomUUID().toString()));
+    }
+
+    private void getUUIDFromUri_invalid() {
+        assertNull(ResourceReferenceConverter.getUUIDFromUri("ABC"));
+    }
+
     private ToClientConverter mockClientConverter(Resource serverObj, ClientResource clientObj) {
         ToClientConverter toClientConverter = new ToClientConverter() {
             @Override
@@ -691,5 +709,4 @@ public class ResourceReferenceConverterTest {
 
         return toClientConverter;
     }
-
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -112,6 +112,7 @@ public class HypermediaRepositoryJaxrsService {
             @QueryParam("excludeFolder") List<String> excludeFolders,
             @QueryParam("containerType") List<String> containerType,
             @QueryParam("accessType") String accessTypeString,
+            @QueryParam("favorites") @DefaultValue("false") Boolean favorites,
             @QueryParam(RestConstants.QUERY_PARAM_OFFSET)@DefaultValue("0") Integer start,
             @QueryParam(RestConstants.QUERY_PARAM_LIMIT)@DefaultValue("100") Integer limit,
             @QueryParam("recursive") @DefaultValue("true") Boolean recursive,
@@ -157,7 +158,7 @@ public class HypermediaRepositoryJaxrsService {
                         batchRepositoryService.getResourcesForLookupClass(RepoFolder.class.getName(),q, folderUri, containerType, excludeType, null, excludeFolders,
                                 start, limit,
                                 recursive, showHiddenItems,
-                                sortBy, accessType, user,
+                                sortBy, accessType, favorites, user,
                                 forceFullPage);
 
                 int foundFolders = searchResult.getItems().size();
@@ -166,7 +167,7 @@ public class HypermediaRepositoryJaxrsService {
                         batchRepositoryService.getResourcesForLookupClass(RepoResourceItem.class.getName(),q, folderUri, ListUtils.union(type, splitContainerType), excludeType, null, excludeFolders,
                                 foundFolders>0?0:start-foundFolders<0?0:start-foundFolders, limit-foundFolders,
                                 recursive, showHiddenItems,
-                                sortBy, accessType, user,
+                                sortBy, accessType, favorites, user,
                                 forceFullPage)
                 );
 
@@ -175,7 +176,7 @@ public class HypermediaRepositoryJaxrsService {
                     batchRepositoryService.getResources(q, folderUri, ListUtils.union(type, containerType), excludeType, null, excludeFolders,
 	                    start, limit,
 	                    recursive, showHiddenItems,
-	                    sortBy, accessType, user,
+	                    sortBy, accessType, favorites, user,
 	                    forceFullPage);
             }
             if(log.isDebugEnabled()){

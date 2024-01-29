@@ -9,7 +9,7 @@ Framework v3.1, which is included with JRE 7, JDK 7, and OpenJDK 7.
 --- begin of LICENSE ---
 
 Copyright (c) 2000-2005 INRIA, France Telecom
-All rights reserved.
+All Rights Reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -91,7 +91,7 @@ included with JRE 7, JDK 7, and OpenJDK 7.
 Cryptix General License
 
 Copyright (c) 1995-2005 The Cryptix Foundation Limited.
-All rights reserved.
+All Rights Reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -774,7 +774,7 @@ which is included with JRE 7, JDK 7, and OpenJDK 7.
 
 IAIK PKCS#11 Wrapper License
 
-Copyright (c) 2002 Graz University of Technology. All rights reserved.
+Copyright (c) 2002 Graz University of Technology. All Rights Reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
@@ -825,7 +825,7 @@ is included with JRE 7, JDK 7, and OpenJDK 7.
 
 Copyright (c) 1995-2010 International Business Machines Corporation and others 
 
-All rights reserved. 
+All Rights Reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -930,7 +930,7 @@ which is included with JRE 7, JDK 7, and OpenJDK 7.
 --- begin of LICENSE ---
 
  (C) Copyright IBM Corp. 1999 All Rights Reserved.
- Copyright 1997 The Open Group Research Institute. All rights reserved.
+ Copyright 1997 The Open Group Research Institute. All Rights Reserved.
 
 --- end of LICENSE ---
 
@@ -943,7 +943,7 @@ FundsXpress, INC., which is included with JRE 7, JDK 7, and OpenJDK 7.
 
  Copyright (C) 1998 by the FundsXpress, INC.
 
- All rights reserved.
+ All Rights Reserved.
 
  Export of this software from the United States of America may require
  a specific license from the United States Government.  It is the
@@ -1225,7 +1225,7 @@ which is included with JRE 7, JDK 7, and OpenJDK 7 on Linux and Solaris.
 
 Copyright (c) 1999-2004 David Corcoran <corcoran@linuxnet.com>
 Copyright (c) 1999-2004 Ludovic Rousseau <ludovic.rousseau (at) free.fr>
-All rights reserved.
+All Rights Reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -1296,7 +1296,7 @@ included with JRE 7, JDK 7, and OpenJDK 7.
 --- begin of LICENSE ---
 
 Copyright (c) 2000-2003 Daisuke Okajima and Kohsuke Kawaguchi.  
-All rights reserved.
+All Rights Reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
@@ -1994,7 +1994,7 @@ Privacy Policy. For trademark usage, see the Unicode� Consortium Name and
 Trademark Usage Policy.
 
 A. Unicode Copyright.
-   1. Copyright � 1991-2011 Unicode, Inc. All rights reserved.
+   1. Copyright � 1991-2011 Unicode, Inc. All Rights Reserved.
 
    2. Certain documents and files on this website contain a legend indicating
       that "Modification is permitted." Any person is hereby authorized,
@@ -2129,7 +2129,7 @@ SOFTWARE.
 
 COPYRIGHT AND PERMISSION NOTICE
 
-Copyright � 1991-2011 Unicode, Inc. All rights reserved. Distributed under the
+Copyright � 1991-2011 Unicode, Inc. All Rights Reserved. Distributed under the
 Terms of Use in http://www.unicode.org/copyright.html.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -2315,7 +2315,7 @@ which is included with JRE 7, JDK 7, and OpenJDK 7 on Linux and Solaris.
 
 Version 1.1 of XFree86 ProjectLicence.
 
-Copyright (C) 1994-2004 The XFree86 Project, Inc.    All rights reserved.
+Copyright (C) 1994-2004 The XFree86 Project, Inc.    All Rights Reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal
@@ -2534,7 +2534,7 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.  3.2.3. The
 NetBSD Foundation, Inc.
 
-Copyright (c) 2003 The NetBSD Foundation, Inc. All rights reserved.
+Copyright (c) 2003 The NetBSD Foundation, Inc. All Rights Reserved.
 
 This code is derived from software contributed to The NetBSD Foundation by Ben
 Collver <collver1@attbi.com>
@@ -2597,8 +2597,8 @@ IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF NOT ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.  3.2.5. Theo de Raadt and Damien Miller
 
-Copyright (c) 1995,1999 Theo de Raadt. All rights reserved. Copyright (c)
-2001-2002 Damien Miller. All rights reserved.
+Copyright (c) 1995,1999 Theo de Raadt. All Rights Reserved. Copyright (c)
+2001-2002 Damien Miller. All Rights Reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
@@ -2662,7 +2662,7 @@ IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.  3.3. NVIDIA Corp
 
-Copyright (c) 1996 NVIDIA, Corp. All rights reserved.
+Copyright (c) 1996 NVIDIA, Corp. All Rights Reserved.
 
 NOTICE TO USER: The source code is copyrighted under U.S. and international
 laws. NVIDIA, Corp. of Sunnyvale, California owns the copyright and as design

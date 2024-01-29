@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -114,12 +114,10 @@ $.extend(stdnavPluginTable.prototype, {
         var label = $table.attr('aria-label');
         var labelledBy = $table.attr('aria-labelledby');
         var $items = $table.find('td,th');
-        var allItemsAreLinks = false;
         if (stdnav.nullOrUndefined(label) && stdnav.nullOrUndefined(labelledBy)) {
             var allLinks = $items.find('a');
             if (allLinks.length === $items.length) {
                 $table.attr('aria-label', 'Table of ' + $items.length + ' links.');
-                allItemsAreLinks = true;
             } else {
                 $table.attr('aria-label', 'Table of ' + $items.length + ' cells.');
             }
@@ -133,7 +131,6 @@ $.extend(stdnavPluginTable.prototype, {
                 var itemLabelledBy = $item.attr('aria-labelledby');
                 if (stdnav.nullOrUndefined(itemLabel) && stdnav.nullOrUndefined(itemLabelledBy)) {
                     var itemText = $item.text();
-                    var itemLinkText = $($itemLinks[0]).text();
                     itemLabel = itemText;
                     $item.attr('aria-label', itemLabel);
                 }
@@ -290,7 +287,7 @@ $.extend(stdnavPluginTable.prototype, {
     },
     _onUp: function (element) {
         var sfel = this._findSubfocus(element);
-        var row = $(false);
+        var row;
         var newrow = $(false);
         var newsf = $(false);
         if (sfel.is('td')) {
@@ -322,7 +319,7 @@ $.extend(stdnavPluginTable.prototype, {
     },
     _onDown: function (element) {
         var sfel = this._findSubfocus(element);
-        var row = $(false);
+        var row;
         var newrow = $(false);
         var newsf = $(false);
         if (sfel.is('td')) {

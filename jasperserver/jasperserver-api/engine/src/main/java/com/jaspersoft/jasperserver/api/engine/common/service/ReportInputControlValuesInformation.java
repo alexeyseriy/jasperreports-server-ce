@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -35,5 +35,18 @@ public interface ReportInputControlValuesInformation {
     Set<String> getControlValuesNames();
 
     ReportInputControlValueInformation getInputControlValueInformation(String name);
+
+    /**
+     * Indicate if input control has filter with <i>isAnyValue()</i> function or if all values could be selected.
+     * If it's <b>true</b> it doesn't mean that all values will be always selected, but rather they will be selected
+     * if incoming values / parameters are empty (if nothing is selected).
+     *
+     * For example:
+     * - isAnyValue is true but parameters contains a single selected value - IC should have only a single selected value;
+     * - isAnyValue is true but empty parameters (no values) - IC should select all values.
+     */
+    boolean isAnyValue();
+
+    void setAnyValue(boolean anyValue);
 
 }

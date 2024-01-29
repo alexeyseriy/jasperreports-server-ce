@@ -1,6 +1,6 @@
 <%@ page contentType="text/html; charset=utf-8" %>
 <%--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -24,11 +24,11 @@
 <%@ taglib prefix="js" uri="/WEB-INF/jasperserver.tld" %>
 
 <%--main menu--%>
-<div id='menu' class="menu vertical context hidden" aria-hidden="true" role="menuitem"></div>
+<div id='menu' class="menu vertical context hidden" role="none"></div>
 
-<div id="commonMenu" class="hidden">
-    <div class="content">
-        <ul id="menuList_template" role="menubar">
+<div id="commonMenu" class="hidden" role="none">
+    <div class="content" role="none">
+        <ul id="menuList_template" role="menu">
         </ul>
         <js:xssNonce/>
     </div>
@@ -36,21 +36,20 @@
 
 <ul class="hidden" aria-hidden="true" role="menubar">
     <%--simply action list option--%>
-    <li id="menuList_simpleAction" class="leaf" role="menuitem"><p class="wrap button"><span class="icon"></span><!--Item text goes here--></p></li>
+    <li id="menuList_simpleAction" class="leaf" role="none"><p role="menuitem" class="wrap button"><span class="icon"></span><!--Item text goes here--></p></li>
 
     <%--separator for menu--%>
-    <li id="menuList_separator" class="leaf separator" role="separator"></li>
+    <li id="menuList_separator" class="leaf separator" role="none"></li>
 
     <%--submenu list--%>
-    <li id="menuList_flyout" class="node" role="menu"><p class="wrap button"><span class="icon"></span><!--Item text goes here--></p></li>
+    <li id="menuList_flyout" class="node" role="none"><p role="menuitem" class="wrap button"><span class="icon"></span><!--Item text goes here--></p></li>
 
     <%--extra pop up menu--%>
-    <li id="menuList_extraInput" class="leaf"><p class="wrap button"><span class="icon"></span><!--Item text goes here--></p></li>
+    <li id="menuList_extraInput" class="leaf" role="none"><p role="menuitem" class="wrap button"><span class="icon"></span><!--Item text goes here--></p></li>
 
     <%--dropdown list element--%>
-    <li id="menuList_listItem" class="leaf" role="menuitem"><p class="wrap toggle button"><span class="icon"></span><!--Item text goes here--></p></li>
+    <li id="menuList_listItem" class="leaf" role="none"><p role="menuitem" class="wrap toggle button"><span class="icon"></span><!--Item text goes here--></p></li>
 
     <%--main navigation mutton--%>
-    <%--<li id="navigation_mutton" class="leaf mutton up button" role="menuitem" js-navtype="actionmenu"><i class="icon"></i></li>--%>
-    <li id="navigation_mutton" tabIndex="-1" class="node mutton" role="menuitem"><p class="wrap button"><span class="icon"></span></p></li>
+    <li id="navigation_mutton" class="node mutton" role="none"><p role="menuitem" class="wrap button"><span class="icon"></span></p></li>
 </ul>

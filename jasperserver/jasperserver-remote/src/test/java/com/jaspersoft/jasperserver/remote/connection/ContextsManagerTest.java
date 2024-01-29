@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -26,15 +26,18 @@ import com.jaspersoft.jasperserver.core.util.type.GenericTypeProcessorRegistry;
 import com.jaspersoft.jasperserver.remote.common.JrsBeanValidator;
 import com.jaspersoft.jasperserver.remote.connection.storage.ContextDataStorage;
 import com.jaspersoft.jasperserver.remote.connection.storage.ContextDataPair;
+import com.jaspersoft.jasperserver.remote.exception.MandatoryParameterNotFoundException;
 import com.jaspersoft.jasperserver.remote.exception.OperationCancelledException;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.testng.annotations.BeforeClass;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
 
 import java.util.HashMap;
 import java.util.UUID;
@@ -43,6 +46,9 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyObject;
@@ -54,9 +60,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertSame;
-import static org.testng.Assert.assertTrue;
 
 /**
  * <p></p>
@@ -64,6 +67,7 @@ import static org.testng.Assert.assertTrue;
  * @author Yaroslav.Kovalchyk
  * @version $Id$
  */
+@RunWith(MockitoJUnitRunner.class)
 public class ContextsManagerTest {
     @InjectMocks
     private ContextsManager contextsManager = new ContextsManager();
@@ -79,8 +83,7 @@ public class ContextsManagerTest {
     @Mock
     private JrsBeanValidator jrsBeanValidator;
 
-
-    @BeforeClass
+    @Before
     public void init(){
         MockitoAnnotations.initMocks(this);
         spy = Mockito.spy(contextsManager);
@@ -122,13 +125,27 @@ public class ContextsManagerTest {
         verify(contextExecutorService).cancelContext(uuid);
     }
 
-
     @Test
     public void removeConnection_contextNonExists_removeActionsAreDone(){
         final UUID uuid = UUID.randomUUID();
         spy.removeContext(uuid);
         verify(contextDataStorage).get(uuid, false);
         verify(contextDataStorage).delete(uuid);
+    }
+
+    @Test
+    public void removeConnection_strategyNonExists_removeActionsAreDone(){
+        final UUID uuid = UUID.randomUUID();
+        final Object context = new Object();
+        final HashMap<String, Object> data = new HashMap<String, Object>();
+        final ContextDataPair pair = new ContextDataPair(context, data);
+        doReturn(pair).when(contextDataStorage).get(uuid, false);
+
+        spy.removeContext(uuid);
+
+        verify(spy).getStrategy(pair);
+        verify(contextDataStorage).delete(uuid);
+        verify(contextExecutorService).cancelContext(uuid);
     }
 
     @Test
@@ -323,5 +340,15 @@ public class ContextsManagerTest {
         verify(queryExecutor, never()).executeQueryForMetadata(anyObject(), anyObject(), anyMap());
         final Callable callable = callableCaptor.getValue();
         assertSame(callable.call(), queryExecutorResult);
+    }
+
+    @Test(expected = MandatoryParameterNotFoundException.class)
+    public void createRawContext() {
+        spy.createRawContext(null);
+    }
+
+    @Test(expected = MandatoryParameterNotFoundException.class)
+    public void updateRawContext() {
+        spy.updateRawContext(UUID.randomUUID(), null);
     }
 }

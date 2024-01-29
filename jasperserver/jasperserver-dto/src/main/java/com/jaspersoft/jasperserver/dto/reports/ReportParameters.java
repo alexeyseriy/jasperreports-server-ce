@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -43,6 +43,10 @@ import static com.jaspersoft.jasperserver.dto.utils.ValueObjectUtils.copyOf;
 @XmlRootElement
 public class ReportParameters implements DeepCloneable<ReportParameters> {
     private List<ReportParameter> reportParameters;
+    public static final String SELECT = "_select";
+    public static final String LIMIT = "_limit";
+    public static final String OFFSET = "_offset";
+    public static final String CRITERIA = "_criteria";
 
     public ReportParameters() { }
 
@@ -73,42 +77,38 @@ public class ReportParameters implements DeepCloneable<ReportParameters> {
 			hidden = true
 			)
     public Map<String, String[]> getRawParameters(){
-        String SELECT = "_select";
-        String LIMIT = "_limit";
-        String OFFSET = "_offset";
-        String CRITERIA = "_criteria";
 
         Map<String, String[]> rawParameters = new HashMap<>();
 
-        if(reportParameters != null){
-            for(ReportParameter currentParameter : reportParameters){
-                if(currentParameter.getValues().size() > 0) {
+        if (reportParameters != null) {
+            for (ReportParameter currentParameter : reportParameters) {
+                if (currentParameter.getValues().size() > 0) {
                     rawParameters.put(
                             currentParameter.getName(),
                             currentParameter.getValues().toArray(new String[currentParameter.getValues().size()])
                     );
                 }
-                if(currentParameter.getSelect() != null) {
+                if (currentParameter.getSelect() != null) {
                     rawParameters.put(
-                            currentParameter.getName()+SELECT,
+                            currentParameter.getName() + SELECT,
                             new String[]{currentParameter.getSelect()}
-                            );
+                    );
                 }
-                if(currentParameter.getLimit() != null) {
+                if (currentParameter.getLimit() != null) {
                     rawParameters.put(
-                            currentParameter.getName()+LIMIT,
+                            currentParameter.getName() + LIMIT,
                             new String[]{currentParameter.getLimit()}
                     );
                 }
-                if(currentParameter.getOffset() != null) {
+                if (currentParameter.getOffset() != null) {
                     rawParameters.put(
-                            currentParameter.getName()+OFFSET,
+                            currentParameter.getName() + OFFSET,
                             new String[]{currentParameter.getOffset()}
                     );
                 }
-                if(currentParameter.getCriteria() != null) {
+                if (currentParameter.getCriteria() != null) {
                     rawParameters.put(
-                            currentParameter.getName()+CRITERIA,
+                            currentParameter.getName() + CRITERIA,
                             new String[]{currentParameter.getCriteria()}
                     );
                 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -22,6 +22,7 @@
  * @version: $Id$
  */
 import jQuery from 'jquery';
+import layoutModule from '../core/core.layout';
 import resource from './resource.base';
 import {ValidationModule} from "../util/utils.common";
 
@@ -35,7 +36,7 @@ var resourceDataType = {
     CHANGE_TYPE_BUTTON_ID: 'changeCombo',
     _canGenerateId: true,
     initialize: function (options) {
-        this._form = jQuery('#' +this.PAGE_ID).find('form')[0];
+        this._form = jQuery('#' + layoutModule.PAGE_BODY_ID).find('form')[0];
         this._dataType = jQuery('#' +this.DATA_TYPE_ID)[0];
         this._label = jQuery('#' +this.LABEL_ID)[0];
         this._resourceId = jQuery('#' +this.RESOURCE_ID_ID)[0];

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -21,25 +21,27 @@
 /**
  * @version: $Id$
  */
-import __jrsConfigs__ from 'js-sdk/src/jrs.configs';
+import jrsConfigs from 'js-sdk/src/jrs.configs';
 
-var webHelpModule = {
-    currentContext: 'default',
-    displayWebHelp: function () {
+const DEFAULT_CONTEXT = 'default';
+
+const webHelpModule = {
+    currentContext: DEFAULT_CONTEXT,
+    displayWebHelp() {
         // If webHelpModuleState is undefined doesn't display Web Help
-        var webHelpModuleState = __jrsConfigs__.webHelpModuleState;
+        const { webHelpModuleState } = jrsConfigs;
         if (!webHelpModuleState) {
             return;
         }
-        var helpURL = webHelpModuleState.hostURL + '/' + webHelpModuleState.pagePrefix + webHelpModule.getPageForContext();
+        const page = webHelpModuleState.contextMap[webHelpModule.currentContext];
+        const helpURL = `${webHelpModuleState.hostURL}/${webHelpModuleState.pagePrefix}${page}`;
         window.name = '';
-        var runPopup = window.open(helpURL, 'MCWebHelp');
-        runPopup.focus();
+        const runPopup = window.open(helpURL, 'MCWebHelp');
+        if (runPopup) {
+            runPopup.focus();
+        }
     },
-    getPageForContext: function () {
-        return __jrsConfigs__.webHelpModuleState.contextMap[webHelpModule.currentContext];
-    },
-    setCurrentContext: function (context) {
+    setCurrentContext(context) {
         webHelpModule.currentContext = context;
     }
 };

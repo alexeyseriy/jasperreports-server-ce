@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2019 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -20,17 +20,11 @@
  */
 package com.jaspersoft.jasperserver.api.engine.scheduling.quartz;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
+import java.util.function.Consumer;
 
+import io.opentelemetry.extension.annotations.WithSpan;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.quartz.JobExecutionException;
@@ -99,9 +93,22 @@ public class InternalReportExecutor implements ReportExecutor, MessageSourceAwar
 		this.executionContext = jobContext.getExecutionContext();
 	}
 
-	@Override
+    @WithSpan
+    @Override
 	public List<? extends ReportExecutionOutput> createOutputs(Map<String, Object> reportParameters) {
-        Set<Byte> outputFormats = jobDetails.getOutputFormatsSet();
+        Set<Byte> outputFormats = new HashSet<>(jobDetails.getOutputFormatsSet());
+        if (outputFormats.remove(ReportJob.OUTPUT_FORMAT_XLS))
+        {
+        	outputFormats.add(ReportJob.OUTPUT_FORMAT_XLSX);
+        }
+        if (outputFormats.remove(ReportJob.OUTPUT_FORMAT_XLS_NOPAG))
+        {
+        	outputFormats.add(ReportJob.OUTPUT_FORMAT_XLSX_NOPAG);
+        }
+        if (outputFormats.remove(ReportJob.OUTPUT_FORMAT_XLS_DETAILED))
+        {
+        	outputFormats.add(ReportJob.OUTPUT_FORMAT_XLSX_DETAILED);
+        }
         List<ReportExecutionOutput> outputs = new ArrayList<ReportExecutionOutput>(outputFormats.size());
         for (Iterator<Byte> it = outputFormats.iterator(); it.hasNext(); ) {
             Byte format = it.next();
@@ -161,13 +168,20 @@ public class InternalReportExecutor implements ReportExecutor, MessageSourceAwar
     		return output;
     	}
 
-    	@Override
-    	public ReportOutput getReportOutput(ReportJobContext reportJobContext) throws JobExecutionException {
+        @WithSpan
+		@Override
+		public void createReportOutput(ReportJobContext reportJobContext, Consumer<ReportOutput> outputConsumer)
+				throws JobExecutionException {
     		ReportUnitResult result = getReportResultForOutput(output, jasperReport);
-    		return getOutput().getOutput(reportJobContext, result.getJasperPrint());
-    	}
+            getOutput().createOutputs(reportJobContext, result.getJasperPrint(),
+            		reportOutput -> {
+                        reportOutput.setExecutionID(result.getRequestId());
+                        outputConsumer.accept(reportOutput);
+            		});
+		}
     }
 
+    @WithSpan
     protected void executeReport(Map<String, Object> reportParameters, List<ReportExecutionOutput> outputs) {
         jasperReport = jobContext.getEngineService().getMainJasperReport(executionContext, 
         		jobContext.getReportUnitURI());
@@ -195,7 +209,8 @@ public class InternalReportExecutor implements ReportExecutor, MessageSourceAwar
         runReport(paginations, reportParameters);
     }
 
-	protected void runReport(List<PaginationParameters> paginations, Map<String, Object> reportParameters) {
+    @WithSpan
+    protected void runReport(List<PaginationParameters> paginations, Map<String, Object> reportParameters) {
 		// recording a data snapshot if saving is enabled or if we need to fill the report multiple times
         recordDataSnapshot = getDataSnapshotService().isSnapshotPersistenceEnabled() 
                 //FIXME detect common cases when multiple pagination params can use a single execution
@@ -226,7 +241,8 @@ public class InternalReportExecutor implements ReportExecutor, MessageSourceAwar
 		return result;
 	}
 
-	protected ReportUnitResult runReport(PaginationParameters paginationParams, 
+    @WithSpan
+    protected ReportUnitResult runReport(PaginationParameters paginationParams,
 			Map<String, Object> reportParameters) {
         jobContext.checkCancelRequested();
         if (log.isDebugEnabled()) {
@@ -234,20 +250,18 @@ public class InternalReportExecutor implements ReportExecutor, MessageSourceAwar
         }
         
 		ReportUnitResult result = null;
-        try {
-        	Map<String, Object> parametersMap = new HashMap<>(reportParameters);
-        	putAdditionalParameters(parametersMap);
-            Map<String, Object> reportJobProperties = collectReportJobProperties();
+        Map<String, Object> parametersMap = new HashMap<>(reportParameters);
+        putAdditionalParameters(parametersMap);
+        Map<String, Object> reportJobProperties = collectReportJobProperties();
 
-            paginationParams.setReportParameters(parametersMap);
-            ReportUnitRequest request = new ReportUnitRequest(jobContext.getReportUnitURI(), 
-            		parametersMap, reportJobProperties);
-            request.setJasperReportsContext(jobContext.getJasperReportsContext());
+        paginationParams.setReportParameters(parametersMap);
+        ReportUnitRequest request = new ReportUnitRequest(jobContext.getReportUnitURI(),
+        parametersMap, reportJobProperties);
+        request.setScheduleResourceType(ReportExecutionJob.RESOURCE_TYPE_REPORT);
+        request.setScheduleExecutionID(jobContext.getReportExecutionJob().getScheduleExecutionID());
+        request.setJasperReportsContext(jobContext.getJasperReportsContext());
+        result = runReport(request);
 
-            result = runReport(request);
-        } catch (Exception e) {
-        	jobContext.handleException(getMessage("report.scheduling.error.filling.report", null), e);
-        }
         return result;
 	}
 

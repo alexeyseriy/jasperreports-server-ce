@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -24,7 +24,7 @@ import $ from 'jquery';
 import _ from 'underscore';
 import i18n from 'js-sdk/src/i18n/CommonBundle.properties';
 import TreeDataLayer from 'js-sdk/src/common/component/tree/TreeDataLayer';
-import processorsFactory from '../dialog/processor/factory/processorFactory';
+import processorsFactory from '../dialog/processor/factory/processorsFactory';
 import TooltipTreePlugin from 'js-sdk/src/common/component/tree/plugin/TooltipPlugin';
 import repositoryResourceTypes from '../enum/repositoryResourceTypes';
 import olapConnectionTypesEnum from '../enum/olapConnectionTypesEnum';

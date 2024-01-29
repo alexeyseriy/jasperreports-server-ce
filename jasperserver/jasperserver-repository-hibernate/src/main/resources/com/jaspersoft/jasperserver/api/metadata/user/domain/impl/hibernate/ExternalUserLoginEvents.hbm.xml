@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
+  ~ http://www.jaspersoft.com.
+  ~
+  ~ Unless you have purchased a commercial license agreement from Jaspersoft,
+  ~ the following license terms apply:
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU Affero General Public License as
+  ~ published by the Free Software Foundation, either version 3 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  ~ GNU Affero General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Affero General Public License
+  ~ along with this program. If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+    <class table="JIExternalUserLoginEvents" name="com.jaspersoft.jasperserver.api.metadata.user.domain.impl.hibernate.RepoExternalUserLoginEvent" batch-size="1000">
+        <id type="long" column="id" name="id">
+            <generator class="native"/>
+        </id>
+        <property name="username" not-null="true" length="100" type="string" column="username"/>
+        <property name="enabled" type="boolean" column="enabled"/>
+        <property name="recordCreationDate" type="timestamp" column="recordCreationDate"/>
+        <property name="recordLastUpdateDate" type="timestamp" column="recordLastUpdateDate"/>
+        <property name="numberOfFailedLoginAttempts" type="int">
+            <column name="numberOfFailedLoginAttempts" default="0" not-null="false"/>
+        </property>
+        <property name="tenantId" type="string" length="100" not-null="false" column="tenantId" />
+    </class>
+
+    <!-- create index JIUser_tenantId_index on JIUser (tenantId); -->
+    <!--
+        <database-object>
+            <create>create index JIUser_tenantId_index on JIUser (tenantId)</create>
+            <drop>DROP INDEX JIUser_tenantId_index ON JIUser</drop>
+        </database-object>
+    -->
+
+</hibernate-mapping>

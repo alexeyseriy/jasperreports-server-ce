@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -23,6 +23,7 @@ package com.jaspersoft.jasperserver.api.engine.jasperreports.service.impl;
 import com.jaspersoft.jasperserver.api.JSExceptionWrapper;
 import com.jaspersoft.jasperserver.api.metadata.jasperreports.service.ConnectionTestingDataSourceService;
 import com.jaspersoft.jasperserver.api.metadata.jasperreports.service.ReportDataSourceService;
+import io.opentelemetry.extension.annotations.WithSpan;
 import net.sf.jasperreports.engine.JRParameter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -46,6 +47,7 @@ public abstract class BaseJdbcDataSource implements ReportDataSourceService, Con
 	private Optional<Span> connSpan;
 	private Optional<Tracer.SpanInScope> connScope;
 
+	@WithSpan
 	public void setReportParameterValues(Map parameterValues) {
 		connSpan = this.tracer.map(t -> t.nextSpan().name("dbConnection"));
 		try {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -24,6 +24,7 @@
 import jQuery from 'jquery';
 import resource from './resource.base';
 import {ValidationModule} from "../util/utils.common";
+import layoutModule from "../core/core.layout";
 
 var resourceAnalysisView = {
     LABEL_ID: 'labelID',
@@ -32,7 +33,7 @@ var resourceAnalysisView = {
     NEXT_BUTTON_ID: 'next',
     _canGenerateId: true,
     initialize: function (options) {
-        this._form = jQuery(document.body).find('form');
+        this._form = jQuery('#' + layoutModule.PAGE_BODY_ID).find('form')[0];
         this._label = jQuery('#' +this.LABEL_ID)[0];
         this._resourceId = jQuery('#' +this.RESOURCE_ID_ID)[0];
         this._description = jQuery('#' +this.DESCRIPTION_ID)[0];

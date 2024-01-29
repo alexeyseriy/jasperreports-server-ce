@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -29,12 +29,14 @@
        xmlns:aop="http://www.springframework.org/schema/aop"
        xmlns:util="http://www.springframework.org/schema/util"
        xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:task="http://www.springframework.org/schema/task"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
         http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.3.xsd
         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd
         http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-4.3.xsd
-        http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-4.2.xsd
-        http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.3.xsd">
+        http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-5.7.xsd
+        http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.3.xsd
+        http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.0.xsd">
 
 <beans profile="jrs">
 
@@ -103,6 +105,7 @@
         <property name="dataSource" ref="dataSource"/>
         <property name="mappingResources">
             <list>
+                <value>/com/jaspersoft/jasperserver/api/metadata/common/service/impl/hibernate/persistent/RepoFavoriteResource.hbm.xml</value>
                 <value>/com/jaspersoft/jasperserver/api/metadata/common/service/impl/hibernate/persistent/RepoResourceItemBase.hbm.xml</value>
                 <value>/com/jaspersoft/jasperserver/api/metadata/common/service/impl/hibernate/persistent/CachedItem.hbm.xml</value>
                 <value>/com/jaspersoft/jasperserver/api/metadata/common/service/impl/hibernate/persistent/ContentRepoFileResource.hbm.xml</value>
@@ -143,13 +146,14 @@
                 <value>/com/jaspersoft/jasperserver/api/metadata/data/snapshot/hibernate/DataSnapshotContents.hbm.xml</value>
                 <value>${property.hbm.NamedQueries}</value>
                 <value>/com/jaspersoft/jasperserver/api/metadata/common/service/impl/hibernate/persistent/RepoReportThumbnail.hbm.xml</value>
+                <value>/com/jaspersoft/jasperserver/api/metadata/user/domain/impl/hibernate/ExternalUserLoginEvents.hbm.xml</value>
             </list>
         </property>
         <property name="hibernateProperties">
             <props>
                 <prop key="hibernate.dialect">${metadata.hibernate.dialect}</prop>
                 <prop key="hibernate.show_sql">false</prop>
-                <prop key="hibernate.generate_statistics">true</prop>
+                <prop key="hibernate.generate_statistics">false</prop>
                 <!-- uncomment property below if a default schema should be specified such as for DB2 -->
                 <!-- <prop key="hibernate.default_schema">${metadata.hibernate.default_schema}</prop> -->
 
@@ -164,8 +168,12 @@
 
                 <prop key="hibernate.jmx.enabled">true</prop>
                 <prop key="hibernate.jmx.usePlatformServer">true</prop>
-		<!-- Hibernate 5.x new config settings -->
-		<prop key="hibernate.temp.use_jdbc_metadata_defaults">false</prop>
+		        <!-- Hibernate 5.x new config settings -->
+		        <prop key="hibernate.temp.use_jdbc_metadata_defaults">false</prop>
+                <!-- Hibernate 5.4 new config settings -->
+                <prop key="hibernate.bytecode.provider">javassist</prop>
+                <!--<prop key="hibernate.cache.ehcache.missing_cache_strategy">create-warn</prop>
+                <prop key="hibernate.id.disable_delayed_identity_inserts">true</prop>-->
             </props>
         </property>
         <property name="entityInterceptor">
@@ -189,7 +197,7 @@
             <props>
                 <prop key="hibernate.dialect">${metadata.hibernate.dialect}</prop>
                 <prop key="hibernate.show_sql">false</prop>
-                <prop key="hibernate.generate_statistics">true</prop>
+                <prop key="hibernate.generate_statistics">false</prop>
                 <!--uncomment property below if a default schema should be specified such as for DB2-->
                 <!--<prop key="hibernate.default_schema">${metadata.hibernate.default_schema}</prop>-->
                 <!--Cache Configurations-->
@@ -365,6 +373,8 @@
                value="com.jaspersoft.jasperserver.api.metadata.olap.domain.client.MondrianConnectionImpl"/>
         <entry key="com.jaspersoft.jasperserver.api.logging.access.domain.AccessEvent"
                value="com.jaspersoft.jasperserver.api.logging.access.domain.AccessEventImpl"/>
+        <entry key="com.jaspersoft.jasperserver.api.metadata.user.domain.ExternalUserLoginEvent"
+               value="com.jaspersoft.jasperserver.api.metadata.user.domain.client.ExternalUserLoginEventImpl"/>
     </util:map>
 </beans>
 <beans profile="jrs">
@@ -451,6 +461,8 @@
                value="com.jaspersoft.jasperserver.api.metadata.olap.domain.impl.hibernate.RepoMondrianXMLADefinition"/>
         <entry key="com.jaspersoft.jasperserver.api.logging.access.domain.AccessEvent"
                value="com.jaspersoft.jasperserver.api.logging.access.domain.hibernate.RepoAccessEvent"/>
+        <entry key="com.jaspersoft.jasperserver.api.metadata.user.domain.ExternalUserLoginEvent"
+               value="com.jaspersoft.jasperserver.api.metadata.user.domain.impl.hibernate.RepoExternalUserLoginEvent"/>
     </util:map>
 
     <bean id="addPersistentMappings" class="com.jaspersoft.jasperserver.api.common.util.spring.GenericBeanUpdaterDefinition">
@@ -830,7 +842,20 @@
         </list>
       </property>
     </bean>
-
+    <bean id="favoriteResourceProxyService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="interceptorNames">
+            <list>
+                <idref bean="hibernateRepoServiceSecurity"/>
+                <idref bean="permissionsPrefetcher"/>
+                <idref bean="favoriteResourceService"/>
+            </list>
+        </property>
+    </bean>
+    <bean id="favoriteResourceService" class="com.jaspersoft.jasperserver.api.metadata.common.service.impl.hibernate.FavoriteResourceServiceImpl">
+      <property name="userAuthorityService" ref="${bean.userAuthorityService}"/>
+      <property name="favoriteResourceProxyService" ref="favoriteResourceProxyService"/>
+      <property name="sessionFactory" ref="sessionFactory"/>
+    </bean>
     <bean id="thumbnailGenerationService" class="com.jaspersoft.jasperserver.api.metadata.common.service.impl.ThumbnailGenerationServiceImpl">
         <property name="longestEdge" value="300"/>
         <property name="jpgQuality" value="0.8"/> <!-- a value between 0 and 1 -->
@@ -883,6 +908,9 @@
         </property>
         <property name="queryManipulator">
             <ref bean="CascadeQueryManipulator"/>
+        </property>
+        <property name="tenantService">
+            <ref bean="${bean.hibernateTenantService}"/>
         </property>
         <property name="securityContextProvider" ref="${bean.securityContextProvider}"/>
         <property name="builtInParameterProviders" ref="builtInParameterProviders"/>
@@ -1164,6 +1192,7 @@
         <property name="auditContext" ref="${bean.auditContext}"/>
         <property name="databaseCharactersEscapeResolver" ref="databaseCharactersEscapeResolver"/>
         <property name="usernameCaseSensitive" value="false"/>
+        <property name="externalUserLoginEventService" ref="${bean.externalUserLoginEventService}"/>
 
         <!-- Allows to change regular expression, which validates password complexity.
              You should also change "exception.remote.weak.password" message in
@@ -1184,6 +1213,31 @@
         <property name="profileAttributeService" ref="profileAttributeServiceTarget"/>
         <property name="tenantCaseSensitive" value="false"/>
     </bean>
+
+     <bean id="externalUserLoginAttemptsCleanUpService" class="com.jaspersoft.jasperserver.api.metadata.user.service.impl.ExternalUserLoginAttemptsCleanUpServiceImpl">
+         <property name="sessionFactory" ref="sessionFactory"/>
+         <property name="persistentClassFactory" ref="persistentMappings"/>
+         <!-- Specify the value of record threshold here. Records will be deleted when the count exceeds the threshold -->
+         <property name="userLoginAttemptsThreshold" value="100"/>
+         <property name="loggingService"><ref bean="logEventService"/></property>
+     </bean>
+
+     <task:scheduler id="externalUserCleanupScheduler"/>
+
+     <task:scheduled-tasks scheduler="externalUserCleanupScheduler">
+         <!--Configuring the cron expression which will run the job every hour -->
+         <task:scheduled ref="externalUserLoginAttemptsCleanUpService" method="clearAllData" cron="0 0 */1 * * *" />
+     </task:scheduled-tasks>
+
+     <bean id="externalUserLoginEventService" class="com.jaspersoft.jasperserver.api.metadata.user.service.impl.ExternalUserLoginEventServiceImpl">
+         <property name="sessionFactory" ref="sessionFactory"/>
+         <property name="persistentClassFactory" ref="persistentMappings"/>
+         <!--
+                  <property name="userAuthorityService" ref="${bean.internalUserAuthorityService}"/>
+         -->
+         <property name="tenantPersistenceResolver"><ref bean="${bean.hibernateTenantService}"/></property>
+
+     </bean>
 </beans>
 <beans profile="engine">
     <bean id="rootTenantId" class="java.lang.String">
@@ -1241,6 +1295,13 @@
     <bean id="attributeCache" class="org.springframework.cache.ehcache.EhCacheFactoryBean" lazy-init="true">
         <property name="cacheManager" ref="cacheManager"/>
         <property name="cacheName" value="attributeCache" />
+    </bean>
+
+    <bean id="inputControlCache" class="org.springframework.cache.ehcache.EhCacheFactoryBean" lazy-init="true">
+        <property name="cacheManager" ref="cacheManager"/>
+        <property name="cacheName" value="inputControlCache" />
+        <property name="timeToIdleSeconds" value="360000"/>
+        <property name="timeToLiveSeconds" value="720000"/>
     </bean>
 
     <util:map id="cacheFactoryMap" map-class="java.util.HashMap">
@@ -1396,6 +1457,7 @@
                 <value>${resource.root}/bundles/ScalableInputControlsBundle</value>
                 <value>${resource.root}/bundles/ValidationBundle</value>
                 <value>${resource.root}/bundles/CommonBundle</value>
+                <value>${resource.root}/bundles/GeneralSettingsBundle</value>
             </list>
         </property>
     </bean>
@@ -1433,6 +1495,8 @@
                 <prop key="net.sf.jasperreports.chrome.executable.path">${chrome.path:}</prop>
                 <prop key="net.sf.jasperreports.chrome.page.timeout">#{'${chrome.page.timeout:}'.trim().isEmpty() ? 150000 : (T(Integer).parseInt('${chrome.page.timeout:}'.trim()) * 1000)}</prop>
                 <prop key="net.sf.jasperreports.chrome.argument.enable-logging">stderr</prop>
+                <prop key="net.sf.jasperreports.chrome.page.isolate">true</prop>
+                <prop key="net.sf.jasperreports.chrome.argument.remote-allow-origins">*</prop>
             </props>
         </property>
     </bean>
@@ -1454,7 +1518,7 @@
     				<bean class="net.sf.jasperreports.repo.SerializedReportPersistenceService"/>
     			</entry>
     			<entry key="net.sf.jasperreports.repo.DataAdapterResource">
-    				<bean class="net.sf.jasperreports.repo.CastorDataAdapterPersistenceService">
+    				<bean class="net.sf.jasperreports.repo.JacksonDataAdapterPersistenceService">
     					<constructor-arg ref="${bean.jasperReportsContext}"/>
     				</bean>
     			</entry>
@@ -1599,6 +1663,8 @@
         <property name="lenientFormats" value="false"/>
     </bean>
 
+    <alias name="${bean.calendarFormatProvider}" alias="configurableCalendarFormatProvider"/>
+
     <!-- handle file uploads using commons-fileupload
     <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver"/>
      -->
@@ -1630,9 +1696,21 @@
     </bean>
 
     <bean id="hyperlinkDateParameterFormatter" class="com.jaspersoft.jasperserver.war.util.HyperlinkDateParameterFormatter">
-        <property name="dateConverter" ref="dateDataConverter"/>
-        <property name="timestampConverter" ref="timestampDataConverter"/>
-        <property name="timeConverter" ref="timeDataConverter"/>
+        <property name="dateConverter">
+            <bean class="com.jaspersoft.jasperserver.inputcontrols.cascade.handlers.converters.DateDataConverter">
+                <property name="onlyUseISOFormat" value="true"/>
+            </bean>
+        </property>
+        <property name="timestampConverter">
+            <bean class="com.jaspersoft.jasperserver.inputcontrols.cascade.handlers.converters.TimestampDataConverter">
+                <property name="onlyUseISOFormat" value="true"/>
+            </bean>
+        </property>
+        <property name="timeConverter">
+            <bean class="com.jaspersoft.jasperserver.inputcontrols.cascade.handlers.converters.TimeDataConverter">
+                <property name="onlyUseISOFormat" value="true"/>
+            </bean>
+        </property>
     </bean>
 
     <bean id="encodingProvider" class="com.jaspersoft.jasperserver.api.common.util.StaticCharacterEncodingProvider">
@@ -1906,6 +1984,7 @@
                 <value>navigation</value>
                 <value>search</value>
                 <value>viewReport</value>
+                <value>serverMonitoringTabs</value>
             </list>
         </property>
     </bean>
@@ -1913,6 +1992,7 @@
     <!--bean definition for primary navigation-->
     <bean id="navigationActionModelSupport" class="com.jaspersoft.jasperserver.api.engine.common.service.impl.NavigationActionModelSupport" lazy-init="false" scope="singleton">
         <property name="proVersion" value="${isProVersion}"/>
+        <property name="availableAdminConsole" value="true"/>
     </bean>
 
     <bean id="genericActionModelBuilder" class="com.jaspersoft.jasperserver.war.action.GenericActionModelBuilder" lazy-init="false" scope="singleton">
@@ -2194,6 +2274,23 @@
         <property name="resourceFactory" ref="mappingResourceFactory"/>
     </bean>
      -->
+
+    <util:map id="monitoringExceptionMapping" key-type="java.lang.String" value-type="java.util.List">
+        <entry key="Report DataSource">
+            <list>
+                <value>com.jaspersoft.jasperserver.api.metadata.common.service.JSDataSourceConnectionFailedException</value>
+                <value>java.sql.SQLException</value>
+                <value>javax.naming.NameNotFoundException</value>
+                <value>net.sf.jasperreports.data.cache.DataSnapshotException</value>
+                <value>net.sf.jasperreports.engine.data.NoRecordAtIndexException</value>
+            </list>
+        </entry>
+        <entry key="Invalid Report">
+            <list>
+                <value>net.sf.jasperreports.engine.design.JRValidationException</value>
+            </list>
+        </entry>
+    </util:map>
 
 </beans>
 </beans>

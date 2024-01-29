@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved. Confidentiality & Proprietary.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved. Confidentiality & Proprietary.
  * Licensed pursuant to commercial TIBCO End User License Agreement.
  */
 
@@ -74,7 +74,6 @@ function onHeadingChange() {
             'applyTo': 'heading',
             'tableUuid': this.get('parentId'),
             'columnIndex': this.get('columnIndex'),
-            'dataType': this.get('dataType'),
             'headingName': this.get('columnLabel'),
             'fontName': this.headingFormat.get('font').name,
             'fontSize': this.headingFormat.get('font').size,
@@ -345,7 +344,6 @@ export default BaseComponentModel.extend({
                     'applyTo': 'detailrows',
                     'tableUuid': this.get('parentId'),
                     'columnIndex': this.get('columnIndex'),
-                    'dataType': this.get('dataType'),
                     'fontName': this.detailsRowFormat.get('font').name,
                     'fontSize': this.detailsRowFormat.get('font').size,
                     'fontBold': this.detailsRowFormat.get('font').bold,

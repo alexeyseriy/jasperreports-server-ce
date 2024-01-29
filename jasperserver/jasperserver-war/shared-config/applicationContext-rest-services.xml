@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -30,7 +30,7 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
                 http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-4.3.xsd
                 http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd
-                http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-4.2.xsd">
+                http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-5.7.xsd">
     <!-- REST v.2-->
     <context:component-scan base-package="com.jaspersoft.jasperserver.jaxrs">
         <context:exclude-filter type="regex" expression=".*UserWorkflowStorage"/>
@@ -115,7 +115,7 @@
 
     <util:map id="contentTypeMapping">
         <entry key="pdf" value="application/pdf"/>
-        <entry key="html" value="text/html"/>
+        <entry key="html" value="application/html"/>
         <entry key="xls" value="application/xls"/>
         <entry key="rtf" value="application/rtf"/>
         <entry key="csv" value="text/csv"/>
@@ -125,19 +125,20 @@
         <entry key="ods" value="application/vnd.oasis.opendocument.spreadsheet"/>
         <entry key="xlsx" value="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"/>
         <entry key="font" value="font/*"/>
-        <entry key="jrxml" value="application/xml"/>
+        <entry key="jrxml" value="application/repository.file+jrxml"/>
         <entry key="jar" value="application/zip"/>
         <entry key="prop" value="text/plain"/>
-        <entry key="jrtx" value="application/xml"/>
-        <entry key="xml" value="application/xml"/>
+        <entry key="jrtx" value="application/repository.file+jrtx"/>
+        <entry key="xml" value="application/repository.file+xml"/>
         <entry key="json" value="application/json"/>
         <entry key="css" value="text/css"/>
-        <entry key="accessGrantSchema" value="application/xml"/>
-        <entry key="olapMondrianSchema" value="application/xml"/>
+        <entry key="accessGrantSchema" value="application/repository.file+accessGrantSchema"/>
+        <entry key="olapMondrianSchema" value="application/repository.file+olapMondrianSchema"/>
         <entry key="pptx" value="application/vnd.openxmlformats-officedocument.presentationml.presentation"/>
         <entry key="json" value="application/json"/>
         <entry key="dashboardComponent" value="application/dashboardComponentsSchema+json"/>
         <entry key="data_csv" value="text/csv"/>
+        <entry key="data_xlsx" value="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"/>
     </util:map>
 
     <bean id="exposedMessageSource" parent="messageSource" class="com.jaspersoft.jasperserver.jaxrs.bundle.ExposedResourceBundleMessageSource"  >
@@ -159,6 +160,7 @@
                       value-type="com.jaspersoft.jasperserver.jaxrs.poc.hypermedia.common.activity.Activity">
                 <entry key="contentReferences" value-ref="contentCollectionActivity"/>
                 <entry key="resources" value-ref="searchResourceLookupActivity"/>
+                <entry key="favorites" value-ref="favoritesLookupActivity"/>
                 <entry key="workflows" value-ref="workflowCollectionActivity"/>
             </util:map>
         </constructor-arg>
@@ -167,13 +169,14 @@
             <util:list value-type="com.jaspersoft.jasperserver.jaxrs.poc.hypermedia.common.Relation">
                 <value>contentReferences</value>
                 <value>resources</value>
+                <value>favorites</value>
                 <value>workflows</value>
             </util:list>
         </constructor-arg>
        <!--Relations resolver-->
         <property name="visitor">
             <bean id="rootVisitor" scope="prototype" class="com.jaspersoft.jasperserver.jaxrs.poc.hypermedia.root.visitor.RootDocumentRelationsVisitor">
-                <property name="maxCount" value="10"/>
+                <property name="maxCount" value="5"/>
             </bean>
         </property>
     </bean>
@@ -251,6 +254,37 @@
             <util:map key-type="com.jaspersoft.jasperserver.jaxrs.poc.hypermedia.common.Relation"
                       value-type="com.jaspersoft.jasperserver.jaxrs.poc.hypermedia.common.activity.Activity">
                 <entry key="resource" value-ref="resourceLookupActivity"/>
+            </util:map>
+        </constructor-arg>
+        <!--Treat next relations as links-->
+        <constructor-arg index="1">
+            <util:list value-type="com.jaspersoft.jasperserver.jaxrs.poc.hypermedia.common.Relation"/>
+        </constructor-arg>
+        <!--Relations resolver-->
+        <property name="visitor">
+            <bean id="searchRelationsVisitor" scope="prototype" class="com.jaspersoft.jasperserver.jaxrs.poc.hypermedia.resource.visitor.SearchRelationVisitor"/>
+        </property>
+        <!--Default search criteria-->
+        <property name="criteria">
+            <bean class="com.jaspersoft.jasperserver.search.service.impl.RepositorySearchCriteriaImpl">
+                <property name="searchMode" value="SEARCH" />
+                <property name="startIndex" value="0" />
+                <property name="maxCount" value="100" />
+                <property name="showHidden" value="false" />
+                <property name="customFilters" ref="hypermediaSearchCustomFilters"/>
+            </bean>
+        </property>
+    </bean>
+
+
+    <bean id="favoritesLookupActivity"
+          scope="prototype"
+          class="com.jaspersoft.jasperserver.jaxrs.poc.hypermedia.resource.activity.FavoritesActivity">
+        <!--Mapping to activities-->
+        <constructor-arg index="0">
+            <util:map key-type="com.jaspersoft.jasperserver.jaxrs.poc.hypermedia.common.Relation"
+                      value-type="com.jaspersoft.jasperserver.jaxrs.poc.hypermedia.common.activity.Activity">
+                <entry key="favorite" value-ref="resourceLookupActivity"/>
             </util:map>
         </constructor-arg>
         <!--Treat next relations as links-->

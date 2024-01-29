@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -357,7 +357,8 @@ orgModule.userManager.addDialog = {
         this.userName.inputValidator = orgModule.createInputRegExValidator(this.userName);
         this.userEmail.blurValidator = orgModule.createRegExpValidator(this.userEmail, 'invalidEmail', XRegExp(orgModule.Configuration.emailRegExpPattern));
         this.password.inputValidator = orgModule.createRegExpValidator(this.password, 'passwordIsWeak', XRegExp(orgModule.Configuration.passwordPattern));
-        this.confirmPassword.blurValidator = orgModule.createSameValidator(this.confirmPassword, this.password, 'invalidConfirmPassword'), this._validators = [
+        this.confirmPassword.blurValidator = orgModule.createSameValidator(this.confirmPassword, this.password, 'invalidConfirmPassword');
+        this._validators = [
             orgModule.createBlankValidator(this.userName, 'userNameIsEmpty'),
             orgModule.createBlankValidator(this.password, 'passwordIsEmpty', function (validator) {
                 validator.element.inputValidator = null;

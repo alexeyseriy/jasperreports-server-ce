@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -29,7 +29,7 @@ import dialogs from './components.dialogs';
 import {ajax} from '../core/core.ajax';
 import jQuery from 'jquery';
 
-jaspersoft.components.utils = (function(jQuery, _, dialogs, ajax){
+jaspersoft.components.utils = (function($, _, componentDialogs, coreAjax){
     var isIE = navigator.userAgent.toLowerCase().indexOf("msie") > -1;
 
     return {
@@ -52,29 +52,29 @@ jaspersoft.components.utils = (function(jQuery, _, dialogs, ajax){
                 //remove from the dom, it also reduce reflows on this element
                 parent.removeChild(el);
             }
-            jQuery(el).html('');
+            $(el).html('');
             if (isIE && el.tagName == 'SELECT') {
                 //workaround for bug in IE, select element and innerHTML functionality
                 //TODO: rewrite it, because it hardcoded for one special case it doesn't use template
                 var fragment = document.createDocumentFragment();
-                _.each(data.data, function (data) {
+                _.each(data.data, function (item) {
                     var option = document.createElement('OPTION');    //hardcoded workaround for report options
                     //hardcoded workaround for report options
-                    option.value = !_.isUndefined(data.value) ? data.value : data.id;
-                    jQuery(option).html(data.label);
-                    if (data.selected) {
+                    option.value = !_.isUndefined(item.value) ? item.value : item.id;
+                    $(option).html(item.label);
+                    if (item.selected) {
                         option.setAttribute('selected', 'selected');
                     }
                     fragment.appendChild(option);
                 });
                 el.appendChild(fragment);
             } else {
-                jQuery(el).html(template(data));
+                $(el).html(template(data));
             }
             if (nextSibling) {
                 parent.insertBefore(el, nextSibling);
             } else {
-                parent.appendChild(el);
+                parent && parent.appendChild(el);
             }
             el.style.display = display;
             if (isIE && el.tagName == 'SELECT') {
@@ -86,25 +86,25 @@ jaspersoft.components.utils = (function(jQuery, _, dialogs, ajax){
             }
         },
         wait: function (delay) {
-            return jQuery.Deferred(function (dfr) {
+            return $.Deferred(function (dfr) {
                 setTimeout(dfr.resolve, delay);
             });
         },
         showLoadingDialogOn: function (deferred, delay, modal) {
             this.wait(delay ? delay : this.LOADING_DIALOG_DELAY).then(_.bind(function () {
                 if (deferred.state() == 'pending') {
-                    dialogs.popup.show(jQuery('#' + ajax.LOADING_ID)[0], modal);
-                    jQuery.when(deferred).always(_.bind(function () {
+                    componentDialogs.popup.show($('#' + coreAjax.LOADING_ID)[0], modal);
+                    $.when(deferred).always(_.bind(function () {
                         //don't close loading dialog very fast it irritates user
                         this.wait(500).then(function () {
-                            dialogs.popup.hide(jQuery('#' + ajax.LOADING_ID)[0]);
+                            componentDialogs.popup.hide($('#' + coreAjax.LOADING_ID)[0]);
                         });
                     }, this));
                 }
             }, this));
         },
         createTimer: function (message) {
-            var timer = new jQuery.Deferred();
+            var timer = new $.Deferred();
             timer.done(function (startTime) {
                 var endTime = new Date().getTime();
                 var diff = endTime - startTime;

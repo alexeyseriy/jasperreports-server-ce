@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -170,5 +170,17 @@ public interface User extends AttributedObject, TenantQualified {
 	
 	public List getAttributes();
 	public void setAttributes(List attrs);
-	
+
+	/**
+	 * Sets the count of failed login attempts by the user
+	 * @param numberOfFailedLoginAttempts
+	 */
+	public void setNumberOfFailedLoginAttempts(Integer numberOfFailedLoginAttempts);
+
+	/**
+	 * returns the count of failed login attempts for the user
+	 * @return numberOfFailedLoginAttempts count of failed login attempts
+	 */
+	public Integer getNumberOfFailedLoginAttempts();
+
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2021 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -54,7 +54,7 @@
 
      9. MISC/UNKNOWN
    -----------------------------------
-    File last modified Feb 8, 2021
+    File last modified Mar 31, 2023
    -----------------------------------  */
 
 
@@ -71,18 +71,29 @@
 }
 
 /* Responsive Behavior for banner */
-@media only screen and (max-width: 1100px) {
+/*@media only screen and (max-width: 980px) {
     #logo {
         height: 18px;
         margin-top: 12px;
         width: 150px;
     }
-}
+} not needed after branding change */
 
-@media only screen and (max-width: 980px) {
+@media only screen and (max-width: 940px) {
     #logo {
         display: none;
     }
+}
+
+/* Skip link */
+.skipLink {
+    background-color: var(--background-white);
+    display: inline-block;
+    padding: 5px;
+    position: absolute;
+    top: -30px;
+    left: 0;
+    z-index: 999;
 }
 
 .sectionLeft {
@@ -110,20 +121,7 @@
     width: 100%;
 }
 
-/* chrome and safari only */
-@media screen and (-webkit-min-device-pixel-ratio: 0) {
-    #frameFooter {
-        position: fixed;
-    }
-}
-
-#frameFooter #about a {
-    color: #fff !important;
-}
-
-#frameFooter #copyright,
-#frameFooter #about,
-#frameFooter #license {
+#frameFooter p {
     line-height: 17px;
     position: absolute;
 }
@@ -138,6 +136,34 @@
 
 #frameFooter #license {
     color: #feef97;
+}
+
+@media only screen and (max-width: 750px) {
+    .sectionLeft {
+        margin-left: 0;
+    }
+}
+
+@media only screen and (max-width: 500px) {
+    #frameFooter p {
+        font-size: 8px;
+    }
+}
+
+@media only screen and (max-width: 350px) {
+    #frameFooter p {
+        font-size: 6px;
+    }
+}
+
+/* Keyboard Focus */
+.skipLink:active,
+.skipLink:focus {
+    top: 0;
+}
+
+#frameFooter #about a.focus-visible {
+    box-shadow:  0 -2px #bde7ff, 0 2px var(--theme-medium-light);
 }
 
 
@@ -205,7 +231,9 @@
 /* ------------------------- */
 /*  3. HEADER & SUBHEADER    */
 /* ------------------------- */
-.header {} /* top-level header gradually being replaced by .pageHeader */
+.header {
+    color: #666666;
+}
 
 .header > .title {
     float: left;
@@ -219,6 +247,10 @@
     text-overflow: ellipsis;
     word-wrap: normal;
     white-space: nowrap;
+}
+
+.content .header > .title {
+    color: var(--theme-medium-dark)
 }
 
 .widget .header {
@@ -269,10 +301,10 @@
 
 .header > .button.mutton,
 .subheader > .button.mutton {
-    background-image: url(images/disclosure_indicators_icons_sprite@1x.png);
+    background-image: url(images/disclosure_indicators_icons_sprite.svg);
     background-repeat: no-repeat;
     background-position: 5px 8px;
-    background-size: 80px;
+    background-size: 170px;
     display: inline-block;
     height: 32px;
     margin: 0;
@@ -282,23 +314,16 @@
     width: 22px;
 }
 
-/* 2x icons */
-@media (-webkit-min-device-pixel-ratio: 2),(min-resolution: 192dpi){
-    .header > .button.mutton,
-    .subheader > .button.mutton {
-        background-image: url(images/disclosure_indicators_icons_sprite@2x.png);
-    }
-}
-
 .sub.header {
-    height: 28px;
-    margin-top: 1px;
-    position: relative;
-    z-index: 10;
+    background: var(--background-white);
     border-top: 1px solid var(--border-white);
-    min-height: 0;
     clear: both;
     cursor: default; /* prevents the move cursor from .mover */
+    height: 28px;
+    margin-top: 1px;
+    min-height: 0;
+    position: relative;
+    z-index: 10;
 }
 
 .sub.header .title {
@@ -343,20 +368,18 @@
 .pane.filter .content > .header > .button.disclosure.open,
 .pane.expression .content > .header > .button.disclosure.open {
     background-position: 2px -701px;
-}
+} /* bg image is 'disclosure_indicators_sprite' defined in buttons.css */
 
 .subheader > .button.disclosure.closed,
 .pane.filter .content > .header > .button.disclosure.closed,
 .pane.expression .content > .header > .button.disclosure.closed {
     background-position: 2px -677px;
-}
+} /* bg image is 'disclosure_indicators_sprite' defined in buttons.css */
 
 
 
-/* -------------- */
-/*  4. COLUMNS    */
-/* -------------- */
-
+/* ----------------- */
+/*  4. COLUMNS       */
 /* ----------------- */
 /*  4a. base rules   */
 /* ----------------- */
@@ -411,7 +434,7 @@
 #display > .column.decorated.primary {
     min-width: 312px;
     overflow: hidden;
-} /* I'm not sure this exists */
+}
 
 .column.decorated > .content {
     height: auto;
@@ -423,17 +446,28 @@
 }
 
 .column.decorated > .content > .header {
+    background-color: var(--background-grey-10);
+    border-bottom: 1px solid var(--border-white);
     height: 28px;
     position: relative;
     white-space: nowrap;
     z-index: 1;
 }
 
+.column.decorated > .content > .header > .subheader {
+    background-color: var(--background-grey-10);
+    border-bottom: 1px solid var(--border-white);
+}
+
 .column.decorated > .content > .body {
     overflow: auto;
     position: absolute;
     top: 27px;
-    /* left: 0; defined by .body in BASIC CONTAINER section */
+}
+
+.column.decorated.secondary > .content > .body,
+.column.decorated.tertiary > .content > .body {
+    background-color: var(--background-grey-03);
 }
 
 .column.decorated > .content.hasFooter > .body {
@@ -455,6 +489,8 @@
 /*  4c. minimized   */
 /* ---------------- */
 .column.decorated.minimized {
+    background: var(--background-white);
+    border: 0;
     min-width: 24px !important;
     width: 24px !important;
 }
@@ -472,7 +508,8 @@
 }
 
 .column.decorated.minimized .vtitle {
-    background: var(--background-white);
+    background: transparent;
+    color: var(--theme-medium-dark);
     cursor: pointer;
     font-size: 12px;
     line-height: 20px;
@@ -522,7 +559,6 @@
     background-position: -58px -84px;
 }  /* manage */
 
-
 /* ------------- */
 /*  4d. simple   */
 /* ------------- */
@@ -539,7 +575,9 @@
     overflow: auto;
 }
 
-/* 4e. tabbed */
+/* ------------- */
+/*  4e. tabbed   */
+/* ------------- */
 /* not sure these exist any more */
 .column.decorated.tabbed.showingToolBar > .content > .body {
     margin-top: 32px;
@@ -631,6 +669,7 @@
     margin-left: -7px;
     top: 0;
     width: 8px;
+    z-index: 1;
 }
 
 .column.minimized > .sizer {
@@ -685,8 +724,9 @@
 /*  5. TOOLBAR    */
 /* -------------- */
 .toolbar {
+    background-color: var(--background-grey-08);
     clear: both;
-    height: 28px;
+    height: 32px;
 }
 
 .toolbar .divider {
@@ -719,8 +759,6 @@
     margin-right: 8px;
     margin-left: 8px;
 }
-
-
 
 
 
@@ -1081,14 +1119,6 @@ body,
 .column.decorated > .content > .header > .subheader {
     background-color: var(--background-grey-10);
     border-bottom: 1px solid var(--border-white);
-}
-
-.toolbar {
-    background-color: var(--background-grey-08);
-}
-
-.sub.header {
-    background: var(--background-white);
 }
 
 .column.decorated.secondary > .content > .body,

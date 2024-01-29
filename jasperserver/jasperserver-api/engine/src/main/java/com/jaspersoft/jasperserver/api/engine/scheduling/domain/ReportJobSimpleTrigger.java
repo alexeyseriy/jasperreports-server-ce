@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -21,7 +21,11 @@
 package com.jaspersoft.jasperserver.api.engine.scheduling.domain;
 
 import com.jaspersoft.jasperserver.api.JasperServerAPI;
+import com.jaspersoft.jasperserver.api.engine.scheduling.domain.jaxb.ReportJobTriggerIntervalUnitXmlAdapter;
 import com.jaspersoft.jasperserver.api.engine.scheduling.domain.reportjobmodel.ReportJobSimpleTriggerModel;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.io.Serializable;
 
 /**
@@ -39,6 +43,7 @@ import java.io.Serializable;
  * @since 1.0
  */
 @JasperServerAPI
+@XmlRootElement(name = "simpleTrigger")
 public class ReportJobSimpleTrigger extends ReportJobTrigger implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -149,6 +154,8 @@ public class ReportJobSimpleTrigger extends ReportJobTrigger implements Serializ
 	 * 
 	 * @see #getRecurrenceInterval()
 	 */
+    @XmlElement
+    @XmlJavaTypeAdapter(ReportJobTriggerIntervalUnitXmlAdapter.class)
 	public Byte getRecurrenceIntervalUnit() {
 		return recurrenceIntervalUnit;
 	}

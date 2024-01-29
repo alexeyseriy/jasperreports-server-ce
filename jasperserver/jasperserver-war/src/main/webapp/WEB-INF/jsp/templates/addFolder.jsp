@@ -1,6 +1,6 @@
 <%@ page contentType="text/html; charset=utf-8" %>
 <%--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -43,24 +43,26 @@ Usage:
 
 
 <t:insertTemplate template="/WEB-INF/jsp/templates/container.jsp">
+    <t:putAttribute name="containerAttributes" value="role='dialog' aria-labelledby='addFolderTitleId' aria-modal='true' js-stdnav='false' js-navtype='none' " />
     <t:putAttribute name="containerID" value="addFolder" />
     <t:putAttribute name="containerClass">panel dialog overlay addFolder moveable ${containerClass}</t:putAttribute>
-    <t:putAttribute name="containerTitle"><spring:message code="dialog.addFolder.title" javaScriptEscape="true"/></t:putAttribute>
+    <t:putAttribute name="containerTitle"><h2 id="addFolderTitleId"><spring:message code="dialog.addFolder.title" javaScriptEscape="true"/></h2></t:putAttribute>
     <t:putAttribute name="headerClass" value="mover"/>
+    <t:putAttribute name="bodyID" value="addFolderBodyId" />
     <t:putAttribute name="bodyContent">
             <label class="control input text" accesskey="o" for="addFolderInputName" title="<spring:message code="dialog.file.name.title" javaScriptEscape="true"/>">
                 <spring:message code="dialog.file.name" javaScriptEscape="true"/> (<spring:message code='required.field' javaScriptEscape="true"/>):
-                <input class="" id="addFolderInputName" type="text" value="" tabindex="1"/>
+                <input class="" id="addFolderInputName" type="text" value="" aria-required="true"/>
                 <span class="message warning">error message here</span>
             </label>
             <label class="control textArea" for="addFolderInputDescription">
                 <spring:message code="dialog.file.description" javaScriptEscape="true"/>:
-                <textarea id="addFolderInputDescription" type="text" tabindex="2"/></textarea>
+                <textarea id="addFolderInputDescription" type="text"/></textarea>
                 <span class="message warning">error message here</span>
             </label>
     </t:putAttribute>
     <t:putAttribute name="footerContent">
-            <button id="addFolderBtnAdd" class="button action primary up" tabindex="3"><span class="wrap"><spring:message code="dialog.addFolder.add" javaScriptEscape="true"/></span><span class="icon"></span></button>
-            <button id="addFolderBtnCancel" class="button action up" tabindex="4"><span class="wrap"><spring:message code="dialog.file.cancel" javaScriptEscape="true"/><span class="icon"></span></button>
+            <button id="addFolderBtnAdd" class="button action primary up"><span class="wrap"><spring:message code="dialog.addFolder.add" javaScriptEscape="true"/></span><span class="icon"></span></button>
+            <button id="addFolderBtnCancel" class="button action up"><span class="wrap"><spring:message code="dialog.file.cancel" javaScriptEscape="true"/><span class="icon"></span></button>
     </t:putAttribute>
 </t:insertTemplate>

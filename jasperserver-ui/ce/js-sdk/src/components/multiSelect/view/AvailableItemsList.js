@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -123,6 +123,7 @@ var AvailableItemsList = Backbone.View.extend({
         }
 
         this.label = options.label;
+        this.caseSensitiveSelection = options.caseSensitiveSelection;
         this.template = _.template(options.availableItemsTemplate || template);
 
         this.keyboardManager = new KeyboardManager({
@@ -150,10 +151,12 @@ var AvailableItemsList = Backbone.View.extend({
         this.getData = options.getData;
 
         var Model = ListWithSelectionAsObjectHashModel.extend(listWithNavigationModelTrait);
+
         return options.listViewModel || new Model({
             getData: options.getData,
             bufferSize: options.bufferSize,
-            loadFactor: options.loadFactor
+            loadFactor: options.loadFactor,
+            caseSensitiveSelection: options.caseSensitiveSelection
         });
     },
 
@@ -267,25 +270,38 @@ var AvailableItemsList = Backbone.View.extend({
     },
 
     selectionAdd: function(selection) {
-        this.model.get("value")[selection.value] = true;
+        const currentValues = this.model.get("value");
+        if (this.caseSensitiveSelection) {
+            currentValues[selection.value] = true;
+        } else {
+            currentValues[selection.value.toLowerCase()] = selection.value;
+        }
         this.model.trigger("change:value");
     },
 
     selectionAddRange: function(range) {
-        var selection = range.selection,
-            value     = this.model.get("value"),
-            sx        = 0,
-            sLen      = selection.length;
+        const selection = range.selection,
+            currentValues = this.model.get("value");
 
-        for ( sx; sx < sLen; sx +=1 ) {
-            value[selection[sx]] = true;
+        for (let i = 0; i < selection.length; i +=1 ) {
+            const value = selection[i];
+            if (this.caseSensitiveSelection) {
+                currentValues[value] = true;
+            } else {
+                currentValues[value.toLowerCase()] = value;
+            }
         }
 
         this.model.trigger("change:value");
     },
 
     selectionRemove: function(selection) {
-        delete this.model.get("value")[selection.value];
+        const currentValues = this.model.get("value");
+        if (this.caseSensitiveSelection) {
+            delete currentValues[selection.value];
+        } else {
+            delete currentValues[selection.value.toLowerCase()];
+        }
 
         this.model.trigger("change:value");
     },
@@ -630,17 +646,20 @@ var AvailableItemsList = Backbone.View.extend({
     },
 
     processSelectionThroughApi: function(selection, options) {
-        var value = {},
-            sx    = 0,
-            sLen  = selection.length;
+        var newValues = {};
 
         this.selectionClear();
 
-        for (sx; sx < sLen; sx += 1) {
-            value[selection[sx]] = true;
+        for (let i = 0; i < selection.length; i += 1) {
+            const value = selection[i];
+            if (this.caseSensitiveSelection) {
+                newValues[value] = true;
+            } else {
+                newValues[value.toLowerCase()] = value;
+            }
         }
 
-        this.model.attributes.value = value;
+        this.model.attributes.value = newValues;
         if (!options || !options.silent) {
             this.model.trigger("change:value");
         }
@@ -687,7 +706,12 @@ var AvailableItemsList = Backbone.View.extend({
     },
 
     getValue: function() {
-        return _.keys(this.model.get("value"));
+        const currentValues = this.model.get("value");
+        if (this.caseSensitiveSelection) {
+            return Object.keys(currentValues);
+        } else {
+            return Object.values(currentValues);
+        }
     },
 
     setValue: function(value, options) {
@@ -695,12 +719,15 @@ var AvailableItemsList = Backbone.View.extend({
 
         this.listViewModel.once("selection:change", function () {
             this.selectionClear();
-            var selection = this.listViewModel.getSelection(),
-                i = 0,
-                length = selection.length;
+            const selection = this.listViewModel.getSelection();
 
-            for (i; i < length; i++) {
-                this.model.attributes.value[selection[i]] = true;
+            for (let i = 0; i < selection.length; i++) {
+                const value = selection[i];
+                if (this.caseSensitiveSelection) {
+                    this.model.attributes.value[value] = true;
+                } else {
+                    this.model.attributes.value[value.toLowerCase()] = value;
+                }
             }
 
             if (!options || !options.silent) {

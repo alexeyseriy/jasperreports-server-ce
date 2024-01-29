@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -75,7 +75,7 @@ function fromJavaToMomentDatePattern(dateFormat) {
 }
 
 function toMomentTimePattern(timeFormat) {
-    return timeFormat.toLowerCase().replace("hh", "HH");
+    return timeFormat.toLowerCase().replace(/h/g, "H");
 }
 
 function fromJavaToMomentTimePattern(timeFormat) {
@@ -100,7 +100,7 @@ function toMomentDateOrTimeOrTimestampPattern(dateOrTimeOrTimestampFormat, dateT
     var toDatePattern = fromJava ? fromJavaToMomentDatePattern : toMomentDatePattern;
     var toTimePattern = fromJava ? fromJavaToMomentTimePattern : toMomentTimePattern;
 
-    if ((dateFormat.indexOf('h') > 0) || (dateFormat.indexOf('H') > 0) || dateFormat.indexOf("s") > 0) {
+    if ((dateFormat.indexOf('h') >= 0) || (dateFormat.indexOf('H') >= 0) || dateFormat.indexOf("s") >= 0) {
         timeFormat = dateFormat;
         dateFormat = null;
     }

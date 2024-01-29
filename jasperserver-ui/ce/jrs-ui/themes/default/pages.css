@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2021 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -44,7 +44,7 @@
 
     6. FLOW
   -----------------------------------
-    File last modified Jan 13, 2021
+    File last modified Oct 12, 2022
   -----------------------------------  */
 
 
@@ -549,6 +549,10 @@
 
 .flow .row.instructions {
 	margin: 10px 10px 15px 10px;
+}
+
+.flow #stepDisplay .instructions h2 {
+	color: var(--theme-medium-dark);
 }
 
 .flow .row.inputs {

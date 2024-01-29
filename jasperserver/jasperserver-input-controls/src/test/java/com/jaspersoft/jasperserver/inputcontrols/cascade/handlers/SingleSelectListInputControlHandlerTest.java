@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -23,6 +23,7 @@ package com.jaspersoft.jasperserver.inputcontrols.cascade.handlers;
 import com.jaspersoft.jasperserver.api.common.util.diagnostic.DiagnosticSnapshotPropertyHelper;
 import com.jaspersoft.jasperserver.api.engine.common.service.ReportInputControlInformation;
 import com.jaspersoft.jasperserver.api.engine.jasperreports.service.impl.JasperReportInputControlInformation;
+import com.jaspersoft.jasperserver.api.engine.jasperreports.service.impl.ReportInputControlValuesInformationImpl;
 import com.jaspersoft.jasperserver.api.metadata.common.domain.DataType;
 import com.jaspersoft.jasperserver.api.metadata.common.domain.InputControl;
 import com.jaspersoft.jasperserver.api.metadata.common.domain.ListOfValuesItem;
@@ -45,6 +46,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static com.jaspersoft.jasperserver.dto.common.validations.MandatoryValidationRule.ERROR_KEY;
@@ -54,6 +56,7 @@ import static com.jaspersoft.jasperserver.inputcontrols.cascade.handlers.Paramet
 import static com.jaspersoft.jasperserver.inputcontrols.cascade.handlers.ParametersHelper.listOfOptions;
 import static com.jaspersoft.jasperserver.inputcontrols.cascade.handlers.ParametersHelper.listOfValues;
 import static com.jaspersoft.jasperserver.inputcontrols.cascade.handlers.ParametersHelper.map;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -439,7 +442,7 @@ public class SingleSelectListInputControlHandlerTest extends BaseInputControlHan
         InputControl inputControl = mock(InputControl.class);
 
         Map<String, List<String>> result = new HashMap<>();
-        result.put("Country", Arrays.asList(new String[]{"USA"}));
+        result.put("Country", Arrays.asList("USA"));
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("Country", "USA");
         when(info.getDefaultValue()).thenReturn("USA");
@@ -684,8 +687,38 @@ public class SingleSelectListInputControlHandlerTest extends BaseInputControlHan
 
         doThrow(new IllegalStateException()).when(dataConverterService).formatSingleValue("invalid", null, (Class) null);
         assertFalse(selectedValuesDict.checkMatch("invalid"));
+    }
 
+    @Test
+    public void SelectedValuesDict_withSingle_CaseSensitive() {
+        assertTrue(handler.matches("abc", "abc"));
+    }
 
+    @Test
+    public void SelectedValuesDict_withSingle_CaseInSensitive() {
+        handler.setCaseSensitive(false);
+        doAnswer(invocation -> invocation.getArgument(0)).when(dataConverterService)
+                .formatSingleValue(anyString(), nullable(DataType.class), nullable(Class.class));
+        assertTrue(handler.matches("abc", "aBc"));
+    }
+
+    @Test
+    public void SelectedValuesDict_withCollection_CaseInSensitive() {
+        handler.setCaseSensitive(false);
+        List<Object> defaultValue = Arrays.asList(new String[]{"abc2", "efg2"});
+        doAnswer(invocation -> invocation.getArgument(0)).when(dataConverterService)
+                    .formatSingleValue(anyString(), nullable(DataType.class), nullable(Class.class));
+        SingleSelectListInputControlHandler.SelectedValuesDict selectedValuesDict = handler.createSelectedValuesDict(defaultValue);
+        assertTrue(selectedValuesDict.checkMatch("aBc2"));
+        assertTrue(selectedValuesDict.checkMatch("EFG2"));
+    }
+
+    @Test
+    public void SelectedValuesDict_withCollection_CaseSensitive() {
+        List<Object> defaultValue = Arrays.asList(new Object[]{"abc", "efg"});
+        SingleSelectListInputControlHandler.SelectedValuesDict selectedValuesDict = handler.createSelectedValuesDict(defaultValue);
+        assertTrue(selectedValuesDict.checkMatch("abc"));
+        assertFalse(selectedValuesDict.checkMatch("EFG"));
     }
 
     @Test
@@ -750,6 +783,59 @@ public class SingleSelectListInputControlHandlerTest extends BaseInputControlHan
 
         assertEquals(1, state.getOptions().size());
         assertEquals("Canada", state.getOptions().get(0).getValue());
+    }
+
+    @Test
+    public void selectedAllInParameters_fillStateValue_selectedOptions() throws CascadeResourceNotFoundException {
+        Map<String, Object> parameters = new HashMap<>();
+        setSelectedOnly(parameters, true);
+        parameters.put(inputControl.getName() + SingleSelectListInputControlHandler.SELECT, InputControlHandler.ALL_VALUES);
+
+        mockLoadValues(values);
+
+        handler.fillStateValue(state, inputControl, dataSource, parameters, reportInputControlInformation, Collections.emptyMap());
+
+        assertEquals(3, state.getOptions().size());
+        assertEquals("USA", state.getOptions().get(0).getLabel());
+        assertThat(Collections.nCopies(3, true), equalTo(state.getOptions().stream()
+                .map(InputControlOption::isSelected).collect(Collectors.toList())));
+    }
+
+    @Test
+    public void selectedAllInInputControl_fillStateValue_selectedOptions() throws CascadeResourceNotFoundException {
+        Map<String, Object> parameters = new HashMap<>();
+        setSelectedOnly(parameters, true);
+
+        ReportInputControlValuesInformationImpl valuesInformation = new ReportInputControlValuesInformationImpl();
+        valuesInformation.setAnyValue(true);
+        doReturn(valuesInformation).when(reportInputControlInformation).getReportInputControlValuesInformation();
+
+        mockLoadValues(values);
+
+        handler.fillStateValue(state, inputControl, dataSource, parameters, reportInputControlInformation, Collections.emptyMap());
+
+        assertEquals(3, state.getOptions().size());
+        assertEquals("USA", state.getOptions().get(0).getLabel());
+        assertThat(Collections.nCopies(3, true), equalTo(state.getOptions().stream()
+                .map(InputControlOption::isSelected).collect(Collectors.toList())));
+    }
+
+    @Test
+    public void selectedOnlyWhenIsAnyValueTrue_fillStateValue_selectedOptions() throws CascadeResourceNotFoundException {
+        Map<String, Object> parameters = new HashMap<>();
+        setIncomingValue(parameters, "Canada", inputControl);
+        setSelectedOnly(parameters, true);
+
+        ReportInputControlValuesInformationImpl valuesInformation = new ReportInputControlValuesInformationImpl();
+        valuesInformation.setAnyValue(true);
+        doReturn(valuesInformation).when(reportInputControlInformation).getReportInputControlValuesInformation();
+
+        mockLoadValues(values);
+
+        handler.fillStateValue(state, inputControl, dataSource, parameters, reportInputControlInformation, Collections.emptyMap());
+
+        assertEquals(1, state.getOptions().size());
+        assertEquals("Canada", state.getOptions().get(0).getLabel());
     }
 
     @Test

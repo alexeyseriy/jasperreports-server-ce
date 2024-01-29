@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -27,9 +27,7 @@ import JdbcDriverCollection from '../collection/JdbcDriverCollection';
 import connectionTypes from '../enum/connectionTypes';
 import repositoryResourceTypes from 'bi-repository/src/bi/repository/enum/repositoryResourceTypes';
 import i18n from '../../i18n/jasperserver_messages.properties';
-import awsSettings from '../../settings/awsSettings.settings';
 import jasperserverConfig from '../../i18n/jasperserver_config.properties';
-import settingsUtility from '../util/settingsUtility';
 
 var AzureSqlDataSourceModel = JdbcDataSourceModel.extend({
     otherDriverIsPresent: false,
@@ -81,7 +79,6 @@ var AzureSqlDataSourceModel = JdbcDataSourceModel.extend({
     }(),
     initialize: function (attributes, options) {
         BaseDataSourceModel.prototype.initialize.apply(this, arguments);
-        var deepDefaults = settingsUtility.deepDefaults(options, { awsSettings: awsSettings });
         if (!this.isNew()) {
             // use password substitution
             this.set('password', jasperserverConfig['input.password.substitution']);

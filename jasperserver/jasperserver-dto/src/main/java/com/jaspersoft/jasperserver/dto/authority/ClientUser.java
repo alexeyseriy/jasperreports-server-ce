@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -26,6 +26,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.Date;
+import java.util.Objects;
 import java.util.Set;
 
 import static com.jaspersoft.jasperserver.dto.utils.ValueObjectUtils.checkNotNull;
@@ -46,6 +47,7 @@ public class ClientUser implements DeepCloneable<ClientUser> {
     private Date previousPasswordChangeTime;
     private String tenantId;
     private String username;
+    private Integer numberOfFailedLoginAttempts;
 
     public ClientUser() {
     }
@@ -62,6 +64,7 @@ public class ClientUser implements DeepCloneable<ClientUser> {
         this.previousPasswordChangeTime = copyOf(other.getPreviousPasswordChangeTime());
         this.tenantId = other.getTenantId();
         this.username = other.getUsername();
+        this.numberOfFailedLoginAttempts = other.getNumberOfFailedLoginAttempts();
     }
 
     @Override
@@ -160,38 +163,33 @@ public class ClientUser implements DeepCloneable<ClientUser> {
         return this;
     }
 
+    @XmlElement(name = "numberOfFailedLoginAttempts")
+    public Integer getNumberOfFailedLoginAttempts() {
+        return numberOfFailedLoginAttempts;
+    }
+
+    public ClientUser setNumberOfFailedLoginAttempts(Integer numberOfFailedLoginAttempts) {
+        this.numberOfFailedLoginAttempts = numberOfFailedLoginAttempts;
+        return this;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-
         ClientUser that = (ClientUser) o;
-
-        if (roleSet != null ? !roleSet.equals(that.roleSet) : that.roleSet != null) return false;
-        if (fullName != null ? !fullName.equals(that.fullName) : that.fullName != null) return false;
-        if (password != null ? !password.equals(that.password) : that.password != null) return false;
-        if (emailAddress != null ? !emailAddress.equals(that.emailAddress) : that.emailAddress != null) return false;
-        if (externallyDefined != null ? !externallyDefined.equals(that.externallyDefined) : that.externallyDefined != null)
-            return false;
-        if (enabled != null ? !enabled.equals(that.enabled) : that.enabled != null) return false;
-        if (previousPasswordChangeTime != null ? !previousPasswordChangeTime.equals(that.previousPasswordChangeTime) : that.previousPasswordChangeTime != null)
-            return false;
-        if (tenantId != null ? !tenantId.equals(that.tenantId) : that.tenantId != null) return false;
-        return username != null ? username.equals(that.username) : that.username == null;
+        return Objects.equals(roleSet, that.roleSet) && Objects.equals(fullName, that.fullName)
+                && Objects.equals(password, that.password) && Objects.equals(emailAddress, that.emailAddress)
+                && Objects.equals(externallyDefined, that.externallyDefined) && Objects.equals(enabled, that.enabled)
+                && Objects.equals(previousPasswordChangeTime, that.previousPasswordChangeTime)
+                && Objects.equals(tenantId, that.tenantId) && Objects.equals(username, that.username)
+                && Objects.equals(numberOfFailedLoginAttempts, that.numberOfFailedLoginAttempts);
     }
 
     @Override
     public int hashCode() {
-        int result = roleSet != null ? roleSet.hashCode() : 0;
-        result = 31 * result + (fullName != null ? fullName.hashCode() : 0);
-        result = 31 * result + (password != null ? password.hashCode() : 0);
-        result = 31 * result + (emailAddress != null ? emailAddress.hashCode() : 0);
-        result = 31 * result + (externallyDefined != null ? externallyDefined.hashCode() : 0);
-        result = 31 * result + (enabled != null ? enabled.hashCode() : 0);
-        result = 31 * result + (previousPasswordChangeTime != null ? previousPasswordChangeTime.hashCode() : 0);
-        result = 31 * result + (tenantId != null ? tenantId.hashCode() : 0);
-        result = 31 * result + (username != null ? username.hashCode() : 0);
-        return result;
+        return Objects.hash(roleSet, fullName, password, emailAddress, externallyDefined, enabled,
+                previousPasswordChangeTime, tenantId, username, numberOfFailedLoginAttempts);
     }
 
     @Override
@@ -206,6 +204,7 @@ public class ClientUser implements DeepCloneable<ClientUser> {
                 ", previousPasswordChangeTime=" + previousPasswordChangeTime +
                 ", tenantId='" + tenantId + '\'' +
                 ", username='" + username + '\'' +
+                ", numberOfFailedLoginAttempts=" + numberOfFailedLoginAttempts +
                 '}';
     }
 }

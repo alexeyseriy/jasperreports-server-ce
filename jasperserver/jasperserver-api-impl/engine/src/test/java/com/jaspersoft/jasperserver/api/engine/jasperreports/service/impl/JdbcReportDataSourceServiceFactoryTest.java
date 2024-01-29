@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -31,6 +31,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.verification.VerificationMode;
 
 import javax.sql.DataSource;
 import java.util.HashMap;
@@ -40,8 +41,7 @@ import java.util.TimeZone;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -109,6 +109,19 @@ public class JdbcReportDataSourceServiceFactoryTest {
 
         assertEquals(TimeZone.getTimeZone(dsTimeZone), paramsMap.get(JRTimezoneJdbcQueryExecuterFactory.PARAMETER_TIMEZONE));
 
+    }
+
+    @Test
+    public void getReleasePooledDataSource() {
+        PooledDataSource pooledDataSourceMock2 = mock(PooledDataSource.class);
+        DataSource dataSourceMock2 = mock(DataSource.class);
+        when(pooledDataSourceMock2.getDataSource()).thenReturn(dataSourceMock2);
+        when(pooledJdbcDataSourceFactory.createPooledDataSource(any(), any(), any(), any(), eq(true), eq(false)))
+                .thenReturn(pooledDataSourceMock2);
+        jdbcReportDataSourceServiceFactory.setPoolTimeout(1);
+        jdbcReportDataSourceServiceFactory.getPoolDataSource("abc", "abc", "abc", "abc");
+        jdbcReportDataSourceServiceFactory.releaseExpiredPools(System.currentTimeMillis());
+        Mockito.verify(pooledDataSourceMock2, times(0)).release();
     }
 
     @Test

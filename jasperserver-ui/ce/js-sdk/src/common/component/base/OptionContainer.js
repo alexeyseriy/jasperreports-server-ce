@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -177,8 +177,8 @@ export default Backbone.View.extend(/** @lends OptionContainer.prototype */{
                 optionsToToggle = this.hasGroups ? _.reduce(this.options, function (memo, option) { option.model.get("groupId") === group && memo.push(option); return memo; }, [])
                     : this.options;
 
-            _.each(optionsToToggle, function (optionView) {
-                optionView.removeSelection();
+            _.each(optionsToToggle, function (view) {
+                view.removeSelection();
             }, this);
 
             optionView.addSelection();

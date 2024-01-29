@@ -344,7 +344,7 @@ export default class InputControlsReportViewerService {
                             return {
                                 ...stateMemo,
                                 [controlSelection.id]: controlSelection.options ? controlSelection.options.map((ip) => _.omit(ip, 'selected')) || []
-                                    : controlSelection.value
+                                    : [{ value: controlSelection.value, label: controlSelection.value }]
                             };
                         }, {});
 
@@ -363,6 +363,10 @@ export default class InputControlsReportViewerService {
                     paginatedValuesResponse: paginatedValues
                 });
             });
+    }
+
+    fetchReportRawParameterValues(executionId: string) {
+        return this.inputControlsService.getReportRawParameterValues(executionId).then((response) => response);
     }
 
     private fetchInputControlsOptionsByPaginatedValuesOptionsAndUri(options: {
@@ -396,4 +400,4 @@ export default class InputControlsReportViewerService {
                 return response;
             });
     }
-};
+}

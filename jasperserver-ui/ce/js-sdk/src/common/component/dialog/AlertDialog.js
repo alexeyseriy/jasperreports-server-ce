@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -33,6 +33,9 @@ export default Dialog.extend({
             message: options.message,
             additionalCssClasses: 'alertDialog ' + (options.additionalCssClasses || ''),
             title: options.title || i18n['dialog.exception.title'],
+            id: options.id,
+            titleContainerId: options.titleContainerId,
+            bodyContainerId: options.bodyContainerId,
             buttons: [{
                 label: i18n['button.close'],
                 action: 'close',

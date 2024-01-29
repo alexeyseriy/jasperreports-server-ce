@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -103,7 +103,14 @@ public class DefaultReportJobValidator implements ReportJobValidator, Applicatio
 		validateJobDetails(errors, job);
 		validateSource(errors, job.getSource());
 		validateJobTrigger(errors, job);
-		validateJobOutput(errors, job);
+		validateJobOutput(errors, job, false);
+		return errors;
+	}
+
+    public ValidationErrors validateEffectiveJobOutput(ExecutionContext context, ReportJob job) {
+		ValidationErrors errors = new ValidationErrorsImpl();
+		validateJobDetails(errors, job);
+		validateJobOutput(errors, job, true);
 		return errors;
 	}
 
@@ -253,10 +260,10 @@ public class DefaultReportJobValidator implements ReportJobValidator, Applicatio
 		}
 	}
 
-	protected void validateJobOutput(ValidationErrors errors, ReportJob job) {
+	protected void validateJobOutput(ValidationErrors errors, ReportJob job, boolean effective) {
 		String baseOutputFilename = job.getBaseOutputFilename();
 		if (checkString(errors, "baseOutputFilename", baseOutputFilename, true, 100)) {
-			if (!ValidationUtil.regExValidateName(baseOutputFilename)) {
+			if ((effective || !baseOutputFilename.contains("${")) && !ValidationUtil.regExValidateName(baseOutputFilename)) {
 				errors.add(new ValidationErrorImpl("error.invalid.chars",
 						null, null, "baseOutputFilename"));
 			}
@@ -270,21 +277,22 @@ public class DefaultReportJobValidator implements ReportJobValidator, Applicatio
 		if (job.getContentRepositoryDestination() == null) {
 			errors.add(new ValidationErrorImpl("error.report.job.no.repository.output", null, "Repository output is not defined for the job.", "contentRepositoryDestination"));
 		} else {
-			validateRepositoryDestination(errors, job.getContentRepositoryDestination());
+			validateRepositoryDestination(errors, job.getContentRepositoryDestination(), effective);
 		}
 
 		ReportJobMailNotification mailNotification = job.getMailNotification();
 		if (mailNotification != null && !mailNotification.isEmpty()) {
-			validateMailNotification(errors, mailNotification);
+			validateMailNotification(errors, mailNotification, effective);
 		}
 	}
 
-	protected void validateRepositoryDestination(ValidationErrors errors, ReportJobRepositoryDestination repositoryDestination) {
+	protected void validateRepositoryDestination(ValidationErrors errors, ReportJobRepositoryDestination repositoryDestination,
+			boolean effective) {
 		if (!repositoryDestination.isSaveToRepository()) return;
         if (repositoryDestination.isUsingDefaultReportOutputFolderURI()) return;
         String folderURI = repositoryDestination.getFolderURI();
-		if (checkString(errors, "contentRepositoryDestination.folderURI", folderURI, true, 200)) {
-			validateFolderURI(errors, folderURI);
+		if (checkString(errors, "contentRepositoryDestination.folderURI", folderURI, true, 250)) {
+			validateFolderURI(errors, folderURI, effective);
 		}
 
 		checkString(errors, "contentRepositoryDestination.outputDescription",
@@ -311,7 +319,10 @@ public class DefaultReportJobValidator implements ReportJobValidator, Applicatio
 		}
 	}
 
-	protected void validateFolderURI(ValidationErrors errors, String folderURI) {
+	protected void validateFolderURI(ValidationErrors errors, String folderURI, boolean effective) {
+		if (!effective && folderURI.contains("${")) {
+			return;
+		}
 		if (getRepository().getFolder(null, folderURI)==null) {
 			errors.add(new ValidationErrorImpl("error.report.job.output.folder.inexistent", new Object[]{folderURI},
 					null, "contentRepositoryDestination.folderURI"));
@@ -321,28 +332,29 @@ public class DefaultReportJobValidator implements ReportJobValidator, Applicatio
 		}
 	}
 
-	protected void validateMailNotification(ValidationErrors errors, ReportJobMailNotification mailNotification) {
+	protected void validateMailNotification(ValidationErrors errors, ReportJobMailNotification mailNotification,
+			boolean effective) {
 		checkString(errors, "mailNotification.subject", mailNotification.getSubject(), true, 100);
 		checkString(errors, "mailNotification.messageText", mailNotification.getMessageText(), false, 2000);
-		validateAddresses(errors, mailNotification);
+		validateAddresses(errors, mailNotification, effective);
 	}
 
 	protected void validateAddresses(ValidationErrors errors,
-			ReportJobMailNotification mailNotification) {
+			ReportJobMailNotification mailNotification, boolean effective) {
 		validateAddresses(errors,
-				mailNotification.getToAddresses(), "mailNotification.toAddresses");
+				mailNotification.getToAddresses(), "mailNotification.toAddresses", effective);
 		validateAddresses(errors,
-				mailNotification.getCcAddresses(), "mailNotification.ccAddresses");
+				mailNotification.getCcAddresses(), "mailNotification.ccAddresses", effective);
 		validateAddresses(errors,
-				mailNotification.getBccAddresses(), "mailNotification.bccAddresses");
+				mailNotification.getBccAddresses(), "mailNotification.bccAddresses", effective);
 	}
 
 	protected void validateAddresses(ValidationErrors errors, List addresses,
-			String fieldName) {
+			String fieldName, boolean effective) {
 		if (addresses != null && !addresses.isEmpty()) {
 			for (Iterator it = addresses.iterator(); it.hasNext();) {
 				String address = (String) it.next();
-				if (! emailValidator.isValid(address)) {
+				if (! emailValidator.isValid(address) && (effective || !address.contains("${"))) {
 					errors.add(new ValidationErrorImpl("error.invalid", new Object[]{address},
 							"Invalid email address " + address,
 							fieldName));

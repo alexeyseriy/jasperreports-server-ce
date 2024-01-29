@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -21,11 +21,15 @@
 package com.jaspersoft.jasperserver.jaxrs.common;
 
 import com.jaspersoft.jasperserver.api.JSExceptionWrapper;
+import com.jaspersoft.jasperserver.api.common.error.handling.ExceptionOutputManager;
 import com.jaspersoft.jasperserver.dto.common.ErrorDescriptor;
 import com.jaspersoft.jasperserver.api.ErrorDescriptorException;
 import com.jaspersoft.jasperserver.remote.exception.builders.LocalizedErrorDescriptorBuilder;
+import static com.jaspersoft.jasperserver.api.common.error.handling.ExceptionOutputManager.GENERIC_ERROR_MESSAGE_CODE;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -51,7 +55,10 @@ public class GenericRemoteExceptionMapper implements ExceptionMapper<ErrorDescri
     private LocalizedErrorDescriptorBuilder localizedErrorDescriptorBuilder;
     @Resource
     private JSExceptionWrapperMapper exceptionWrapperMapper;
-
+    @Resource
+    private MessageSource messageSource;
+    @Resource
+    private ExceptionOutputManager exceptionOutputManager;
     public Response toResponse(ErrorDescriptorException exception) {
         Response.Status status = Response.Status.BAD_REQUEST;
         final ErrorDescriptor rootErrorDescriptor = localizedErrorDescriptorBuilder
@@ -66,11 +73,19 @@ public class GenericRemoteExceptionMapper implements ExceptionMapper<ErrorDescri
             final Object entity = exceptionWrapperMapper
                     .toResponse(new JSExceptionWrapper((Exception) cause)).getEntity();
             if(entity instanceof ErrorDescriptor){
+                if(!exceptionOutputManager.isExceptionMessageAllowed() && (exception.getErrorDescriptor().getMessage().contains(messageSource.getMessage(GENERIC_ERROR_MESSAGE_CODE, null, LocaleContextHolder.getLocale())))){
+                    ((ErrorDescriptor) entity).setMessage(exception.getErrorDescriptor().getMessage());
+                    ((ErrorDescriptor) entity).setProperties(null);
+                }
                 details.add((ErrorDescriptor) entity);
             } else if(entity instanceof GenericEntity){
                 final Object genericEntity = ((GenericEntity) entity).getEntity();
                 if(genericEntity instanceof Collection
                         && ((Collection)genericEntity).iterator().next() instanceof ErrorDescriptor) {
+                    if(!exceptionOutputManager.isExceptionMessageAllowed() && (exception.getErrorDescriptor().getMessage().contains(messageSource.getMessage(GENERIC_ERROR_MESSAGE_CODE, null, LocaleContextHolder.getLocale())))){
+                        ((ErrorDescriptor) entity).setMessage(exception.getErrorDescriptor().getMessage());
+                        ((ErrorDescriptor) entity).setProperties(null);
+                    }
                     details.addAll((Collection) genericEntity);
                 }
             }

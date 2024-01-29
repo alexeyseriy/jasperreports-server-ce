@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -355,6 +355,7 @@
         </entry>
         <entry key="isRTL" value="CAL_isRTL"/>
         <entry key="timeFormat" value="calendar.time.format"/>
+        <entry key="millisecTimeFormat" value="calendar.time.format.milliseconds"/>
         <entry key="dateFormat" value="calendar.date.format"/>
         <entry key="separator" value="calendar.datetime.separator"/>
     </util:map>

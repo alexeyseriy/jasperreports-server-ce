@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -46,7 +46,6 @@ import buttonManager from '../core/core.events.bis';
 import primaryNavModule from '../actionModel/actionModel.primaryNavigation';
 import {ajaxTargettedUpdate, AjaxRequester} from "../core/core.ajax";
 import {baseErrorHandler} from "../core/core.ajax.utils";
-import XRegExp from 'xregexp';
 import orgModule from './mng.org.module';
 import xssUtil from 'js-sdk/src/common/util/xssUtil';
 import jQuery from 'jquery';
@@ -896,6 +895,9 @@ orgModule.properties = {
     },
     canDelete: function () {
         let orgProperties = this.getValue();
+        if ( orgProperties && orgProperties.getNameWithTenant() === this.options.currentUser) {
+            return false;
+        }
         return !!orgProperties && orgProperties.uri !== '/';
     },
     setValuesProperty: function (name, value) {

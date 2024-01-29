@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -29,10 +29,10 @@ import template from './template/simpleColorPickerTemplate.htm';
 export default Backbone.View.extend({
     events: { 'click .color': '_selectColor' },
     constructor: function (options) {
-        options || (options = {});
-        this.label = options && options.label;
-        this.showTransparentInput = options && options.showTransparentInput;
-        this.showNoneInput = options && options.showNoneInput;
+        options = options || {};
+        this.label = options.label;
+        this.showTransparentInput = options.showTransparentInput;
+        this.showNoneInput = options.showNoneInput;
         Backbone.View.apply(this, arguments);
     },
     el: function () {

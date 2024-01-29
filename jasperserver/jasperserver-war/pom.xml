@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -54,7 +54,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-war-plugin</artifactId>
-                        <version>2.2</version>
+                        <version>3.3.2</version>
                         <configuration>
                             <archive>
                                 <manifestEntries>
@@ -102,7 +102,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-war-plugin</artifactId>
-                        <version>2.2</version>
+                        <version>3.3.2</version>
                         <configuration>
                             <archive>
                                 <manifestEntries>
@@ -278,6 +278,10 @@
                     <groupId>org.bouncycastle</groupId>
                     <artifactId>bcpkix-jdk15on</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>xalan</groupId>
+                    <artifactId>xalan</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -302,6 +306,10 @@
                 <exclusion>
                     <groupId>xerces</groupId>
                     <artifactId>xercesImpl</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>xalan</groupId>
+                    <artifactId>xalan</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -345,6 +353,12 @@
             <artifactId>ji-jpivot-war</artifactId>
             <version>${jpivot-version}</version>
             <type>war</type>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.ant</groupId>
+                    <artifactId>ant</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>jakarta-regexp</groupId>
@@ -555,7 +569,12 @@
         <dependency>
             <groupId>jaxen</groupId>
             <artifactId>jaxen</artifactId>
-            <version>1.1-beta-8-JS-1</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>jdom</groupId>
+                    <artifactId>jdom</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>commons-fileupload</groupId>
@@ -570,7 +589,7 @@
         <dependency>
             <groupId>commons-net</groupId>
             <artifactId>commons-net</artifactId>
-            <version>3.3</version>
+            <version>3.9.0</version>
         </dependency>
         <dependency>
             <groupId>org.easymock</groupId>
@@ -686,6 +705,10 @@
                     <groupId>xml-apis</groupId>
                     <artifactId>xml-apis</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>xalan</groupId>
+                    <artifactId>xalan</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -756,22 +779,13 @@
             <version>2.0.1</version>
         </dependency>
 	    <!-- support jrxml with javascript -->
-        <dependency>
-            <groupId>org.mozilla</groupId>
-            <artifactId>rhino</artifactId>
-            <version>1.7.6</version>
-            <scope>runtime</scope>
-        </dependency>
+
         <!-- xbean dependency added in order to make jersey REST work for WAS 7. see bug #28550 -->
         <!-- 3.1.0 matches apache's poi-ooxml 4.1.0 -->
         <dependency>
             <groupId>org.apache.xmlbeans</groupId>
             <artifactId>xmlbeans</artifactId>
             <version>3.1.0</version>
-        </dependency>
-        <dependency>
-            <groupId>xalan</groupId>
-            <artifactId>serializer</artifactId>
         </dependency>
         <!-- big data connector components START -->
         <dependency>
@@ -804,18 +818,6 @@
 
         <!-- big data connector components END -->
 
-        <!-- Remote logging thru JMX feature -->
-        <dependency>
-            <groupId>jmxlogger</groupId>
-            <artifactId>jmx-logger-log4j</artifactId>
-            <version>0.3.1</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>log4j</groupId>
-                    <artifactId>log4j</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
         <dependency>
             <groupId>org.mvel</groupId>
             <artifactId>mvel2</artifactId>
@@ -849,17 +851,17 @@
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-core</artifactId>
-            <version>7.3.0</version>
+            <version>8.3.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-analyzers-common</artifactId>
-            <version>7.3.0</version>
+            <version>8.3.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-queryparser</artifactId>
-            <version>7.3.0</version>
+            <version>8.3.0</version>
         </dependency>
         <dependency>
             <groupId>com.google.zxing</groupId>
@@ -869,7 +871,7 @@
         <dependency>
             <groupId>com.github.kklisura.cdt</groupId>
             <artifactId>cdt-java-client</artifactId>
-            <version>2.0.0</version>
+            <version>4.0.0</version>
         </dependency>
         <dependency>
             <groupId>org.kohsuke</groupId>
@@ -998,7 +1000,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
-                <version>2.2</version>
+                <version>3.3.2</version>
                 <configuration>
                     <archive>
                         <manifestEntries>

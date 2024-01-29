@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -27,7 +27,7 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans
        http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
        http://www.springframework.org/schema/security
-       http://www.springframework.org/schema/security/spring-security-4.2.xsd
+       http://www.springframework.org/schema/security/spring-security-5.7.xsd
        http://www.springframework.org/schema/util
        http://www.springframework.org/schema/util/spring-util-4.2.xsd">
 
@@ -515,6 +515,7 @@
                 <security:intercept-url pattern="/xmla" access="ROLE_USER,ROLE_ADMINISTRATOR" />
                 <security:intercept-url pattern="/services/**" access="ROLE_USER,ROLE_ADMINISTRATOR" />
                 <security:intercept-url pattern="/reportimage/**" access="ROLE_USER,ROLE_ADMINISTRATOR" />
+                <security:intercept-url pattern="/reportresource**" access="ROLE_USER,ROLE_ADMINISTRATOR" />
                 <security:intercept-url pattern="/heartbeatInfo.html" access="ROLE_USER,ROLE_ADMINISTRATOR" />
                 <security:intercept-url pattern="/rest_v2/thumbnails/**" access="ROLE_USER,ROLE_ADMINISTRATOR" />
                 <security:intercept-url pattern="/rest_v2/keys/**" access="ROLE_ADMINISTRATOR" />
@@ -526,8 +527,8 @@
                 <security:intercept-url pattern="/rest_v2/reportFonts/**" access="ROLE_USER,ROLE_ADMINISTRATOR" />
                 <security:intercept-url pattern="/rest_v2/reportResources/**" access="ROLE_USER,ROLE_ADMINISTRATOR" />
                 <security:intercept-url pattern="/rest_v2/api/resources/**" access="ROLE_USER,ROLE_ADMINISTRATOR" />
-                <security:intercept-url pattern="/rest_v2/connections/**" access="ROLE_USER,ROLE_ADMINISTRATOR" />
-                <security:intercept-url pattern="/rest_v2/contexts/**" access="ROLE_USER,ROLE_ADMINISTRATOR" />
+                <security:intercept-url pattern="/rest_v2/connections/**" access="ROLE_USER,ROLE_ADMINISTRATOR" request-matcher-ref="contentTypeNegotiateMatcher"/>
+                <security:intercept-url pattern="/rest_v2/contexts/**" access="ROLE_USER,ROLE_ADMINISTRATOR" request-matcher-ref="contentTypeNegotiateMatcher"/>
                 <security:intercept-url pattern="/rest_v2/reportExecutions/**" access="ROLE_USER,ROLE_ADMINISTRATOR" />
                 <security:intercept-url pattern="/rest_v2/serverInfo/**" access="ROLE_ANONYMOUS,ROLE_USER,ROLE_ADMINISTRATOR" />
                 <security:intercept-url pattern="/rest_v2/application.wadl" access="ROLE_ANONYMOUS,ROLE_USER,ROLE_ADMINISTRATOR" />
@@ -536,6 +537,7 @@
                 <security:intercept-url pattern="/rest_v2/settings/**" access="ROLE_ANONYMOUS,ROLE_USER,ROLE_ADMINISTRATOR" />
                 <security:intercept-url pattern="/rest_v2/customDataSources" access="ROLE_USER,ROLE_ADMINISTRATOR" />
                 <security:intercept-url pattern="/rest_v2/jdbcDrivers" method="GET" access="ROLE_USER,ROLE_ADMINISTRATOR" />
+                <security:intercept-url pattern="/rest_v2/favorites/**" access="ROLE_USER,ROLE_ADMINISTRATOR" />
                 <security:intercept-url pattern="/404.html" access="ROLE_ANONYMOUS,ROLE_USER,ROLE_ADMINISTRATOR" />
                 <security:intercept-url pattern="/500.html" access="ROLE_ANONYMOUS,ROLE_USER,ROLE_ADMINISTRATOR" />
                 <security:intercept-url pattern="/reportGenerator.html" access="ROLE_USER,ROLE_ADMINISTRATOR" />
@@ -555,7 +557,45 @@
             </security:filter-security-metadata-source>
         </property>
     </bean>
-
+    <bean id="contentTypeNegotiateMatcher" class="org.springframework.security.web.util.matcher.AndRequestMatcher">
+        <constructor-arg index="0" type="java.util.List">
+            <list>
+                <ref bean="patternMatcher"/>
+                <ref bean="mediaTypeRequestMatcher"/>
+            </list>
+        </constructor-arg>
+    </bean>
+    <bean id="patternMatcher" class="org.springframework.security.web.util.matcher.OrRequestMatcher">
+        <constructor-arg  type="java.util.List">
+            <list>
+                <bean id="antPathRequestMatcher" class="org.springframework.security.web.util.matcher.AntPathRequestMatcher">
+                    <constructor-arg index="0" value="/rest_v2/contexts/**"></constructor-arg>
+                </bean>
+                <bean id="antPathRequestMatcher1" class="org.springframework.security.web.util.matcher.AntPathRequestMatcher">
+                    <constructor-arg index="0" value="/rest_v2/connections/**"></constructor-arg>
+                </bean>
+            </list>
+        </constructor-arg>
+    </bean>
+    <bean id="mediaTypeRequestMatcher" class="org.springframework.security.web.util.matcher.MediaTypeRequestMatcher">
+        <property name="ignoredMediaTypes" >
+            <set>
+                <value>application/contexts.sqlExecutionRequest+json</value>
+            </set>
+        </property>
+        <constructor-arg index="0" type="org.springframework.web.accept.ContentNegotiationStrategy" ref="contentNegotiationManager"/>
+        <constructor-arg index="1" type="java.util.Collection">
+            <list>
+                <bean class="org.springframework.http.MediaType">
+                    <constructor-arg value="*" index="0" type="java.lang.String"/>
+                    <constructor-arg value="*" index="1" type="java.lang.String"/>
+                </bean>
+            </list>
+        </constructor-arg>
+    </bean>
+    <bean id="contentNegotiationManager" class="com.jaspersoft.jasperserver.core.util.spring.HeaderContentNegotiationStrategyResolver">
+        <constructor-arg value="Content-Type" type="java.lang.String" index="0"/>
+    </bean>
     <!-- updater bean to set the roles allowed to get to a URL -->
     <bean id="setRolesForURL" class="com.jaspersoft.jasperserver.api.common.util.spring.GenericBeanUpdaterDefinition">
         <property name="order" value="10"/>
@@ -636,6 +676,7 @@
                 <value>/flow.html?_flowId=roleListFlow</value>
                 <value>/flow.html?_flowId=mondrianPropertiesFlow</value>
                 <value>/flow.html?_flowId=designerOptionsFlow</value>
+                <value>/flow.html?_flowId=generalSettingsFlow</value>
                 <value>/flow.html?_flowId=designerCacheFlow</value>
                 <value>/flow.html?_flowId=awsSettingsFlow</value>
 
@@ -668,7 +709,7 @@
 
     <bean id="corsAuthRedirectionFilter" class="com.jaspersoft.jasperserver.api.security.csrf.CorsAuthRedirectionFilter"/>
 
-    <bean id = "corsProcessor" class = "com.jaspersoft.jasperserver.api.security.csrf.JSCorsProcessor">
+    <bean id="corsProcessor" class="com.jaspersoft.jasperserver.api.security.csrf.JSCorsProcessor">
         <property name="headerUrlPatterns">
             <util:map value-type="java.util.List">
                 <entry key="Vary">
@@ -677,6 +718,16 @@
                         <value>(/runtime/[0-9ABCDEF]*)*/rest_v2/settings/.*</value>
                     </util:list>
                 </entry>
+                <!-- Uncomment the section below to allow Cross-Origin Resource Sharing (CORS) for private networks.
+                     The URL pattern is a standard RegExp. The default ".*" value allows any URL, and there is a possibility
+                     to define RegExp for different URLs (please look at the previous section for an example) -->
+                <!--
+                <entry key="Access-Control-Allow-Private-Network">
+                    <util:list>
+                        <value>.*</value>
+                    </util:list>
+                </entry>
+                -->
             </util:map>
         </property>
         <property name="headerValues">
@@ -686,6 +737,14 @@
                         <value>Accept-Language</value>
                     </util:list>
                 </entry>
+                <!-- Uncomment the section below to allow Cross-Origin Resource Sharing (CORS) for private networks -->
+                <!--
+                <entry key="Access-Control-Allow-Private-Network">
+                    <util:list>
+                        <value>true</value>
+                    </util:list>
+                </entry>
+                -->
             </util:map>
         </property>
     </bean>

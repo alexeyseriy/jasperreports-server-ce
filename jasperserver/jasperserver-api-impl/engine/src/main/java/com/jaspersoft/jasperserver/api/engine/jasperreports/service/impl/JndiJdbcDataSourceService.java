@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -21,6 +21,7 @@
 package com.jaspersoft.jasperserver.api.engine.jasperreports.service.impl;
 
 import com.jaspersoft.jasperserver.api.metadata.common.service.JSDataSourceConnectionFailedException;
+import io.opentelemetry.extension.annotations.WithSpan;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -63,7 +64,8 @@ public class JndiJdbcDataSourceService extends BaseJdbcDataSource {
         }
     }
 
-	protected Connection createConnection() {
+    @WithSpan
+    protected Connection createConnection() {
 
 		try
 		{

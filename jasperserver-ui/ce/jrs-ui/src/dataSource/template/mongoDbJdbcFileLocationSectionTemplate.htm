@@ -22,7 +22,7 @@
 		<label title="{{- i18n['resource.datasource.mongoJdbc.fileLocation.repository.fileLocation']}}" class="control input text">
 			<span class="wrap">{{- i18n['resource.datasource.mongoJdbc.fileLocation.repository.fileLocation']}}{{ if (!modelAttributes.autoSchemaDefinition) { }} ({{- i18n['required.field']}}){{ } }}:</span>
 			<input type="text" value="{{- modelAttributes.repositoryFileName }}" name="repositoryFileName" {{- (isEditMode || modelAttributes.autoSchemaDefinition) ? 'disabled=disabled' : ''}}>
-			<button class="button action" type="button" name="repositoryBrowserButton"  {{- isEditMode || modelAttributes.autoSchemaDefinition ? 'disabled=disabled' : ''}}>
+			<button class="button action up" type="button" name="repositoryBrowserButton"  {{- isEditMode || modelAttributes.autoSchemaDefinition ? 'disabled=disabled' : ''}}>
 			       <span class="wrap">{{- i18n['dialog.file.browse'] }}...<span class="icon"></span></span>
 			</button>
 			<span class="message warning"></span>

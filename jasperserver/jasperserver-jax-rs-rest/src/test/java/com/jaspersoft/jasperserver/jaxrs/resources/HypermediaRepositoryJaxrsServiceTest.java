@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -172,13 +172,13 @@ public class HypermediaRepositoryJaxrsServiceTest {
                 "", "/", Arrays.asList("folder"), null, null, new ArrayList<String>(),
                 0, 1000,
                 false, false, null,
-                AccessType.ALL, fakeUser, true)).thenReturn(searchResult);
+                AccessType.ALL, false, fakeUser, true)).thenReturn(searchResult);
 
 
         final Response response = hypermediaRepositoryJaxrsService.getResources("",
                 "/", Arrays.asList("dataSource", "domain"),
                null, new ArrayList<String>(),
-                Arrays.asList("folder"), "accessType",
+                Arrays.asList("folder"), "accessType",false,
                 0, 1000,
                 false, false,
                 false, null,
@@ -191,7 +191,7 @@ public class HypermediaRepositoryJaxrsServiceTest {
                 EMPTY_LIST, 0,
                 1000, false,
                 false, null,
-                AccessType.ALL, fakeUser,
+                AccessType.ALL, false, fakeUser,
                 true);
 
         // Second call does not contain "folder"
@@ -201,7 +201,7 @@ public class HypermediaRepositoryJaxrsServiceTest {
                 EMPTY_LIST, 0,
                 995, false,
                 false, null,
-                AccessType.ALL, fakeUser,
+                AccessType.ALL, false, fakeUser,
                 true);
 
     }

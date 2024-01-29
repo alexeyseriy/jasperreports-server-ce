@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -40,13 +40,7 @@ import xssUtil from 'js-sdk/src/common/util/xssUtil';
 import Builder from 'scriptaculous/src/builder';
 
 let $elem;
-var dialogs = {};    ///////////////////////////////////////////
-// System confirm object and methods
-///////////////////////////////////////////
-/**
- * System confirm is used to show system confirm about the last action.
- * It fades up rapidly after the action completes, and fades away on the next mouseDown anywhere on the page.
- */
+var dialogs = {};
 ///////////////////////////////////////////
 // System confirm object and methods
 ///////////////////////////////////////////
@@ -104,13 +98,7 @@ jQuery(document).on('systemDialogWarn', function(event) {
         duration = event.detail.duration;
 
     dialogs.systemConfirm.showWarning(message, duration);
-});    //////////////////////////////////////////////
-// Ajax Error Popup Dialog object and methods
-//////////////////////////////////////////////
-/**
- * Ajax Error dialog is used then any ajax call returns and server side error which was not
- * catched by server. It show popup dialog with stackrtace and close button.
- */
+});
 //////////////////////////////////////////////
 // Ajax Error Popup Dialog object and methods
 //////////////////////////////////////////////
@@ -172,7 +160,7 @@ dialogs.errorPopup = {
                 this.clickHandler = this._clickHandler.bindAsEventListener(this);
             }
             if (this._dom) {
-                var finalContent = contentText;    //If error is a plain text - wrap it into <p> element
+                var finalContent = contentText;
                 //If error is a plain text - wrap it into <p> element
                 if (!isStackTrace) {
                     finalContent = Builder.node('P', { 'class': 'message' });
@@ -229,16 +217,14 @@ dialogs.clusterErrorPopup = _.extend({}, dialogs.errorPopup, {
         dialogs.errorPopup._hide.apply(this, arguments);
         window.location = 'home.html';
     }
-});    /**
- * generic 'popup' dialog controller
- * @param {Object} elem
- */
+});
 /**
  * generic 'popup' dialog controller
  * @param {Object} elem
  */
 dialogs.popup = {
     OWNER_ATTR: 'data-owner',
+    preDialogFocusArray: [],
     show: function (elem, showDimmer, options) {
         options = options || {};
         elem = jQuery(elem)[0];
@@ -249,11 +235,11 @@ dialogs.popup = {
             // Update the displayed message in the dialog.
             jQuery(elem).find('.body').text(xssUtil.unescape(options.message));
         }    //dimmer
-        //dimmer
+
         if (showDimmer) {
             pageDimmer.show();
             jQuery(elem).is(layoutModule.DIALOG_LOADING_PATTERN) && pageDimmer.setZindex(elem.getStyle('zIndex') - 1);
-        }    //ensure body is parent
+        }
         //ensure body is parent
         reParent(elem, document.body);
         elem.setOpacity(0);
@@ -274,37 +260,33 @@ dialogs.popup = {
                 vert: true
             });
         }    // raise if necessary
-        // raise if necessary
-        dialogs.popup._setHigherZIndex(elem);    // Drag'&'Drop depends depends from zIndex on dialog
+        dialogs.popup._setHigherZIndex(elem);
         // Drag'&'Drop depends depends from zIndex on dialog
-        layoutModule.createMover.call(layoutModule, elem, options);    // To move dialog on foreground we need initialize DnD after we have zIndex for dialog
+        layoutModule.createMover.call(layoutModule, elem, options);
         // To move dialog on foreground we need initialize DnD after we have zIndex for dialog
-        isIPad() ? elem.setOpacity(1) && elem.show() : appear(elem, 0.4);    // Keep track of the element that had focus prior to the dialog being
-        // shown, so that it can be restored.
+        isIPad() ? elem.setOpacity(1) && elem.show() : appear(elem, 0.4);
         // Keep track of the element that had focus prior to the dialog being
         // shown, so that it can be restored.
-        jQuery('.preDialogFocus').removeClass('preDialogFocus');
-        jQuery(document.activeElement).addClass('preDialogFocus');    // Set focus on dialog if options.focus is not present in options or it's set to true.
-        // If there is a primary button, ensure it receives focus.  Otherwise, ensure the
-        // dialog itself receives focus.
-        // Set focus on dialog if options.focus is not present in options or it's set to true.
-        // If there is a primary button, ensure it receives focus.  Otherwise, ensure the
-        // dialog itself receives focus.
-        var focusTarget = elem;
-        if (elem && jQuery('.primary', elem).length > 0) {
-            focusTarget = jQuery('.primary', elem)[0];
+        if (options.returnFocus) {
+            this.preDialogFocusArray.push(options.returnFocus);
+        } else {
+            this.preDialogFocusArray.push(document.activeElement);
         }
-        if (!options || typeof options.focus === 'undefined' || options.focus) {
-            // In any case, ensure the dialog itself can be focused.  This helps
-            // screen readers to read the text in the dialog itself.
-            elem.tabIndex = 0;
-            focusTarget.tabIndex = 0;
-            focusTarget.focus();
+
+        const focusTarget = dialogs.popup._getInitialFocus(elem, options);
+        if (focusTarget) {
+            _.defer(() => {
+                // need to defer focus because stdnav might broke focusing otherwise
+                // for example is dialog is shown via enter key press on a link
+                // stdnav forces focus on a link after this dialog is shown
+                focusTarget.focus();
+            });
         }
-        !showDimmer && elem.observe('click', dialogs.popup.zIndexHandler);    // Ensure the TAB key cannot move focus outside of the dialog.  While
-        // the "shader" dialog will intercept mouse clicks and touch events, it
-        // does not prevent keyboard events.
-        // NOTE: This must be done AFTER moving focus into the dialog.
+        if (options.closable) {
+            elem.observe('keydown', this._keyDownHandler);
+        }
+
+        !showDimmer && elem.observe('click', dialogs.popup.zIndexHandler);
         // Ensure the TAB key cannot move focus outside of the dialog.  While
         // the "shader" dialog will intercept mouse clicks and touch events, it
         // does not prevent keyboard events.
@@ -315,30 +297,29 @@ dialogs.popup = {
         // Ensure the TAB key can move focus to all the places it was able to
         // before the dialog was shown.
         // NOTE: This must be done BEFORE moving focus out of the dialog.
-        stdnav.endModalFocus(elem);    // Restore keyboard focus to the element that had it prior to the
-        // dialog.
+        stdnav.endModalFocus(elem);
+
         // Restore keyboard focus to the element that had it prior to the
         // dialog.
-        var jqPreDialogFocus = jQuery('.preDialogFocus');
-        if (jqPreDialogFocus.length && jQuery(elem).is(":visible")){
-            stdnav.forceFocus(jqPreDialogFocus.first());
-            jQuery(jqPreDialogFocus).removeClass('preDialogFocus');
+        if (this.preDialogFocusArray.length && jQuery(elem).is(":visible")){
+            stdnav.forceFocus(this.preDialogFocusArray.pop());
         }
         if (!elem) {
             return;
         }
 
-        var $elem = jQuery(elem)[0];
+        var $element = jQuery(elem)[0];
         //hide dialog and dimmer
-        if (jQuery($elem).hasClass(layoutModule.CANCELLABLE_CLASS)) {
-            jQuery($elem).removeClass(layoutModule.CANCELLABLE_CLASS);
+        if (jQuery($element).hasClass(layoutModule.CANCELLABLE_CLASS)) {
+            jQuery($element).removeClass(layoutModule.CANCELLABLE_CLASS);
         }
-        if (!jQuery($elem).hasClass(layoutModule.HIDDEN_CLASS)) {
-            jQuery($elem).addClass(layoutModule.HIDDEN_CLASS);
+        if (!jQuery($element).hasClass(layoutModule.HIDDEN_CLASS)) {
+            jQuery($element).addClass(layoutModule.HIDDEN_CLASS);
             pageDimmer.hide();
-            jQuery($elem).is(layoutModule.DIALOG_LOADING_PATTERN) && pageDimmer.setZindex(layoutModule.DIMMER_Z_INDEX);
+            jQuery($element).is(layoutModule.DIALOG_LOADING_PATTERN) && pageDimmer.setZindex(layoutModule.DIMMER_Z_INDEX);
         }
 
+        $element.stopObserving('keydown', dialogs.popup._keyDownHandler);
         _.defer(()=>{
             // JRS-20956
             // in IE click event handler for dialog executed twice for some reason.
@@ -349,7 +330,7 @@ dialogs.popup = {
             // 3. unexpected click event handler executed second time and it fails since there is no even in the registry
             //
             // wrapping in _.defer changes this to click->click->stopObserving
-            $elem.stopObserving('click', dialogs.popup.zIndexHandler)
+            $element.stopObserving('click', dialogs.popup.zIndexHandler)
         });
     },
     showShared: function (elem, showDimmer, options) {
@@ -397,10 +378,7 @@ dialogs.popup = {
         if (parentDialog) {
             parentsZIndex = parentDialog.getStyle('zIndex');
         }
-        otherDialogs = document.body.select(layoutModule.DIALOG_PATTERN);    // skip dialogs which are:
-        // 1) not active
-        // 2) loading dialog
-        // 3) the current dialog
+        otherDialogs = document.body.select(layoutModule.DIALOG_PATTERN);
         // skip dialogs which are:
         // 1) not active
         // 2) loading dialog
@@ -420,9 +398,9 @@ dialogs.popup = {
         otherDialogs.each(function (dialog) {
             maxZIndexAcrossOtherDialogs = Math.max(maxZIndexAcrossOtherDialogs, dialog.getStyle('zIndex'));
         });
-        biggestZIndex = Math.max(parentsZIndex, currentDialogZIndex, maxZIndexAcrossOtherDialogs, layoutModule.DIMMER_Z_INDEX);    // set the current dialog the biggest found z-index
+        biggestZIndex = Math.max(parentsZIndex, currentDialogZIndex, maxZIndexAcrossOtherDialogs, layoutModule.DIMMER_Z_INDEX);
         // set the current dialog the biggest found z-index
-        currentDialog.setStyle({ zIndex: biggestZIndex });    // now walk thr each other dialog and if it has the same z-index, decrease it by one
+        currentDialog.setStyle({ zIndex: biggestZIndex });
         // now walk thr each other dialog and if it has the same z-index, decrease it by one
         otherDialogs.each(function (dialog) {
             var currentZIndex = dialog.getStyle('zIndex');
@@ -430,6 +408,22 @@ dialogs.popup = {
                 dialog.setStyle({ zIndex: biggestZIndex - 1 });
             }
         });
+    },
+    _getInitialFocus: function (elem, options = {}) {
+        // WAI-ARIA best practices says that first focusable element inside a dialog should get focused
+        // If you want to override that - pass focusable focus element in options, but make sure it could be
+        // focused programmatically (for example set tabindex=-1 if it's not an input/button/anchor)
+        if (options.focus && stdnav.isLogicFocusable(options.focus)) {
+            return options.focus;
+        } else {
+            return stdnav.getFirstFocusableElement(elem);
+        }
+    },
+    _keyDownHandler: function (event) {
+        if (event.keyCode === Event.KEY_ESC) {
+            event.stopPropagation();
+            dialogs.popup.hide(this);
+        }
     }
 };
 dialogs.popupConfirm = _.extend({}, dialogs.popup, {
@@ -439,7 +433,7 @@ dialogs.popupConfirm = _.extend({}, dialogs.popup, {
             okButtonSelector: 'button.ok',
             cancelButtonSelector: 'button.cancel'
         }, options);
-        var $elem = jQuery(elem), $ok = jQuery($elem).find(options.okButtonSelector), $cancel = jQuery($elem).find(options.cancelButtonSelector), deferred = jQuery.Deferred();
+        var $element = jQuery(elem), $ok = jQuery($element).find(options.okButtonSelector), $cancel = jQuery($element).find(options.cancelButtonSelector), deferred = jQuery.Deferred();
         jQuery($ok).on('click', function () {
             if (options.validateFunc) {
                 if (options.validateFunc() === false) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -29,6 +29,7 @@ import DataSourceController from '../dataSource/DataSourceController';
 import jrsConfigs from 'js-sdk/src/jrs.configs';
 import jQuery from 'jquery';
 import _ from 'underscore';
+import layoutModule from "../core/core.layout";
 
 var resourceQuery = {
     STEP1_PAGE_ID: 'addResource_query_step1',
@@ -52,7 +53,7 @@ var resourceQuery = {
         this._step2Page = jQuery('#' +this.STEP2_PAGE_ID)[0];
         this._step3Page = jQuery('#' +this.STEP3_PAGE_ID)[0];
         if (this._step1Page) {
-            this._form = jQuery(document.body).find('form')[0];
+            this._form = jQuery('#' + layoutModule.PAGE_BODY_ID).find('form')[0];
             this._label = document.getElementById(this.LABEL_ID);
             this._resourceId = document.getElementById(this.RESOURCE_ID_ID);
             this._description = document.getElementById(this.DESCRIPTION_ID);
@@ -61,12 +62,12 @@ var resourceQuery = {
             this._description.validator = resource.descriptionValidator.bind(this);
         }
         if (this._step2Page) {
-            this._form = jQuery(document.body).find('form')[0];
+            this._form = jQuery('#' + layoutModule.PAGE_BODY_ID).find('form')[0];
             this._dataSourceUri = document.getElementById(this.RESOURCE_URI_INPUT_ID);
             this._dataSourceUri.validator = resource.dataSourceValidator.bind(this);
         }
         if (this._step3Page) {
-            this._form = jQuery(document.body).find('form')[0];
+            this._form = jQuery('#' + layoutModule.PAGE_BODY_ID).find('form')[0];
             this._query = document.getElementById(this.QUERY_SQL);
             this._query.validator = resource.queryValidator.bind(this);
         }

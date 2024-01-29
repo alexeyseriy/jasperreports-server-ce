@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2021 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2023 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -47,12 +47,14 @@
 
     10. SCHEDULED BUTTON
 
-    11. SEARCH BUTTON
+    11. FAVORITES BUTTON
 
-    12. MOVE BUTTON
+    12. SEARCH BUTTON
+
+    13. MOVE BUTTON
 
   -----------------------------------
-    File last modified Jan 19, 2021
+    File last modified Jan 6, 2023
   ----------------------------------- */
 
 
@@ -63,6 +65,7 @@
     background-color: transparent;
     border: 0;
     border-radius: 0;
+    color: #666666;
     cursor: pointer;
     padding: 0;
     position: relative;
@@ -72,6 +75,7 @@
 
 .button.disabled,
 .button[disabled] {
+    color: #aaaaaa;
     cursor: default;
 }
 
@@ -106,35 +110,30 @@
     width: 24px;
 }
 
-button[disabled] .icon,
-button[disabled] .indicator {
-    opacity: 0.3;
-}
-
-@media screen and (-webkit-min-device-pixel-ratio: 0) {
-    /* Safari and Google Chrome only
-       To address discrepancy in rendering between PC and Mac WebKit */
-
-    .button {
-        margin-top: -1px;
-        margin-bottom: -1px;
-    }
-
-    .tabSet.horizontal .button > .wrap {
-        margin-top: 0;
-    }
-}
-
 .button::-moz-focus-inner {
     border: none; /* overrides extra padding in Firefox */
     padding: 0;
 }
 
+/* States */
+.button.up.over,
+.button.up.pressed,
+.button.down.over,
+.button.down.pressed {
+    color: #ffffff;
+}
+
+button[disabled] .icon,
+button[disabled] .indicator {
+    opacity: 0.3;
+}
+
 
 /* --------------------- */
-/*  2. ACTION BUTTON    */
+/*  2. ACTION BUTTON     */
 /* --------------------- */
 .action {
+    border-radius: 2px;
     display: inline-block;
     margin-right: 5px;
     min-height: 28px;
@@ -156,8 +155,21 @@ button[disabled] .indicator {
     margin-top: 4px;
 }
 
-/* State */
+/* Keyboard Focus */
+.action:focus-visible{
+    outline: 2px solid #666666;
+    outline-offset: 1px;
+}
+
+.action.primary:focus-visible {
+    /* outline: 2px solid #11429e; standardized to 062e79 */
+    outline: 2px solid var(--theme-dark);
+    outline-offset: 1px;
+}
+
+/* States */
 .action,
+.action.over,
 .action.pressed,
 .action.pressed.over,
 .action.square.pressed,
@@ -167,7 +179,7 @@ button[disabled] .indicator {
 
 .action.over,
 .action.square.over {
-    background-color: var(--background-grey-29);
+    background-color: var(--background-grey-54);
 }
 
 .action.primary,
@@ -177,8 +189,23 @@ button[disabled] .indicator {
     background-image: none;
 }
 
+.button.action.primary.disabled,
+.button.action.primary[disabled] {
+    opacity: .4;
+}
+
 .action.primary.over {
     background-color: var(--theme-medium-dark);
+}
+
+.button.action.pressed {
+    color: #666666;
+}
+
+.button.up.primary,
+.button.up.primary.over,
+.button.up.primary.pressed {
+    color: #ffffff;
 }
 
 .action.checking {
@@ -220,7 +247,7 @@ button[disabled] .indicator {
 }
 
 /*  ------------------  */
-/*  2b. Small action   */
+/*  2b. Small action    */
 /*  ------------------  */
 /*  introduced October 2014, occurs in redesigned Select Data dialog box  */
 .action.square.small {
@@ -246,24 +273,24 @@ button[disabled] .indicator {
     width: 30px;
 }
 
-/* State, background color */
-.action.small.up {
-    background-color: var(--background-grey-10);
-}
-
-.action.small.up.over,
-.action.small.up.pressed {
+/* States */
+/* background color */
+.action.small.down.over {
     background-color: var(--theme-medium-dark);
 }
 
 .action.small.pressed.over,
 .action.small.down,
-.action.small.down.over,
 .action.small.down.pressed {
     background-color: var(--theme-medium-light);
 }
 
-/* State, icon position  */
+.action.small.down.focus-visible {
+    outline: 2px solid #11429e;
+    outline-offset: 1px;
+}
+
+/* icon position  */
 .action.small.tree.up .icon {
     background-position: -56px -175px;
 }
@@ -294,6 +321,7 @@ button[disabled] .indicator {
 .action.simple {
     background: url("images/button_action_icons_sprite@1x.png") no-repeat scroll 0 0 transparent;
     background-size: 240px;
+    border-radius: 1px;
     display: inline-block;
     height: 18px;
     margin: 0;
@@ -330,10 +358,16 @@ button[disabled] .indicator {
     height: 100%;
 }
 
+/* Keyboard Focus */
+.action.simple.focus-visible {
+    outline: 2px solid var(--theme-dark);
+    outline-offset: 2px;
+}
+
 
 
 /* ------------------- */
-/*  3. MATH BUTTON    */
+/*  3. MATH BUTTON     */
 /* ------------------- */
 .button.math {
     background: var(--background-grey-02);
@@ -474,7 +508,7 @@ button[disabled] .indicator {
 
 
 /* --------------------- */
-/*  4. SQUARE BUTTON    */
+/*  4. SQUARE BUTTON     */
 /* --------------------- */
 /* domain designer buttons */
 #add.square > .wrap > .icon {
@@ -507,7 +541,7 @@ button[disabled] .indicator {
 
 
 /* ---------------------- */
-/*  5. CAPSULE BUTTON    */
+/*  5. CAPSULE BUTTON     */
 /* ---------------------- */
 button.capsule {
     display: inline-block;
@@ -537,17 +571,10 @@ button.capsule {
 
 /* disclosure indicator icon positions for capsule buttons */
 .button.capsule .indicator {
-    background-image: url(images/disclosure_indicators_icons_sprite@1x.png);
-    background-size: 80px;
+    background-image: url(images/disclosure_indicators_icons_sprite.svg);
+    background-size: 170px;
     background-position: -1px -80px;
     right: 2px;
-}
-
-/* 2x icons */
-@media (-webkit-min-device-pixel-ratio: 2),(min-resolution: 192dpi) {
-    .button.capsule .indicator {
-        background-image: url(images/disclosure_indicators_icons_sprite@2x.png);
-    }
 }
 
 .button.capsule.over .indicator,
@@ -597,20 +624,20 @@ button.capsule.mini .wrap {
     padding: 0 12px;
 }
 
-.button.capsule.text .indicator {
-    background-position: 0 -47px;
-    margin-right: 5px;
-}
-
 .button.capsule.text.mutton .wrap {
     padding-right: 16px;
 }
 
+/* Next 3 rules: I don't think we have any text capsule button with indicators
+   These background positions don't make sense with the current bg image */
+.button.capsule.text .indicator {
+    background-position: 0 -47px;
+    margin-right: 5px;
+}
 .button.capsule.text.over .indicator,
 .button.capsule.text.pressed .indicator {
     background-position: 0 -81px;
 }
-
 .button.capsule.text.disabled .indicator,
 .button.capsule.text[disabled] .indicator {
     background-position: 0 -114px;
@@ -623,13 +650,19 @@ button.capsule.mini .wrap {
     right: 1px;
 }
 
-/* capsule button states */
+/* States */
 .button.capsule.disabled {}
-
 .button.capsule.up {}
 
+.button.capsule.down,
+.button.capsule.down.over,
+.button.capsule.down.pressed,
+.button.capsule.superfocus.subfocus:hover {
+    color: #ffffff;
+}
+
 .button.capsule.up.over,
-.button.capsule.superfocus.subfocus:hover,
+.button.capsule.superfocus.subfocus:not([disabled]):hover,
 .button.capsule.down,
 .button.capsule.down.over,
 .button.capsule.down.pressed {
@@ -642,12 +675,11 @@ button.capsule.mini .wrap {
 }
 
 .button.capsule.down {}
-
 .button.capsule.down.pressed {}
 
 
 /* ------------------------- */
-/*  6. DISCLOSURE BUTTON    */
+/*  6. DISCLOSURE BUTTON     */
 /* ------------------------- */
 .button.disclosure {
     background-color: transparent;
@@ -665,6 +697,7 @@ button.capsule.mini .wrap {
     background-position: 0 -205px;
 }
 
+/* States */
 .closed .button.disclosure.over,
 .minimized .button.disclosure.over {
     background-position: 0 -229px;
@@ -691,9 +724,9 @@ button.capsule.mini .wrap {
 }
 
 
-/* ----------------------- */
+/* ---------------------- */
 /*  7. MINIMIZE BUTTON    */
-/* ----------------------- */
+/* ---------------------- */
 .button.minimize {
     background-image: url(images/disclosure_indicators_sprite.png);
     background-repeat: no-repeat;
@@ -711,6 +744,7 @@ button.capsule.mini .wrap {
     width: 24px;
 }
 
+/* States */
 .button.minimize.over {
     background-position: 0 -513px;
 }
@@ -720,9 +754,9 @@ button.capsule.mini .wrap {
 }
 
 
-/* ---------------------- */
+/* --------------------- */
 /*  8. OPTIONS BUTTON    */
-/* ---------------------- */
+/* --------------------- */
 .button.options {
     background-color: var(--background-grey-10);
     margin-right: 5px;
@@ -746,7 +780,7 @@ button.capsule.mini .wrap {
     border-width: 0;
 }
 
-/* State */
+/* States */
 .button.options.over {
     background-color: var(--background-grey-29);
 }
@@ -756,25 +790,33 @@ button.capsule.mini .wrap {
 }
 
 
-/* --------------------- */
+/* -------------------- */
 /*  9. PICKER BUTTON    */
-/* --------------------- */
+/* -------------------- */
 .button.picker {
-    background-image: url(images/control_icons_sprite.png);
-    background-repeat: no-repeat;
-    background-position: 0 6px;
+    background: url("images/button_action_icons_sprite@1x.png") no-repeat scroll 0 0 transparent;
+    background-position: -119px -87px;
+    background-size: 240px;
     display: inline;
-    height: 27px;
+    height: 26px;
     margin-left: 2px;
     vertical-align: top;
-    width: 17px;
+    width: 22px;
     z-index: 10;
 }
 
-.button.picker.over {}
+/* 2x icons */
+@media (-webkit-min-device-pixel-ratio: 2),(min-resolution: 192dpi) {
+    .button.picker {
+        background-image: url(images/button_action_icons_sprite@2x.png);
+    }
+}
 
-.button.picker.pressed {
-    background-position: -40px 6px;
+.button.picker.superfocus,
+.button.picker.focus-visible {
+    border-color: transparent !important;
+    outline: 2px solid var(--theme-dark) !important;
+    outline-offset: -2px;
 }
 
 
@@ -782,32 +824,42 @@ button.capsule.mini .wrap {
 /*  10. SCHEDULED BUTTON   */
 /* ----------------------- */
 .button.scheduled {
-    background-image: url(images/disclosure_indicators_icons_sprite@1x.png);
-    background-position: -30px -415px;
+    background-image: url(images/disclosure_indicators_icons_sprite.svg);
+    background-position: -30px -416px;
     background-repeat: no-repeat;
-    background-size: 80px;
+    background-size: 170px;
     display: inline-block;
     height: 22px;
     position: relative;
-    width: 16px;
+    width: 20px;
     z-index: 10;
 }
 
-/* 2x icons */
-@media (-webkit-min-device-pixel-ratio: 2),(min-resolution: 192dpi) {
-    .button.scheduled {
-        background-image: url(images/disclosure_indicators_icons_sprite@2x.png);
-    }
-}
-
+/* States */
 .button.scheduled.over {}
-
 .button.scheduled.pressed {}
 
 
 /* ----------------------- */
-/*  11. SEARCH BUTTON   */
+/*  11. FAVORITES BUTTON   */
 /* ----------------------- */
+.button.favorite {
+    background-image: url(images/disclosure_indicators_icons_sprite.svg);
+    background-repeat: no-repeat;
+    display: inline-block;
+    position: relative;
+    z-index: 10;
+}
+
+/* States */
+.button.favorite.over {}
+.button.favorite.pressed {}
+
+
+
+/* -------------------- */
+/*  12. SEARCH BUTTON   */
+/* -------------------- */
 .button.search {
     background-image: url(images/search_icons_sprite@1x.png);
     background-repeat: no-repeat;
@@ -824,38 +876,19 @@ button.capsule.mini .wrap {
     }
 }
 
-/* State */
+/* States */
 .button.search.up,
 .button.search.over,
 .button.search.pressed,
 .button.search.disabled {
-    background-position: -30px -57px;
-}
-
-#secondarySearchBox .button.search.up,
-#secondarySearchBox .button.search.over,
-#secondarySearchBox .button.search.pressed,
-#secondarySearchBox .button.search.disabled {
-    background-position: -30px -55px;
-}
-
-
-#secondarySearchBox .button.searchClear,
-#secondarySearchBox .button.searchClear.up,
-#secondarySearchBox .button.searchClear.over,
-#secondarySearchBox .button.searchClear.pressed {
-    background-position: -30px -87px;
-}
-
-
-#globalSearch .button.search {
-    border-left: none;
+    background-position: -26px -56px;
 }
 
 
 /* ------------------- */
-/*  12. MOVE BUTTON    */
+/*  13. MOVE BUTTON    */
 /* ------------------- */
+/* Background image is 'button_action_icons_sprite' - set in section 2a */
 .move.right .icon,
 .move.right.over.pressed .icon {
     background-position: 8px -24px;

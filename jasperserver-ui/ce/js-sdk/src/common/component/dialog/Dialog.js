@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -35,6 +35,7 @@ import resizablePanelTrait from '../panel/trait/resizablePanelTrait';
 import dialogTemplate from './template/dialogTemplate.htm';
 import dialogButtonTemplate from './template/dialogButtonTemplate.htm';
 import 'jquery-ui/ui/widgets/draggable';
+import stdnav from "../../stdnav/stdnav";
 
 var Dialog = Panel.extend(/** @lends Dialog.prototype */{
     defaultTemplate: dialogTemplate,
@@ -67,7 +68,11 @@ var Dialog = Panel.extend(/** @lends Dialog.prototype */{
 
         this.resizable = options.resizable || false;
         this.modal = options.modal || false;
+        this.id = options.id;
+        this.titleContainerId = options.titleContainerId;
+        this.bodyContainerId = options.bodyContainerId;
         this.additionalBodyCssClasses = options.additionalBodyCssClasses || "";
+        this.returnFocusTo = options.returnFocusTo || false;
 
         if (this.resizable && _.indexOf(options.traits, resizablePanelTrait) === -1) {
             options.traits.push(resizablePanelTrait);
@@ -76,7 +81,7 @@ var Dialog = Panel.extend(/** @lends Dialog.prototype */{
         Panel.call(this, options);
     },
 
-    initialize: function(options){
+    initialize: function(options) {
         this.dialogOptions = _.extend({}, options);
         this.collapsed = !this.collapsed;
         this.resetSizeOnOpen = _.isUndefined(options.resetSizeOnOpen) ? true : options.resetSizeOnOpen;
@@ -109,11 +114,14 @@ var Dialog = Panel.extend(/** @lends Dialog.prototype */{
             templateArguments = Panel.prototype.getTemplateArguments.apply(this, arguments);
 
         return _.extend(templateArguments, {
+            id: this.id,
+            titleContainerId: this.titleContainerId,
+            bodyContainerId: this.bodyContainerId,
             additionalBodyCssClasses: this.additionalBodyCssClasses
         });
     },
 
-    setElement: function(el){
+    setElement: function(el) {
         var res = Panel.prototype.setElement.apply(this, arguments);
 
         this.buttons && this.buttons.setElement(this.$(".jr-mDialog-footer")[0] || this.$(".footer")[0]);
@@ -127,9 +135,18 @@ var Dialog = Panel.extend(/** @lends Dialog.prototype */{
      */
     setTitle: function(title) {
         this.$(".jr-mDialog-header > .jr-mDialog-header-title").text(title);
+        this.$el.attr("aria-label", title);
     },
 
-    render: function(){
+    /**
+     * @description Set element to return focus to when closing
+     * @param {element} element Element to return focus to
+     */
+    setReturnFocus: function(element) {
+        this.returnFocusTo = element;
+    },
+
+    render: function() {
         this.$el.hide();
 
         if (this.modal) {
@@ -151,7 +168,7 @@ var Dialog = Panel.extend(/** @lends Dialog.prototype */{
      * @fires Dialog#dialog:visible
      * @returns {Dialog}
      */
-    open: function(coordinates){
+    open: function(coordinates) {
         if (this.isVisible()) {
             return this;
         }
@@ -193,7 +210,9 @@ var Dialog = Panel.extend(/** @lends Dialog.prototype */{
 
         this.$el.show();
 
-        this.$el.find("input").first().focus();
+        this.lastFocusedElement = this.returnFocusTo || document.activeElement;
+        let firstFocusable = stdnav.getFirstFocusableElement(this.$el[0]);
+        firstFocusable && _.defer(() => firstFocusable.focus());
 
         this._onDialogResize();
 
@@ -201,6 +220,7 @@ var Dialog = Panel.extend(/** @lends Dialog.prototype */{
          * @event Dialog#dialog:visible
          */
         this.trigger("dialog:visible");
+        stdnav.beginModalFocus(this.$el[0]);
         return this;
     },
 
@@ -208,8 +228,9 @@ var Dialog = Panel.extend(/** @lends Dialog.prototype */{
      * @description Close dialog.
      * @returns {Dialog|undefined}
      */
-    close: function(){
+    close: function() {
         if (this.isVisible()) {
+            stdnav.endModalFocus(this.$el[0]);
 
             // lower the z-index of the current dialog which going to be closed
             this.$el.css({ zIndex: --Dialog.highestIndex });
@@ -218,6 +239,7 @@ var Dialog = Panel.extend(/** @lends Dialog.prototype */{
             this.modal && this.dimmer.css({ zIndex: --Dialog.highestIndex }).hide();
 
             this.$el.hide();
+            this.lastFocusedElement && this.lastFocusedElement.focus();
 
             Panel.prototype.close.apply(this, arguments);
 
@@ -245,7 +267,7 @@ var Dialog = Panel.extend(/** @lends Dialog.prototype */{
      * @description Enable specific dialog button.
      * @param {string} action Button action
      */
-    enableButton: function(action){
+    enableButton: function(action) {
         this.buttons.enable(action);
     },
 
@@ -253,7 +275,7 @@ var Dialog = Panel.extend(/** @lends Dialog.prototype */{
      * @description Disable specific dialog button.
      * @param {string} action Button action
      */
-    disableButton: function(action){
+    disableButton: function(action) {
         this.buttons.disable(action);
     },
 
@@ -265,20 +287,20 @@ var Dialog = Panel.extend(/** @lends Dialog.prototype */{
         return this.$el.is(":visible");
     },
 
-	    _setMinSize: function() {
-		    if (this.dialogOptions.minWidth) {
-			    this.$el.css({
+    _setMinSize: function() {
+        if (this.dialogOptions.minWidth) {
+            this.$el.css({
                 minWidth: this.dialogOptions.minWidth
             });
         }
 
-		    if (this.dialogOptions.minHeight) {
-			    this.$el.css({
+        if (this.dialogOptions.minHeight) {
+            this.$el.css({
                 minHeight: this.dialogOptions.minHeight
             });
         }
 
-		    if (this.dialogOptions.setMinSizeAsSize) {
+        if (this.dialogOptions.setMinSizeAsSize) {
             this.$el.css({
                 width: this.dialogOptions.minWidth,
                 height: this.dialogOptions.minHeight
@@ -286,14 +308,13 @@ var Dialog = Panel.extend(/** @lends Dialog.prototype */{
         }
     },
 
-    _position: function(coordinates){
-
+    _position: function(coordinates) {
         var top, left;
         var body = $("body"),
             elHeight = this.$el.height(),
             elWidth = this.$el.width();
 
-        if(coordinates && typeof coordinates.top != "undefined" && typeof coordinates.left != "undefined"){
+        if (coordinates && typeof coordinates.top != "undefined" && typeof coordinates.left != "undefined") {
             top = coordinates.top;
             left = coordinates.left;
 
@@ -303,16 +324,16 @@ var Dialog = Panel.extend(/** @lends Dialog.prototype */{
             var fitByHeight = bodyHeight - coordinates.top;
             var fitByWidth =  bodyWidth - coordinates.left;
 
-            if(fitByHeight < elHeight){
+            if (fitByHeight < elHeight) {
                 top = coordinates.top - elHeight;
                 top = (top < 0) ? (bodyHeight/2 - elHeight/2) : top
             }
-            if(fitByWidth < elWidth){
+            if (fitByWidth < elWidth) {
                 left = coordinates.left - elWidth;
                 left = (left < 0) ? (bodyWidth/2 - elWidth/2) : left
             }
 
-        }else{
+        } else {
             top = $(window).height() / 2 - elHeight / 2;
             left = $(window).width() / 2 - elWidth / 2;
         }
@@ -323,7 +344,7 @@ var Dialog = Panel.extend(/** @lends Dialog.prototype */{
         };
     },
 
-    _focus: function(){
+    _focus: function() {
         !this.modal && this._increaseZIndex();
     },
 
@@ -331,8 +352,16 @@ var Dialog = Panel.extend(/** @lends Dialog.prototype */{
         this.$el.css({ zIndex : ++Dialog.highestIndex });
     },
 
-    _onKeyDown: function(e){
-        this.buttons._onKeyDown(e);
+    _onKeyDown: function(e) {
+        // ARIA requirements are that the ESC key will close modal dialogs
+        // However... buttonless dialog can't be closed (e.g: loading dialog)
+        if ((e.key === "Escape" || e.keyCode === 27)
+            && (this.buttons
+                && this.dialogOptions.buttons.length > 0)) {
+            this.close();
+        }
+
+        this.buttons && this.buttons._onKeyDown(e);
 
         // We don't want to let any keyboard event go outside of our dialog.
         // (for details see ticket http://jira.jaspersoft.com/browse/JRS-12262)
@@ -352,7 +381,7 @@ var Dialog = Panel.extend(/** @lends Dialog.prototype */{
     /**
      * @description Remove dialog from DOM
      */
-    remove: function(){
+    remove: function() {
         this.buttons && this.buttons.remove();
 
         this.dimmer && this.dimmer.remove();

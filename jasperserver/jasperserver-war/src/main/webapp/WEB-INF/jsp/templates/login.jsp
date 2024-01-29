@@ -1,6 +1,6 @@
 <%@ page contentType="text/html; charset=utf-8" %>
 <%--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -61,8 +61,12 @@ Usage:
     <t:putAttribute name="bodyContent">
         <div class="devices"></div>
         <div class="inputSection">
+            <section id="loginWarningSection" aria-hidden="true" aria-label="<spring:message code='jsp.login.warning.section'/>">
             ${warningMessages}
+            </section>
+            <section tabindex="-1" id="loginErrorSection" aria-hidden="true">
             ${errorMessages}
+            </section>
 
             <fieldset>
                 <legend class="offLeft"><span><spring:message code='jsp.Login.section'/></span></legend>
@@ -76,7 +80,7 @@ Usage:
                 <label class="control input text" for="j_username" id="usernamelabel">
                     <span class="wrap"><spring:message code='jsp.Login.username'/>:</span>
                 </label>
-                <input class="stdnavinitialfocus" id="j_username" name="j_username" type="text" autocapitalize="off" autofocus="autofocus" aria-labelledby="usernamelabel"/>
+                <input id="j_username" name="j_username" type="text" autocapitalize="off" aria-labelledby="usernamelabel" aria-required="true"/>
                 <span class="message warning"></span>
                 <label class="control input password" for="j_password_pseudo" id="passwordlabel">
                     <span class="wrap">
@@ -86,23 +90,26 @@ Usage:
                         </c:choose>
                     </span>
                 </label>
-                <input class="" id="j_password_pseudo" name="j_password_pseudo" type="password" maxlength="47" aria-labelledby="passwordlabel" role="application"/>
+                <input class="" id="j_password_pseudo" name="j_password_pseudo" type="password" maxlength="47" aria-labelledby="passwordlabel" aria-required="true"/>
                 <input class="" id="j_password" name="j_password" type="hidden" aria-hidden="true"/>
                 <span class="message warning"></span>
             </fieldset>
             <fieldset>
-                <legend><a id="showHideLocaleAndTimezone" tabindex="0"><spring:message code="jsp.Login.link.showLocale"/></a></legend>
-                <div id="localeAndTimeZone" class="hidden">
+                <legend class="offLeft" id="showHideLocaleAndTimezoneLegend"><span><spring:message code="jsp.Login.link.localeAndTimezoneRegion"/></span></legend>
+                <a class="loginFormAccordionButton" id="showHideLocaleAndTimezone" tabindex="0" role="button" aria-expanded="false" aria-controls="localeAndTimeZone">
+                    <spring:message code="jsp.Login.link.showLocale"/>
+                </a>
+                <div id="localeAndTimeZone" class="hidden" role="region" aria-labelledby="showHideLocaleAndTimezoneLegend">
                     <label class="control select" for="userLocale" id="userLocaleLabel">
                         <span class="wrap"><spring:message code='jsp.Login.locale'/>:</span>
                     </label>
-                    <select id="userLocale" name="userLocale" aria-labelledby="userLocaleLabel" role="listbox">
+                    <select id="userLocale" name="userLocale">
                         ${localeOptions}
                     </select>
                     <label class="control select" for="userTimezone" id="userTimezoneLabel">
                         <spring:message code='jsp.Login.timezone'/>:</span>
                     </label>
-                    <select id="userTimezone" name="userTimezone" aria-labelledby="userTimezoneLabel" role="listbox">
+                    <select id="userTimezone" name="userTimezone" aria-labelledby="userTimezoneLabel">
                         ${timezoneOptions}
                     </select>
                 </div>
@@ -112,23 +119,34 @@ Usage:
                     var doesAllowUserPasswordChange = true;
                 </script>
                 <fieldset>
-                    <legend><a id="showHideChangePassword" tabindex="0">
+                    <legend class="offLeft" id="showHideChangePasswordLegend"><span><spring:message code="jsp.Login.link.changePassword"/></span></legend>
+                    <a
+                            class="loginFormAccordionButton" id="showHideChangePassword" tabindex="0" role="button"
+                            <c:if test="${not showPasswordChange eq 'true'}">aria-expanded="false"</c:if>
+                            <c:if test="${showPasswordChange eq 'true'}">aria-expanded="true"</c:if>
+                            aria-controls="changePassword"
+                    >
                         <c:choose>
-                            <c:when test="${showPasswordChange eq 'true'}"><spring:message code="jsp.Login.link.cancelPassword"/></c:when>
-                            <c:otherwise><spring:message code="jsp.Login.link.changePassword"/></c:otherwise>
+                            <c:when test="${showPasswordChange eq 'true'}">
+                                <spring:message code="jsp.Login.link.cancelPassword"/>
+                            </c:when>
+                            <c:otherwise>
+                                <spring:message code="jsp.Login.link.changePassword"/>
+                            </c:otherwise>
                         </c:choose>
-                    </a></legend>
-                    <div id="changePassword" <c:if test="${not showPasswordChange eq 'true'}">class="hidden"</c:if>>
-                        <label class="control input password" for="j_newpassword1">
+                    </a>
+
+                    <div id="changePassword" <c:if test="${not showPasswordChange eq 'true'}">class="hidden"</c:if> role="region" aria-labelledby="showHideChangePasswordLegend">
+                        <label class="control input password" for="j_newpassword1_pseudo">
                             <span class="wrap"><spring:message code='jsp.Login.link.newPassword'/>:</span>
                             <span class="message warning"></span>
-                            <input id="j_newpassword1_pseudo" name="j_newpassword1_pseudo" type="password"/>
+                            <input id="j_newpassword1_pseudo" name="j_newpassword1_pseudo" type="password" aria-required="true"/>
                             <input id="j_newpassword1" name="j_newpassword1" type="hidden"/>
                         </label>
-                        <label class="control input password" for="j_newpassword2">
+                        <label class="control input password" for="j_newpassword2_pseudo">
                             <span class="wrap"><spring:message code='jsp.Login.link.repeatNewPassword'/>:</span>
                             <span class="message warning"></span>
-                            <input id="j_newpassword2_pseudo" name="j_newpassword2_pseudo" type="password"/>
+                            <input id="j_newpassword2_pseudo" name="j_newpassword2_pseudo" type="password" aria-required="true"/>
                             <input id="j_newpassword2" name="j_newpassword2" type="hidden"/>
                         </label>
                         <input type="hidden" name="passwordExpiredDays"/>
@@ -143,7 +161,7 @@ Usage:
                 <span class="wrap"><spring:message code='jsp.Login.button.login'/></span>
                 <span class="icon"></span>
             </button>
-            <h2><a id="needHelp" tabindex="0"><spring:message code='LOGIN_NEED_HELP_LINK'/></a></h2>
+            <h2 role="presentation"><a id="needHelp" tabindex="0" role="button"><spring:message code='LOGIN_NEED_HELP_LINK'/></a></h2>
             <c:if test="${isProVersion and isEC2}">
                 <div id="amazonLogo" class="row"></div>
             </c:if>

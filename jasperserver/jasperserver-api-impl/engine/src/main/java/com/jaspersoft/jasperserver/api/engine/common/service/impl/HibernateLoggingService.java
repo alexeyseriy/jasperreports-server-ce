@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -125,8 +125,9 @@ public class HibernateLoggingService extends HibernateDaoSupport implements Logg
         if (log.isDebugEnabled()) {
             log.debug("Purging log events older than " + last);
         }
-
-        getHibernateTemplate().bulkUpdate("delete RepoLogEvent e where e.occurrenceDate < ?", last);
+        getHibernateTemplate().execute((s)-> s.createQuery("delete RepoLogEvent e where e.occurrenceDate < ?1")
+                .setParameter(1, last)
+                .executeUpdate());
     }
 
 
@@ -218,8 +219,9 @@ public class HibernateLoggingService extends HibernateDaoSupport implements Logg
         //TODO: FIXME - at the moment method returns all the events.
         String username = securityContextProvider.getContextUsername();
 
-        List result = getHibernateTemplate().find("select count(*) from RepoLogEvent where state=?",
-                new Byte(LogEvent.STATE_UNREAD));
+        List result = getHibernateTemplate().execute((s)-> s.createQuery("select count(*) from RepoLogEvent where state=?1")
+                .setParameter(1, new Byte(LogEvent.STATE_UNREAD))
+                .getResultList());
 
         if (result != null) {
             return (Integer) result.get(0);

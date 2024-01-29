@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -45,8 +45,6 @@
       <property name="sqsConnectorFactory" ref="sqsConnectorFactory" />
       <property name="temporaryTopicSuffix" value="${aws.topicsuffix}" />
       <property name="temporaryQueueSuffix" value="${aws.queuesuffix}" />
-      <property name="awsAccessKey" value="${aws.accessKey}" />
-      <property name="awsSecretKey" value="${aws.secretKey}" />
       <property name="clientID" value="${aws.clientID}" />
       <property name="threadCount" value="${aws.threadCount}" />
       <property name="ehcacheTopic"  ref="ehcacheJMSTopic"/>

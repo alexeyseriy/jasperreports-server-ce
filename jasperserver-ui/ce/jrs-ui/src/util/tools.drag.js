@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -203,28 +203,28 @@ Dragger.prototype.dragging = function (evt) {
     }
     if (this.isDragging) {
         if (xDiff) {
-            for (var i = 0; i < this.draggingObjs.length; i++) {
-                var left = parseInt(this.originalX[i] + xDiff);    //                if (left < 0 || left + $(this.draggingObjs[i]).getWidth() > document.body.clientWidth) {
+            for (var j = 0; j < this.draggingObjs.length; j++) {
+                var left = parseInt(this.originalX[j] + xDiff);    //                if (left < 0 || left + $(this.draggingObjs[i]).getWidth() > document.body.clientWidth) {
                 //                    xDiff = false;
                 //                    break;
                 //                }
             }
             if (xDiff) {
-                for (var i = 0; i < this.draggingObjs.length; i++) {
-                    this.draggingObjs[i].style.left = parseInt(this.originalX[i] + xDiff) + 'px';
+                for (var k = 0; k < this.draggingObjs.length; k++) {
+                    this.draggingObjs[k].style.left = parseInt(this.originalX[k] + xDiff) + 'px';
                 }
             }
         }
         if (yDiff) {
-            for (var i = 0; i < this.draggingObjs.length; i++) {
-                var top = parseInt(this.originalY[i] + yDiff);    //                if (top < 0 || top + $(this.draggingObjs[i]).getHeight() > document.body.clientHeight) {
+            for (var l = 0; l < this.draggingObjs.length; l++) {
+                var top = parseInt(this.originalY[l] + yDiff);    //                if (top < 0 || top + $(this.draggingObjs[i]).getHeight() > document.body.clientHeight) {
                 //                    yDiff = false;
                 //                    break;
                 //                }
             }
             if (yDiff) {
-                for (var i = 0; i < this.draggingObjs.length; i++) {
-                    this.draggingObjs[i].style.top = parseInt(this.originalY[i] + yDiff) + 'px';
+                for (var m = 0; m < this.draggingObjs.length; m++) {
+                    this.draggingObjs[m].style.top = parseInt(this.originalY[m] + yDiff) + 'px';
                 }
             }
         }

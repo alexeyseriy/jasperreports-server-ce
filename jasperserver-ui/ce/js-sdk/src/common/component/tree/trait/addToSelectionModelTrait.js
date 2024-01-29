@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -20,7 +20,7 @@
  */
 
 import _ from 'underscore';
-import ScalableListModel from '../../list/model/ScalableListModel';
+import ScalableListModel from 'src/components/scalableList/model/ScalableListModel';
 export default {
     afterFetchComplete: function (items, total) {
         ScalableListModel.prototype.afterFetchComplete.apply(this, arguments);

@@ -1,6 +1,6 @@
 <%@ page contentType="text/html; charset=utf-8" %>
 <%--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -44,30 +44,16 @@ Usage:
 <tx:useAttribute id="containerAttr" name="containerAttr" classname="java.lang.String" ignore="true"/>
 <tx:useAttribute id="inputID" name="inputID" classname="java.lang.String" ignore="true"/>
 <tx:useAttribute id="accClass" name="accClass" classname="java.lang.String" ignore="true"/>
-<tx:useAttribute id="inputTabindex" name="inputTabindex" classname="java.lang.String" ignore="true"/>
+<tx:useAttribute id="label" name="label" classname="java.lang.String" ignore="true"/>
 
 <%--/WEB-INF/jsp/templates/control_searchLockup.jsp revision A--%>
-<c:choose>
-<c:when test="${isIPad}">
-<span id="${containerID}" class="control searchLockup ${containerClass}" ${containerAttr} ${accClass}>
-    <label for="${inputID}" class="offLeft"><spring:message code="button.search" javaScriptEscape="true"/></label>
+<form role="search" id="${containerID}" class="control searchLockup ${containerClass}" ${containerAttr} <c:if test="${label != null}">aria-label="${label}"</c:if>>
     <div class="wrap">
-        <input type="text" class="${accClass}" id="${inputID}" tabindex="${inputTabindex}"/>
+        <input type="text" class="${accClass}" id="${inputID}" aria-label="<spring:message code='button.search' javaScriptEscape='true'/>"/>
     </div>
-    <b class="right"><a class="button searchClear"></a></b>
-    <a class="button search up"></a>
-</span>
-
-</c:when>
-<c:otherwise>
-<span id="${containerID}" class="control searchLockup ${containerClass}" ${containerAttr}>
-    <label for="${inputID}" class="offLeft"><spring:message code="button.search" javaScriptEscape="true"/></label>
-    <div class="wrap">
-        <input type="text" class="${accClass}" id="${inputID}" tabindex="${inputTabindex}"/>
-    </div>
-    <b class="right"><a class="button searchClear"></a></b>
-    <a class="button search up"></a>
-</span>
-</c:otherwise>
-</c:choose>
+    <b class="right">
+        <button class="button searchClear" aria-label="<spring:message code='button.clear' javaScriptEscape='true'/>"></button>
+    </b>
+    <button class="button search up" aria-label="<spring:message code='button.search' javaScriptEscape='true'/>"></button>
+</form>
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -225,7 +225,6 @@ function targettedResponseHandler(requester) {
     var fillId = requester.params[0];
     var fromId = requester.params[1];
     var callback = requester.params[2];
-    var isAutomaticRefresh = requester.params[3];
     var toLocation = jQuery('#' + fillId)[0];
     if (fromId) {
         jQuery(toLocation).html('');
@@ -658,8 +657,8 @@ function ajaxUpdate(url, options) {
  * @private
  */
 function checkForErrors(requester) {
-    var errorHandler = requester.errorHandler;
-    return errorHandler(requester.xmlhttp);
+    var requesterErrorHandler = requester.errorHandler;
+    return requesterErrorHandler(requester.xmlhttp);
 }    /**
  * @private
  */

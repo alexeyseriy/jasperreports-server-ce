@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Map;
 
 import com.jaspersoft.jasperserver.api.metadata.user.domain.TenantQualified;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.dom4j.Element;
 
 import com.jaspersoft.jasperserver.api.JSException;
@@ -37,11 +39,14 @@ import com.jaspersoft.jasperserver.export.modules.ExporterModuleContext;
 import com.jaspersoft.jasperserver.export.modules.auth.beans.RoleBean;
 import com.jaspersoft.jasperserver.export.modules.auth.beans.UserBean;
 
+import static java.lang.String.format;
+
 /**
  * @author Lucian Chirita (lucianc@users.sourceforge.net)
  * @version $Id$
  */
 public class AuthorityExporter extends BaseExporterModule {
+	private static final Logger log = LogManager.getLogger(AuthorityExporter.class);
 
 	private String usersArgument;
 	private String rolesArgument;
@@ -96,6 +101,8 @@ public class AuthorityExporter extends BaseExporterModule {
     }
 
     public void init(ExporterModuleContext moduleContext) {
+		log.debug("Init authority exporter module");
+
 		super.init(moduleContext);
 
         roles = new LinkedHashMap();
@@ -114,11 +121,12 @@ public class AuthorityExporter extends BaseExporterModule {
 
 	protected void initUsers() {
 		if (isExportEverything() || hasParameter(getUsersArgument())) {
+			log.debug("Init users");
 			String[] userNames = getParameterValues(getUsersArgument());
 			if (isExportEverything() || userNames == null) {
 				List<User> usersList = getUsers();
 				for (User user : usersList) {
-					addUser(getUser(user));
+					addUser(user);
 				}
 			} else {
 				for (int i = 0; i < userNames.length; i++) {
@@ -129,19 +137,22 @@ public class AuthorityExporter extends BaseExporterModule {
 	}
 
 	protected List<User> getUsers () {
-		return configuration.getAuthorityService().getUsers(executionContext, null);
+		return configuration.getAuthorityService().getUsersWithProfileAttributes(executionContext, null);
 	}
 
 	protected void addUser(User user) {
 		if (isNotVisibleAuthority(user)) return;
-
-		users.put(getUserName(user), user);
+		String userName = getUserName(user);
+		log.debug("Add user: {}", userName);
+		users.put(userName, user);
 		if (includeUsersRoles){
 			addUsersRoles(user);
 		}
 	}
 
 	protected void addUsersRoles(User user) {
+		log.debug("Add roles for the user: {}", () -> getUserName(user));
+
 		for (Object roleObject : user.getRoles()) {
 			Role role = (Role) roleObject;
 			if (isNotVisibleAuthority(role)) continue;
@@ -155,6 +166,7 @@ public class AuthorityExporter extends BaseExporterModule {
 	}
 
 	protected User getUser(String userName) {
+		log.debug("Get user: {}", userName);
 		User user = configuration.getAuthorityService().getUser(executionContext, userName);
 		if (user == null) {
 			throw new JSException("jsexception.no.such.user", new Object[] {userName});
@@ -164,6 +176,7 @@ public class AuthorityExporter extends BaseExporterModule {
 
 	protected void initRoles() {
 		if (isExportEverything() || hasParameter(getRolesArgument())) {
+			log.debug("Init roles");
 			String[] roleNames = getParameterValues(getRolesArgument());
 			if (isExportEverything() || roleNames == null) {
 				List<Role> rolesList = getRoles();
@@ -179,6 +192,7 @@ public class AuthorityExporter extends BaseExporterModule {
 	}
 
 	protected List<Role> getRoles () {
+		log.debug("Get roles");
 		return configuration.getAuthorityService().getRoles(executionContext, null);
 	}
 
@@ -199,6 +213,7 @@ public class AuthorityExporter extends BaseExporterModule {
 	}
 
 	protected Role getRole(String name) {
+		log.debug("Get role: {}", name);
 		Role role = configuration.getAuthorityService().getRole(executionContext, name);
 		if (role == null) {
 			throw new JSException("jsexception.no.such.role", new Object[] {name});
@@ -208,8 +223,10 @@ public class AuthorityExporter extends BaseExporterModule {
 
 	protected void addRoleUsers(Role role) {
 		if (includeRoleUsers) {
-			String roleName = getRoleName(role);
+			final String roleName = getRoleName(role);
+			log.debug("Add role users: {}", roleName);
 			List usersInRole = configuration.getAuthorityService().getUsersInRole(executionContext, roleName);
+			log.debug("Add users in role");
 			addUsers(usersInRole);
 		}		
 	}
@@ -246,6 +263,7 @@ public class AuthorityExporter extends BaseExporterModule {
 	}
 
 	protected void exportRoles() {
+		log.debug("Export roles");
 		mkdir(configuration.getRolesDirName());
 		
 		for (Iterator it = roles.values().iterator(); it.hasNext();) {
@@ -255,23 +273,28 @@ public class AuthorityExporter extends BaseExporterModule {
 	}
 
 	protected void exportRole(Role role) {
-		commandOut.info("Exporting role " + role.getRoleName());
+		final String msg = "Exporting role " + role.getRoleName();
+		commandOut.info(msg);
+		log.debug(msg);
 
 		RoleBean roleBean = new RoleBean();
 		roleBean.copyFrom(role);
 		
 		serialize(roleBean, configuration.getRolesDirName(), getRoleFile(role), configuration.getSerializer());
-		
+
 		addIndexElement(role);
 	}
 
 	protected Element addIndexElement(Role role) {
+		String roleName = role.getRoleName();
+		log.debug("Add index element for the role {}", roleName);
 		Element roleElement = getIndexElement().addElement(configuration.getRoleIndexElementName());
-		roleElement.setText(role.getRoleName());
+		roleElement.setText(roleName);
 		return roleElement;
 	}
 
 	protected void exportUsers() {
+		log.debug("Export users");
 		mkdir(configuration.getUsersDirName());
 		
 		for (Iterator it = users.values().iterator(); it.hasNext();) {
@@ -281,7 +304,7 @@ public class AuthorityExporter extends BaseExporterModule {
 	}
 
 	protected void export(User user) {
-		commandOut.info("Exporting user " + user.getUsername());
+		commandOut.info("Exporting user: " + user.getUsername());
 
 		UserBean userBean = new UserBean();
 		userBean.copyFrom(user);
@@ -293,8 +316,10 @@ public class AuthorityExporter extends BaseExporterModule {
 	}
 
 	protected Element addIndexElement(User user) {
+		final String userName = user.getUsername();
+		log.debug("Add index element for the user: {}", userName);
 		Element userElement = getIndexElement().addElement(configuration.getUserIndexElementName());
-		userElement.setText(user.getUsername());
+		userElement.setText(userName);
 		return userElement;
 	}
 

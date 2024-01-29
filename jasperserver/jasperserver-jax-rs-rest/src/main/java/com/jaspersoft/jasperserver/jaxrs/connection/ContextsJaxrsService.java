@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -24,10 +24,13 @@ import com.jaspersoft.jasperserver.api.ErrorDescriptorException;
 import com.jaspersoft.jasperserver.api.ExceptionListWrapper;
 import com.jaspersoft.jasperserver.api.JSException;
 import com.jaspersoft.jasperserver.api.common.domain.impl.ExecutionContextImpl;
+import com.jaspersoft.jasperserver.api.common.error.handling.SecureExceptionHandler;
 import com.jaspersoft.jasperserver.dto.common.ErrorDescriptor;
 import com.jaspersoft.jasperserver.jaxrs.common.JaxrsEntityParser;
 import com.jaspersoft.jasperserver.jaxrs.resources.ContentNegotiationHandler;
+import com.jaspersoft.jasperserver.remote.connection.ContextCreationFailedException;
 import com.jaspersoft.jasperserver.remote.connection.ContextsManager;
+import com.jaspersoft.jasperserver.remote.connection.SecureExceptionWrapperInContextCreationFailure;
 import com.jaspersoft.jasperserver.remote.exception.IllegalParameterValueException;
 import com.jaspersoft.jasperserver.remote.exception.MandatoryParameterNotFoundException;
 import com.jaspersoft.jasperserver.remote.exception.NotAcceptableException;
@@ -37,6 +40,7 @@ import com.jaspersoft.jasperserver.remote.exception.UnsupportedMediaTypeExceptio
 import com.jaspersoft.jasperserver.remote.exception.UnsupportedOperationErrorDescriptorException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -88,6 +92,8 @@ public class ContextsJaxrsService {
     @Resource(name = "processedExceptionsForCreatingContext")
     private List<String> processedExceptionsForCreatingContext;
 
+    @Autowired
+    private SecureExceptionWrapperInContextCreationFailure secureExceptionWrapper;
     @POST
     public Response createContext(InputStream stream, @HeaderParam(HttpHeaders.CONTENT_TYPE) MediaType mediaType,
             @HeaderParam(HttpHeaders.ACCEPT) MediaType accept, @Context HttpServletRequest request, @Context UriInfo uriInfo) throws URISyntaxException, IllegalParameterValueException, IOException {
@@ -124,7 +130,12 @@ public class ContextsJaxrsService {
             }
         } catch (Exception ex) {
             if (isProcessedException(ex, processedExceptionsForCreatingContext)) {
-                throw ex;
+                if (ex instanceof ContextCreationFailedException) {
+                    ErrorDescriptor errorDescriptor = secureExceptionWrapper.handleException(new ErrorDescriptor().setErrorCode("connection.failed").setMessage(ex.getMessage()).setParameters(((ContextCreationFailedException) ex).getErrorDescriptor().getParameters()));
+                    throw new ErrorDescriptorException(errorDescriptor, ex.getCause());
+                } else {
+                    throw ex;
+                }
             } else {
                 // just in case there is unknown exception,
                 // wrap unprocessed exception with error descriptor with error message only
@@ -198,17 +209,17 @@ public class ContextsJaxrsService {
     @GET
     @Path("/{uuid}")
     @Produces({MediaType.APPLICATION_JSON})
-    public Response getContextDetails(@PathParam("uuid") UUID uuid,
+    public Response getContextDetails(@PathParam("uuid") String uuid,
             @Context HttpServletRequest request) throws ResourceNotFoundException {
-        final Object context = contextsManager.getContext(uuid, request.getParameterMap());
+        final Object context = contextsManager.getContext(getUUID(uuid), request.getParameterMap());
         return context != null ? Response.ok(context).build() : Response.status(Response.Status.NOT_FOUND).build();
     }
 
     @DELETE
     @Path("/{uuid}")
-    public Response removeContextDetails(@PathParam("uuid") UUID uuid) throws ResourceNotFoundException {
+    public Response removeContextDetails(@PathParam("uuid") String uuid) throws ResourceNotFoundException {
         try {
-            contextsManager.removeContext(uuid);
+            contextsManager.removeContext(getUUID(uuid));
         } catch (ResourceNotFoundException e){
             // no such context. Do nothing. It's expected state after this operation completion.
         }
@@ -217,19 +228,19 @@ public class ContextsJaxrsService {
 
     @GET
     @Path("/{uuid}/metadata")
-    public Response getContextMetadata(@PathParam("uuid") UUID uuid, @Context HttpServletRequest request) {
-        final Object contextMetadata = contextsManager.getContextMetadata(uuid, request.getParameterMap());
+    public Response getContextMetadata(@PathParam("uuid") String uuid, @Context HttpServletRequest request) {
+        final Object contextMetadata = contextsManager.getContextMetadata(getUUID(uuid), request.getParameterMap());
         if (contextMetadata == null) {
             return Response.status(Response.Status.NO_CONTENT).build();
         }
         final String metadataClientResourceType = contextsManager
-                .getMetadataClientResourceType(contextsManager.getContext(uuid, request.getParameterMap()));
+                .getMetadataClientResourceType(contextsManager.getContext(getUUID(uuid), request.getParameterMap()));
         return Response.ok(contextMetadata, clientTypeToMimeType(metadataClientResourceType)).build();
     }
 
     @POST
     @Path("/{uuid}/metadata")
-    public Response getContextMetadata(@PathParam("uuid") UUID uuid, InputStream stream,
+    public Response getContextMetadata(@PathParam("uuid") String uuid, InputStream stream,
             @HeaderParam(HttpHeaders.CONTENT_TYPE) MediaType mediaType) throws IOException {
         Class<?> paramsClass = contextsManager.getMetadataParamsClass(getType(mediaType));
         if (paramsClass == null) {
@@ -238,7 +249,7 @@ public class ContextsJaxrsService {
         final Object params = parseEntity(paramsClass, stream, mediaType);
         Object contextMetadata;
         try {
-            contextMetadata = contextsManager.getContextMetadata(uuid, params);
+            contextMetadata = contextsManager.getContextMetadata(getUUID(uuid), params);
         } catch (UnsupportedOperationErrorDescriptorException e) {
             throw new UnsupportedMediaTypeException(mediaType.toString());
         }
@@ -275,5 +286,14 @@ public class ContextsJaxrsService {
             }
         }
         return queryClass;
+    }
+
+    protected static UUID getUUID(String uuid) throws ResourceNotFoundException {
+        try {
+            if (uuid.toLowerCase().startsWith("uuid:")) uuid = uuid.substring(5);
+            return UUID.fromString(uuid);
+        } catch (Exception ex) {
+            throw new ResourceNotFoundException("Invalid UUID: " + uuid);
+        }
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -36,17 +36,14 @@ import java.text.ParseException;
  * @version $Id$
  */
 @Service
-public class TimestampDataConverter implements DataConverter<Timestamp>, DateParser<Timestamp>{
-    @Resource(name = "isoCalendarFormatProvider")
-    protected CalendarFormatProvider calendarFormatProvider;
-
+public class TimestampDataConverter extends BaseChronoDataConverter implements DataConverter<Timestamp>, DateParser<Timestamp>{
     @Resource
     private ClientTimezoneFormattingRulesResolver clientTimezoneFormattingRulesResolver;
 
     @Override
     public Timestamp stringToValue(String rawData) throws ParseException {
         try{
-            return StringUtils.isNotEmpty(rawData) ? new Timestamp(getDateTimeFormatter().parse(rawData).getTime()) : null;
+            return StringUtils.isNotEmpty(rawData) ? new Timestamp(getDateTimeFormatter(rawData).parse(rawData).getTime()) : null;
         } catch (ParseException e){
             try {
                return Timestamp.valueOf(rawData);
@@ -58,7 +55,7 @@ public class TimestampDataConverter implements DataConverter<Timestamp>, DatePar
 
     @Override
     public String valueToString(Timestamp value) {
-        return value != null ? getDateTimeFormatter().format(value) : "";
+        return value != null ? getDateTimeFormatter(null).format(value) : "";
     }
 
     @Override
@@ -72,14 +69,15 @@ public class TimestampDataConverter implements DataConverter<Timestamp>, DatePar
     }
 
     private DateFormat getDateFormatter() {
-        return getDateFormatWithTimeZone(calendarFormatProvider.getDateFormat());
+        return getDateFormatWithTimeZone(getDateFormat());
     }
 
-    private DateFormat getDateTimeFormatter() {
+    private DateFormat getDateTimeFormatter(String rawData) {
+        DateFormat dateFormat = getDatetimeFormat(rawData);
         if (clientTimezoneFormattingRulesResolver.isApplyClientTimezone(Timestamp.class)) {
-            return getDateFormatWithTimeZone(calendarFormatProvider.getDatetimeFormat());
+            return getDateFormatWithTimeZone(dateFormat);
         }
-        return calendarFormatProvider.getDatetimeFormat();
+        return dateFormat;
     }
 
     public static DateFormat getDateFormatWithTimeZone(DateFormat dateFormat) {

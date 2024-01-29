@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -23,7 +23,7 @@ import _ from 'underscore';
 import DelegatingDataProvider from '../dataprovider/DelegatingDataProvider';
 import SelectedItemsDataProvider from '../dataprovider/SelectedItemsDataProvider';
 import AvailableItemsListWithTrueAll from '../view/AvailableItemsListWithTrueAll';
-import MultiSelect from '../view/MultiSelect';
+import MultiSelect from './MultiSelect';
 export default MultiSelect.extend({
     _createAvailableItemsList: function (options) {
         this.availableItemsListDataProvider = options.getData;
@@ -34,7 +34,8 @@ export default MultiSelect.extend({
             loadFactor: options.loadFactor,
             chunksTemplate: options.chunksTemplate,
             scrollTimeout: options.scrollTimeout,
-            trueAll: options.trueAll
+            trueAll: options.trueAll,
+            caseSensitiveSelection: options.caseSensitiveSelection
         });
     },
     _createSelectedItemsListDataProvider: function (options) {

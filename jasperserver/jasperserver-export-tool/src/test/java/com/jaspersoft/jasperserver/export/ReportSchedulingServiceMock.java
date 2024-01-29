@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -123,6 +123,11 @@ public class ReportSchedulingServiceMock implements ReportSchedulingService {
     @Override
     public ValidationErrors validateJob(ExecutionContext context, ReportJob job) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public ValidationErrors validateEffectiveJobOutput(ExecutionContext context, ReportJob job) {
+        return null;
     }
 
     @Override

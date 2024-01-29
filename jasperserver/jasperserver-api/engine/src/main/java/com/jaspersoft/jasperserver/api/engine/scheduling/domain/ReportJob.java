@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -22,6 +22,7 @@ package com.jaspersoft.jasperserver.api.engine.scheduling.domain;
 
 import com.jaspersoft.jasperserver.api.JSException;
 import com.jaspersoft.jasperserver.api.JasperServerAPI;
+import com.jaspersoft.jasperserver.api.engine.scheduling.domain.jaxb.OutputFormatXmlAdapter;
 import com.jaspersoft.jasperserver.api.engine.scheduling.domain.reportjobmodel.ReportJobAlertModel;
 import com.jaspersoft.jasperserver.api.engine.scheduling.domain.reportjobmodel.ReportJobCalendarTriggerModel;
 import com.jaspersoft.jasperserver.api.engine.scheduling.domain.reportjobmodel.ReportJobMailNotificationModel;
@@ -40,7 +41,13 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElements;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+
+import com.jaspersoft.jasperserver.dto.job.adapters.TimestampToStringXmlAdapter;
 import net.sf.jasperreports.engine.JRParameter;
 import org.apache.commons.lang.StringUtils;
 
@@ -59,6 +66,7 @@ import org.apache.commons.lang.StringUtils;
  * @see ReportSchedulingService#scheduleJob(com.jaspersoft.jasperserver.api.common.domain.ExecutionContext, ReportJob)
  */
 @JasperServerAPI
+@XmlRootElement(name = "job")
 public class ReportJob implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -191,6 +199,14 @@ public class ReportJob implements Serializable {
 	public static final byte OUTPUT_FORMAT_DATA_CSV= 17;
 
 	/**
+	 * XLSX Metadata output constant.
+	 *
+	 * @see #getOutputFormats()
+	 */
+
+	public static final byte OUTPUT_FORMAT_DATA_XLSX= 18;
+
+	/**
 	 * Report unit with data snapshot output format.
 	 *
 	 * @see #getOutputFormats()
@@ -275,6 +291,8 @@ public class ReportJob implements Serializable {
 	private ReportJobRepositoryDestination contentRepositoryDestination;
 	private ReportJobMailNotification mailNotification;
     private ReportJobAlert alert;
+	private String jobLabel;
+	private String resourceLabel;
 
 	/**
 	 * Creates a new empty report job.
@@ -386,6 +404,9 @@ public class ReportJob implements Serializable {
      * @return the job trigger
      * @see #setTrigger(ReportJobTrigger)
      */
+	@XmlElements({
+			@XmlElement(name = "simpleTrigger", type = ReportJobSimpleTrigger.class),
+			@XmlElement(name = "calendarTrigger", type = ReportJobCalendarTrigger.class)})
     public ReportJobTrigger getTrigger() {
         return trigger;
     }
@@ -449,6 +470,7 @@ public class ReportJob implements Serializable {
      * @return repository output information
      * @see ContentResource
      */
+	@XmlElement(name = "repositoryDestination")
     public ReportJobRepositoryDestination getContentRepositoryDestination() {
         return contentRepositoryDestination;
     }
@@ -516,12 +538,29 @@ public class ReportJob implements Serializable {
 		this.description = description;
 	}
 
+	public String getJobLabel() {
+		return jobLabel;
+	}
+
+	public void setJobLabel(String jobLabel) {
+		this.jobLabel = jobLabel;
+	}
+
+	public String getResourceLabel() {
+		return resourceLabel;
+	}
+
+	public void setResourceLabel(String resourceLabel) {
+		this.resourceLabel = resourceLabel;
+	}
+
 	/**
 	 * Returns a creation date of the job.
 	 *
 	 * @return the job creation date
      * @since 4.7
      */
+	@XmlJavaTypeAdapter(TimestampToStringXmlAdapter.class)
     public Timestamp getCreationDate() {
         return creationDate;
     }
@@ -592,6 +631,7 @@ public class ReportJob implements Serializable {
 	 * @return a set of output formats as <code>java.lang.Byte</code> keys
      * @deprecated use #getOutputFormatsSet() with parametrized Set as output
      */
+	@XmlTransient
     public Set getOutputFormats() {
         return getOutputFormatsSet();
     }
@@ -607,6 +647,8 @@ public class ReportJob implements Serializable {
      *
      * @return a set of output formats as <code>java.lang.Byte</code> keys
      */
+	@XmlElement(name = "outputFormats")
+	@XmlJavaTypeAdapter(OutputFormatXmlAdapter.class)
     public Set<Byte> getOutputFormatsSet() {
         return outputFormats;
     }

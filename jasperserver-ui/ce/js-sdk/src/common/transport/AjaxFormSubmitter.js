@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -59,7 +59,7 @@ function parseChildren(node) {
     var children, ob;
     if (!node.children) {
         children = [];
-        for (var i = 0, l = node.childNodes.length; i < l; i++) {
+        for (let i = 0, l = node.childNodes.length; i < l; i++) {
             if (node.childNodes[i].nodeValue === null) {
                 children.push(node.childNodes[i]);
             }
@@ -73,12 +73,12 @@ function parseChildren(node) {
     } else {
         if (children.length > 1 && (children[0].nodeName === children[1].nodeName)) {
             ob = [];
-            for (var i = 0, l = children.length; i < l; i++) {
+            for (let i = 0, l = children.length; i < l; i++) {
                 ob[i] = parseChildren(children[i]);
             }
         } else {
             ob = {};
-            for (var i = 0, l = children.length; i < l; i++) {
+            for (let i = 0, l = children.length; i < l; i++) {
                 ob[children[i].nodeName] = parseChildren(children[i]);
             }
         }

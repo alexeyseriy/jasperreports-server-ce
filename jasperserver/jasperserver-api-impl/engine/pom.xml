@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -465,7 +465,7 @@
         <dependency>
             <groupId>commons-net</groupId>
             <artifactId>commons-net</artifactId>
-            <version>3.3</version>
+            <version>3.9.0</version>
         </dependency>
         <!-- <dependency>
          <groupId>junit</groupId>
@@ -486,21 +486,21 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>asm</groupId>
+            <groupId>org.ow2.asm</groupId>
             <artifactId>asm</artifactId>
-            <version>3.2</version>
+            <version>${asm.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>asm</groupId>
+            <groupId>org.ow2.asm</groupId>
             <artifactId>asm-analysis</artifactId>
-            <version>3.2</version>
+            <version>${asm.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>asm</groupId>
+            <groupId>org.ow2.asm</groupId>
             <artifactId>asm-tree</artifactId>
-            <version>3.2</version>
+            <version>${asm.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -566,6 +566,10 @@
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-sleuth-api</artifactId>
             <version>3.0.3</version>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-extension-annotations</artifactId>
         </dependency>
     </dependencies>
     <build>

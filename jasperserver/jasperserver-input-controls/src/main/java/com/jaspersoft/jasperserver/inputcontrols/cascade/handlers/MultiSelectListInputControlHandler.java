@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -182,8 +182,9 @@ public class MultiSelectListInputControlHandler extends SingleSelectListInputCon
 
     @Override
     protected void internalApplyNothingSubstitution(String controlName, Map<String, Object> parameters) {
-        // Multiselect input control has full support of nothing selection.
-        // Therefore this handler don't need to perform any actions in this deprecated method
-    }
+        // JS-65535 and JS 65427
+        // sync behavior of using internalApplyNothingSubstitution() and applyNothingSelected()
+        // if nothing is selected, assign empty array to the IC, instead of do nothing
+        applyNothingSelected(controlName, parameters);    }
 }
 

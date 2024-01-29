@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -27,7 +27,9 @@ import static com.jaspersoft.jasperserver.dto.executions.QueryExecutionsErrorCod
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
+import com.jaspersoft.jasperserver.remote.resources.converters.ResourceReferenceConverter;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -80,12 +82,14 @@ public class BaseClientExecutionValidator implements ClientValidator<AbstractCli
         if (StringUtils.isEmpty(dataSourceUri)) {
             exceptions.add(new MandatoryParameterNotFoundException("reference.uri"));
         } else {
-            try {
-                Resource resource;
+            UUID uuid = ResourceReferenceConverter.getUUIDFromUri(dataSourceUri);
+            if (uuid == null) {
+                try {
+                    Resource resource;
 
-                // Do not allow folders
-                if (repositoryService.folderExists(context, dataSourceUri)) {
-                    exceptions.add(badRequestException(QUERY_DATASOURCE_TYPE_NOT_SUPPORTED.createDescriptor(dataSourceUri)));
+                    // Do not allow folders
+                    if (repositoryService.folderExists(context, dataSourceUri)) {
+                        exceptions.add(badRequestException(QUERY_DATASOURCE_TYPE_NOT_SUPPORTED.createDescriptor(dataSourceUri)));
 
                     // Used "getResource()" call instead of "resourceExists()" because it
                     // throws AccessDeniedException
@@ -94,20 +98,21 @@ public class BaseClientExecutionValidator implements ClientValidator<AbstractCli
                 } else {
                     boolean canBeConverted = false;
 
-                    ToClientConverter<?, ?, ?> converter = resourceConverterProvider.getToClientConverter(resource);
-                    if (converter != null) {
-                        Class<?> clientTypeClass = resourceConverterProvider.getClientTypeClass(
-                                converter.getClientResourceType()
-                        );
-                        canBeConverted = ClientReferenceable.class.isAssignableFrom(clientTypeClass);
-                    }
+                        ToClientConverter<?, ?, ?> converter = resourceConverterProvider.getToClientConverter(resource);
+                        if (converter != null) {
+                            Class<?> clientTypeClass = resourceConverterProvider.getClientTypeClass(
+                                    converter.getClientResourceType()
+                            );
+                            canBeConverted = ClientReferenceable.class.isAssignableFrom(clientTypeClass);
+                        }
 
-                    if (!canBeConverted) {
-                        exceptions.add(badRequestException(QUERY_DATASOURCE_TYPE_NOT_SUPPORTED.createDescriptor(dataSourceUri)));
+                        if (!canBeConverted) {
+                            exceptions.add(badRequestException(QUERY_DATASOURCE_TYPE_NOT_SUPPORTED.createDescriptor(dataSourceUri)));
+                        }
                     }
+                } catch (org.springframework.security.access.AccessDeniedException e) {
+                    exceptions.add(badRequestException(QUERY_DATASOURCE_ACCESS_DENIED.createDescriptor(dataSourceUri)));
                 }
-            } catch (org.springframework.security.access.AccessDeniedException e) {
-                exceptions.add(badRequestException(QUERY_DATASOURCE_ACCESS_DENIED.createDescriptor(dataSourceUri)));
             }
         }
     }

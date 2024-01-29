@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -440,6 +440,7 @@ describe("Date Utils", function() {
 
             it("to parse time format", function(){
                 expect(dateUtils.toMomentDateOrTimeOrTimestampPattern("hh:mm:ss")).toEqual("HH:mm:ss");
+                expect(dateUtils.toMomentDateOrTimeOrTimestampPattern("h:mm:ss")).toEqual("H:mm:ss");
             });
 
             it("to parse dateTime format", function(){

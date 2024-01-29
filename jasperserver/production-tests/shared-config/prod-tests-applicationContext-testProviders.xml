@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -35,7 +35,7 @@
        xmlns:security="http://www.springframework.org/schema/security"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
        	http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-4.3.xsd
-       	http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-4.2.xsd">
+       	http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-5.7.xsd">
        
     <!-- ======================== FILTER CHAIN =======================  -->
 

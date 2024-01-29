@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -729,7 +729,6 @@
             <arg value="help:active-profiles"/>
             <arg value="clean"/>
             <arg value="install"/>
-            <arg value="-X"/>
             <arg value="-Denv=${env}"/>
         </runmaven>
     </target>
@@ -1092,6 +1091,7 @@
     <!--
     There are some custom task used in setup.xml and this target depends on setup.xml therefore cyclic dependency.
     To resolve this issue use environment variable BUILDOMATIC_ENV=dev. E.g `BUILDOMATIC_ENV=dev ant build-util`
+    If  BUILDOMATIC_ENV=dev ant build-util doesn't work execute this 'mvn clean install -s build_conf\default\maven_settings.xml'
     -->
     <target name="build-util"
            depends="init-source-paths"

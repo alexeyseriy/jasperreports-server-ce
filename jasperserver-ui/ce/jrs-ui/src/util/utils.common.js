@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -85,6 +85,7 @@ import {Dragger, DragListener} from './tools.drag';
 import moment from 'moment';
 import xssUtil from 'js-sdk/src/common/util/xssUtil';
 import {$, $w, Prototype, Position} from 'prototype';
+import stdnavAlerting from 'js-sdk/src/common/stdnav/stdnavAlerting'
 
 var log = '';    ///////////////////////////////////////////
 // Operating System check.
@@ -2673,8 +2674,8 @@ function matchAny(elem, patterns, includeAncestors) {
     }    //...then ancestors
     //...then ancestors
     if (includeAncestors) {
-        for (var i = 0; i < patterns.length; ++i) {
-            var upMatch = elem.up && elem.up(patterns[i]);
+        for (var j = 0; j < patterns.length; ++j) {
+            var upMatch = elem.up && elem.up(patterns[j]);
             if (upMatch) {
                 return upMatch;
             }
@@ -2808,8 +2809,6 @@ function getAbsoluteOffsets(thisObj) {
     var oTop = thisObj.offsetTop;
     var thisParent = thisObj.offsetParent;
     while (thisParent.tagName.toUpperCase() != 'BODY' && thisParent.style.position != 'absolute') {
-        var oLeft = oLeft + thisParent.offsetLeft;
-        var oTop = oTop + thisParent.offsetTop;
         thisParent = thisParent.offsetParent;
     }    //add co-ords of absolute parent
     //add co-ords of absolute parent
@@ -2835,18 +2834,18 @@ function getAbsoluteTopOffset(thisObj) {
     var oTop = thisObj.offsetTop;
     var thisParent = thisObj.offsetParent;
     while (thisParent.tagName.toUpperCase() != 'BODY' && thisParent.style.position != 'absolute') {
-        var oTop = oTop + thisParent.offsetTop;
+        var updatedTop = oTop + thisParent.offsetTop;
         thisParent = thisParent.offsetParent;
     }    //add co-ords of absolute parent
     //add co-ords of absolute parent
     if (thisParent.style.position == 'absolute') {
-        oTop = oTop + thisParent.offsetTop;
+        updatedTop = oTop + thisParent.offsetTop;
     }
     if (isIE()) {
         //minor adjustment because IE handles offset slightly differently;
-        oTop = oTop + 1;
+        updatedTop = oTop + 1;
     }
-    return oTop;
+    return updatedTop;
 }    /**
  * re-implemenation of getAbsoluteOffsets()
  * but leaving original for now in case results vary slightly
@@ -3219,9 +3218,7 @@ function fitObjectIntoScreen(obj, thisLeft, thisTop, thisWidth, thisHeight) {
         l = sl;
     obj.style.left = l + 'px';
     obj.style.top = t + 'px';
-}    ///////////////////////////////////////////
-// Element Displaying and Effects
-///////////////////////////////////////////
+}
 ///////////////////////////////////////////
 // Element Displaying and Effects
 ///////////////////////////////////////////
@@ -3232,10 +3229,7 @@ function selectAndFocusOn(id) {
     var el = jQuery('#' + id)[0];
     el.select();
     el.focus();
-}    ///////////////////////////////////////////
-// Element Overlays
-///////////////////////////////////////////
-//haze out the entire usable page
+}
 ///////////////////////////////////////////
 // Element Overlays
 ///////////////////////////////////////////
@@ -3432,7 +3426,6 @@ function enableSelection(target) {
         } else if (typeof jQuery(target)[0].style.MozUserSelect != 'undefined') {
             //Firefox route
             jQuery(target)[0].style.MozUserSelect = 'text';
-        } else {
         }    //All other route (e.g. Opera)
         jQuery(target)[0].style.cursor = 'default';
     }
@@ -3596,11 +3589,8 @@ function triggerNativeEvent(event, target) {
         // IE
         target.fireEvent('on' + event, document.createEventObject());
     }
-}    /**
- * Is the related target of this event equal to, or descendant from the given element
- * @param {Object} event
- * @param {Object} element
- */
+}
+
 /**
  * Is the related target of this event equal to, or descendant from the given element
  * @param {Object} event
@@ -3680,10 +3670,10 @@ function numberOfDecimals(someNumericValue) {
 /**
  * This function checks to see if the event is a mac style right click action using the keyboard.
  * This supports clicking the right, left of middle buttons on a mouse
- * @param evt the event object
+ * @param event the event object
  */
-function macOSKeyboardRightClick(evt) {
-    var evt = getEvent(evt);
+function macOSKeyboardRightClick(event) {
+    var evt = getEvent(event);
     if (evt.ctrlKey) {
         return evt.button == 0 || evt.button == 1 || evt.button == 2;
     } else {
@@ -3696,11 +3686,11 @@ function macOSKeyboardRightClick(evt) {
  */
 /**
  * This function check to see if the  macOS-style Rightmouseclick has been clicked.
- * @param evt the event object
+ * @param evet the event object
  * @return boolean to indicate whether or not the key has been pressed.
  */
-function macOSMouseRightClick(evt) {
-    var evt = getEvent(evt);
+function macOSMouseRightClick(event) {
+    var evt = getEvent(event);
     var buttonRightclick = false;
     evt = evt || window.event;
     if (evt.which) {
@@ -3782,12 +3772,12 @@ function isLeftClick(evt) {
 /**
  * This function is used to determine whether or not the control key on PC or the command key on Mac OS x has
  * been pressed.
- * @param evt The event being passed.
+ * @param event The event being passed.
  * @param macUsesAlt soemtimes mac uses alt not command to map to ctrl (e.g for copy)
  * @return boolean to indicate whether or not the key has been pressed.
  */
-function isMetaHeld(evt, macUsesAlt) {
-    var evt = getEvent(evt);
+function isMetaHeld(event, macUsesAlt) {
+    var evt = getEvent(event);
     if (getEvent(evt)) {
         if (isMacOS()) {
             return macUsesAlt ? evt.altKey : evt.metaKey;
@@ -3917,8 +3907,6 @@ function textCounter(field, maxlimit) {
  * @param saveString
  */
 function saveAndClear(myString, saveString) {
-    myString = saveString;
-    saveString = '';
 }    /**
  * Use this method to replace illegal characters in string by legal replacements.
  * Examples:
@@ -3989,17 +3977,8 @@ function formatString(string) {
         result.push(parts[i], val);
     }
     return result.join('');
-}    /*
- * This function exists because there is a famous bus in IE9 - table must be cleaner out of the
- * whitespaces between html tags, so we don't have any choice...
- */
+}
 /*
- * This function exists because there is a famous bus in IE9 - table must be cleaner out of the
- * whitespaces between html tags, so we don't have any choice...
- */
-function removeWhitespacesFromTable(table_str) {
-    return table_str.replace(/>\s+<\/table/g, '></table').replace(/>\s+<thead/g, '><thead').replace(/>\s+<\/thead/g, '></thead').replace(/>\s+<tbody/g, '><tbody').replace(/>\s+<\/tbody/g, '></tbody').replace(/>\s+<caption/g, '><caption').replace(/>\s+<\/caption/g, '></caption').replace(/>\s+<tr/g, '><tr').replace(/>\s+<\/tr/g, '></tr').replace(/>\s+<th/g, '><th').replace(/>\s+<\/th/g, '></th').replace(/>\s+<td/g, '><td').replace(/>\s+<\/td/g, '></td');
-}    /*
  * Splits text into two parts - left and right according to the given position
  */
 /*
@@ -4661,8 +4640,6 @@ function switchDesign(switchTo) {
 ///////////////////////////////////////////////////
 function showDiv(divId) {
     var div = document.getElementById(divId);
-    var width = document.body.clientWidth;
-    var height = document.body.clientHeight;
     var oldZindex = div.style.zIndex;
     div.style.zIndex = -100;
     div.style.display = 'block';
@@ -4815,20 +4792,26 @@ var ValidationModule = {
      * @reutrns is validation successful (true/false)
      */
     validateEntry: function (validationEntry, showError) {
+        var valid = true;
+        var msg;
+
         if (validationEntry.validator) {
             //legacy format
-            return this.validateLegacy(validationEntry, showError);
+            valid = this.validateLegacy(validationEntry, showError);
+        } else if (!validationEntry.selector) {
+            msg = this._validateElement(validationEntry.element, validationEntry, showError);
+            valid = msg == null;
+        } else {
+            var elements = jQuery(validationEntry.element).find(validationEntry.selector);
+            for (let i = 0; i < elements.length; i++) {
+                msg = this._validateElement(elements[i], validationEntry, showError);
+                valid = valid && msg == null;
+            }
         }
-        if (!validationEntry.selector) {
-            var msg = this._validateElement(validationEntry.element, validationEntry, showError);
-            return msg == null;
-        }
-        var elements = jQuery(validationEntry.element).find(validationEntry.selector);
-        var valid = true;
-        for (var i = 0; i < elements.length; i++) {
-            var msg = this._validateElement(elements[i], validationEntry, showError);
-            valid = valid && msg == null;
-        }
+
+        // allow a screen-reader user to hear last validation message
+        stdnavAlerting.alert(msg);
+
         return valid;
     },
     /**
@@ -4945,7 +4928,7 @@ var ValidationModule = {
             if (!val) {
                 return null;    //don't validate if no value given
             }
-            var val = parseFloat(val);
+            val = parseFloat(val);
             if (isNaN(val)) {
                 return this._getMessage('notANumber', messages);
             }
@@ -5065,6 +5048,7 @@ var ValidationModule = {
      */
     showError: function (element, errorMessage, detailsMessage) {
         this._showMessage(element, errorMessage, utilsCommonEnum.ERROR_CLASS, utilsCommonEnum.MESSAGE_WARNING_PATTERN);
+        jQuery(element).attr('aria-invalid', 'true');
         var msgContainer = element.validatorMessageContainer || element.parentNode;
         if (detailsMessage) {
             var detailsBtn = jQuery(msgContainer).find(utilsCommonEnum.DETAILS_PATTERN)[0];
@@ -5107,6 +5091,7 @@ var ValidationModule = {
                 msg.update('');
             }
         }
+        jQuery(element).attr('aria-invalid', 'false');
     },
     /**
      * Hides success message for the specified form element.
@@ -5141,9 +5126,9 @@ ClassNameBuilder.addMethod('add', function (name) {
     } else {
         return this;
     }
-    newNames.each(function (name) {
-        if (!this.names.include(name)) {
-            this.names.push(name);
+    newNames.each(function (newName) {
+        if (!this.names.include(newName)) {
+            this.names.push(newName);
         }
     }.bind(this));
     return this;
@@ -5888,7 +5873,6 @@ export {
     saveAndClear,
     escapeString,
     formatString,
-    removeWhitespacesFromTable,
     splitText,
     redirectToUrl,
     checkURLProtocol,

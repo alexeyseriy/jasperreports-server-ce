@@ -106,12 +106,13 @@ display the new components correctly.
  */
 
 /* THEME */
-.superfocus {
-    outline: 3px solid orange;
-}
 
 :focus {
     outline: 1px dotted royalblue;
+}
+
+.superfocus {
+    outline: 3px solid orange;
 }
 
 /* NOTE: Form controls and CSS are not always the best of friends.  Applying

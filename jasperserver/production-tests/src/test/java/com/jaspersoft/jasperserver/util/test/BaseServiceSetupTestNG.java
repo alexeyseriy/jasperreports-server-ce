@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -145,6 +145,7 @@ public class BaseServiceSetupTestNG extends AbstractTestNGSpringContextTests {
     private static final String XDM_WHITELIST_GROUP = "XDM_WHITELIST";
 
     private static final String AUDIT_DB_ATTR = "auditDB";
+    private static final String REPOSITORY_DB_ATTR = "repositoryDB";
 
     protected ExecutionContext m_exContext = new ExecutionContextImpl();
 
@@ -1152,7 +1153,7 @@ public class BaseServiceSetupTestNG extends AbstractTestNGSpringContextTests {
             getProfileAttributeService().putProfileAttribute(executionContext, profileAttribute);
     }
 
-    protected void addAuditDBProfileAttribute() {
+    protected void addDBProfileAttributes() {
         String attributeValue = null;
         if (getJdbcProps().getProperty("test.databaseFlavor").equals("oracle")) {
             attributeValue = "JASPERSERVER";
@@ -1160,13 +1161,17 @@ public class BaseServiceSetupTestNG extends AbstractTestNGSpringContextTests {
             attributeValue = "JSPRSRVR";
         }
         if (attributeValue != null) {
-            m_logger.info("addAuditDBProfileAttribute() called");
+            m_logger.info("addDBProfileAttributes() called");
             final ExecutionContext executionContext = getExecutionContext();
             Tenant server = getTenantService().getTenant(executionContext, TenantService.ORGANIZATIONS);
 
-            ProfileAttribute profileAttribute = createAndPutTestAttribute(AUDIT_DB_ATTR, attributeValue, server, JasperServerPermission.ADMINISTRATION.getMask(), "custom");
-            if (getProfileAttributeService().getProfileAttribute(executionContext, profileAttribute) == null) {
-                getProfileAttributeService().putProfileAttribute(executionContext, profileAttribute);
+            ProfileAttribute auditProfileAttribute = createAndPutTestAttribute(AUDIT_DB_ATTR, attributeValue, server, JasperServerPermission.ADMINISTRATION.getMask(), "custom");
+            if (getProfileAttributeService().getProfileAttribute(executionContext, auditProfileAttribute) == null) {
+                getProfileAttributeService().putProfileAttribute(executionContext, auditProfileAttribute);
+            }
+            ProfileAttribute repoProfileAttribute = createAndPutTestAttribute(REPOSITORY_DB_ATTR, attributeValue, server, JasperServerPermission.ADMINISTRATION.getMask(), "custom");
+            if (getProfileAttributeService().getProfileAttribute(executionContext, repoProfileAttribute) == null) {
+                getProfileAttributeService().putProfileAttribute(executionContext, repoProfileAttribute);
             }
         }
     }
@@ -1180,7 +1185,7 @@ public class BaseServiceSetupTestNG extends AbstractTestNGSpringContextTests {
                 createTestAttr(server, XDM_WHITELIST_PROFILE_ATTRIB_NAME, "*", XDM_WHITELIST_GROUP));
     }
 
-    protected void deleteAuditDBProfileAttribute() {
+    protected void deleteDBProfileAttributes() {
         String attributeValue = null;
         if (getJdbcProps().getProperty("test.databaseFlavor").equals("oracle")) {
             attributeValue = "JASPERSERVER";
@@ -1188,12 +1193,14 @@ public class BaseServiceSetupTestNG extends AbstractTestNGSpringContextTests {
             attributeValue = "JSPRSRVR";
         }
         if (attributeValue != null) {
-            m_logger.info("deleteAuditDBProfileAttribute() called");
+            m_logger.info("deleteDBProfileAttribute() called");
             ExecutionContext executionContext = getExecutionContext();
             Tenant server = getTenantService().getTenant(executionContext, TenantService.ORGANIZATIONS);
 
             getProfileAttributeService().deleteProfileAttribute(executionContext,
                     createTestAttr(server, AUDIT_DB_ATTR, attributeValue, "custom"));
+            getProfileAttributeService().deleteProfileAttribute(executionContext,
+                    createTestAttr(server, REPOSITORY_DB_ATTR, attributeValue, "custom"));
         }
 
     }

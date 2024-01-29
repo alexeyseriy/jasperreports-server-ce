@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -44,6 +44,7 @@ import org.springframework.context.MessageSourceResolvable;
 import org.springframework.context.NoSuchMessageException;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.core.env.PropertySource;
 
 import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
@@ -187,11 +188,32 @@ public class CascadeTestHelper {
             for (Map.Entry<String, Object> entry : mockedServices.entrySet()) {
                 beanFactory.registerSingleton(entry.getKey(), entry.getValue());
             }
+            parentApplicationContext.getEnvironment().getPropertySources().addLast(ContextPropertySource.INSTANCE);
             parentApplicationContext.refresh();
 
             return new ClassPathXmlApplicationContext(contextPath, true, parentApplicationContext);
         } else {
-            return new ClassPathXmlApplicationContext(contextPath, true);
+            ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(contextPath);
+            context.getEnvironment().getPropertySources().addLast(ContextPropertySource.INSTANCE);
+            context.refresh();
+            return context;
+        }
+    }
+
+    private static class ContextPropertySource extends PropertySource<String> {
+        public static final ContextPropertySource INSTANCE = new ContextPropertySource();
+
+        final Map<String, String> propertiesValues = new HashMap<String, String>() {{
+            put("bean.calendarFormatProvider", "isoCalendarFormatProvider");
+        }};
+
+        private ContextPropertySource() {
+            super("custom");
+        }
+
+        @Override
+        public String getProperty(final String name) {
+            return propertiesValues.get(name);
         }
     }
 

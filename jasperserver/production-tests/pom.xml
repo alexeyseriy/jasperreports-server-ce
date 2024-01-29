@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -33,6 +33,21 @@
         <artifactId>server</artifactId>
         <version>${buildArtifactVersionName}</version>
     </parent>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>mysql</groupId>
+                <artifactId>mysql-connector-java</artifactId>
+                <version>8.0.19</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.google.protobuf</groupId>
+                        <artifactId>protobuf-java</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     <dependencies>
         <dependency>
             <groupId>com.jaspersoft.jasperserver.api.metadata.impl</groupId>
@@ -89,6 +104,11 @@
             <artifactId>httpclient</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.hibernate.common</groupId>
+            <artifactId>hibernate-commons-annotations</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
             <version>2.5</version>
@@ -118,7 +138,6 @@
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-            <version>3.1.11</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -286,8 +305,24 @@
             <groupId>net.jodah</groupId>
             <artifactId>failsafe</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.javassist</groupId>
+            <artifactId>javassist</artifactId>
+            <version>3.27.0-GA</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     <build>
+        <resources>
+            <resource>
+                <directory>${platform-path}/webapp/WEB-INF/classes</directory>
+                <includes>
+                    <include>hibernate.properties</include>
+                </includes>
+                <filtering>false</filtering>
+                <targetPath>${project.build.testOutputDirectory}</targetPath>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

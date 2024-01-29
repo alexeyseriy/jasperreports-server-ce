@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -27,28 +27,15 @@ import {matchAny} from "../util/utils.common";
 import Administer from './administer.base';
 import webHelpModule from '../components/components.webHelp';
 import jQuery from 'jquery';
+import AdministerUtils from './administer.common';
 
 var logging = {
     initialize: function () {
-        layoutModule.resizeOnClient('serverSettingsMenu', 'settings');
-        webHelpModule.setCurrentContext('admin');
-        this.initEvents();
+        AdministerUtils.initialize.call(this);
     },
     initEvents: function () {
-        var self = this;
-        jQuery('#display').on('click', function (e) {
-            var elem = e.target;
-            var button = matchAny(elem, [layoutModule.BUTTON_PATTERN], true);
-            if (button) {
-                // observe navigation
-                for (var pattern in Administer.menuActions) {
-                    if (jQuery(button).is(pattern) && !jQuery(button).parents('li').hasClass('selected')) {
-                        document.location = Administer.menuActions[pattern]();
-                        return;
-                    }
-                }
-            }
-        });
+        const self = this;
+        AdministerUtils.initEvents();
         jQuery('.js-logSettings select').on('change', function (e) {
             var $el = jQuery(e.target), loggerName;
             if ($el.hasClass('js-newLogger')) {
@@ -60,7 +47,22 @@ var logging = {
         });
     },
     _setLevel: function (logger, level) {
-        document.location = 'log_settings.html?logger=' + logger + '&level=' + level;
+        const formElement = Object.assign(document.createElement("form"), {
+            method: 'post',
+            action: 'log_settings.html'
+        });
+        formElement.appendChild(Object.assign(document.createElement("input"), {
+            type: 'hidden',
+            name: 'logger',
+            value: logger
+        }));
+        formElement.appendChild(Object.assign(document.createElement("input"), {
+            type: 'hidden',
+            name: 'level',
+            value: level
+        }));
+        document.body.appendChild(formElement);
+        formElement.submit();
     }
 };
 

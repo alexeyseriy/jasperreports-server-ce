@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -59,7 +59,8 @@ public class OutputFormatXmlAdapter extends XmlAdapter<ReportJobOutputFormatsWra
         PPTX(ReportJob.OUTPUT_FORMAT_PPTX),
         JSON(ReportJob.OUTPUT_FORMAT_JSON),
         PNG(ReportJob.OUTPUT_FORMAT_PNG),
-        DATA_CSV(ReportJob.OUTPUT_FORMAT_DATA_CSV);
+        DATA_CSV(ReportJob.OUTPUT_FORMAT_DATA_CSV),
+        DATA_XLSX(ReportJob.OUTPUT_FORMAT_DATA_XLSX);
 
 
         private final Byte byteValue;

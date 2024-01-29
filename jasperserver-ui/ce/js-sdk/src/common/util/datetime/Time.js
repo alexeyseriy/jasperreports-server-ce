@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -21,36 +21,52 @@
 
 import _ from 'underscore';
 function getTimeRegexpPattern(timeFormat) {
-    return new RegExp('^' + timeFormat.toLowerCase().replace('hh', '([0-1][0-9]|2[0-3])').replace('mm', '([0-5][0-9])').replace('ss', '([0-5][0-9])') + '$');
+    const pattern = '^' + timeFormat
+        .toLowerCase()
+        .replace('hh', '([0-1][0-9]|2[0-3])')
+        .replace('mm', '([0-5][0-9])')
+        .replace('ss', '([0-5][0-9])')
+        .replace('l', '([0-9][0-9][0-9])') + '$';
+    return new RegExp(pattern);
 }
 function getTimeFormatComponents(timeFormat) {
-    var matches = timeFormat.toLowerCase().match(/(hh|mm|ss)/g), componentOrders = {
+    const matches = timeFormat.toLowerCase().match(/(hh|mm|ss|l)/g), componentOrders = {
         h: -1,
         m: -1,
-        s: -1
+        s: -1,
+        l: -1
     };
     if (matches) {
-        for (var i = 0; i < matches.length; i++) {
-            if (componentOrders[matches[i].toString().charAt(0)] == -1) {
+        for (let i = 0; i < matches.length; i++) {
+            if (componentOrders[matches[i].toString().charAt(0)] === -1) {
                 componentOrders[matches[i].toString().charAt(0)] = i + 1;
             }
         }
     }
     return componentOrders;
 }
-function Time(hours, minutes, seconds) {
+function Time(hours, minutes, seconds, milliseconds) {
     this.hours = hours || 0;
     this.minutes = minutes || 0;
     this.seconds = seconds || 0;
+    this.milliseconds = milliseconds || 0;
 }
 Time.prototype.total = function () {
     return this.hours * 3600 + this.minutes * 60 + this.seconds;
 };
 Time.prototype.isValid = function () {
-    return this.hours >= 0 && this.hours <= 23 && this.minutes >= 0 && this.minutes <= 59 && this.seconds >= 0 && this.seconds <= 59;
+    return this.hours >= 0 && this.hours <= 23
+        && this.minutes >= 0 && this.minutes <= 59
+        && this.seconds >= 0 && this.seconds <= 59
+        && this.milliseconds >= 0 && this.milliseconds <= 999;
 };
 Time.prototype.format = function (pattern) {
-    return pattern.toLowerCase().replace('hh', this.hours < 10 ? '0' + this.hours : this.hours).replace('mm', this.minutes < 10 ? '0' + this.minutes : this.minutes).replace('ss', this.seconds < 10 ? '0' + this.seconds : this.seconds);
+    return pattern
+        .toLowerCase()
+        .replace('hh', this.hours < 10 ? '0' + this.hours : this.hours)
+        .replace('mm', this.minutes < 10 ? '0' + this.minutes : this.minutes)
+        .replace('ss', this.seconds < 10 ? '0' + this.seconds : this.seconds)
+        .replace('l', this.milliseconds < 10 ? '00' + this.milliseconds : (this.milliseconds < 100 ? '0' + this.milliseconds : this.milliseconds));
 };
 Time.compare = function (time1, time2) {
     var total1 = time1.total(), total2 = time2.total();
@@ -63,16 +79,21 @@ Time.compare = function (time1, time2) {
     }
 };
 Time.parse = function (value, timeFormat) {
-    var timeRegexpPattern = getTimeRegexpPattern(timeFormat);
+    const timeRegexpPattern = getTimeRegexpPattern(timeFormat);
     if (!_.isString(value) || !timeRegexpPattern.test(value)) {
         return undefined;
-    } else {
-        var timeObj = new Time(), components = timeRegexpPattern.exec(value);
-        var timeFormatComponents = getTimeFormatComponents(timeFormat);
-        timeObj.hours = parseInt(components[timeFormatComponents.h], 10);
-        timeObj.minutes = parseInt(components[timeFormatComponents.m], 10);
-        timeObj.seconds = parseInt(components[timeFormatComponents.s], 10);
-        return timeObj;
     }
+
+    const timeObj = new Time(),
+        components = timeRegexpPattern.exec(value);
+    const timeFormatComponents = getTimeFormatComponents(timeFormat);
+    timeObj.hours = parseInt(components[timeFormatComponents.h], 10);
+    timeObj.minutes = parseInt(components[timeFormatComponents.m], 10);
+    timeObj.seconds = parseInt(components[timeFormatComponents.s], 10);
+    if (timeFormatComponents.l !== -1) {
+        timeObj.milliseconds = parseInt(components[timeFormatComponents.l], 10);
+    }
+
+    return timeObj;
 };
 export default Time;

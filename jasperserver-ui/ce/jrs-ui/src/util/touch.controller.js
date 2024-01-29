@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -147,12 +147,6 @@ TouchController.prototype.onTouchEnd = function (e) {
         this.hbar && this.hbar.hide();
         this.vbar && this.vbar.hide();
         e.preventDefault();
-        if (this.shouldStartMomentum()) {
-        }    //this.doMomentum();
-        else
-        //this.doMomentum();
-        {
-        }    //this.snapToBounds();
     }
     this.dragging = false;
 };

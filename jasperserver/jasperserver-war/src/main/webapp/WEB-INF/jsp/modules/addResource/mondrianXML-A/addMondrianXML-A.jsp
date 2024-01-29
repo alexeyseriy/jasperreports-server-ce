@@ -1,6 +1,6 @@
 <%@ page contentType="text/html; charset=utf-8" %>
 <%--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -131,7 +131,7 @@
                                         <label class="control browser<c:if test="${status.error}"> error</c:if>" for="mondrianConnectionReference" title="<spring:message code="jsp.editMondrianXmlaSourceForm.connection_reference_title"/>">
                                             <span class="wrap"><spring:message code="jsp.editMondrianXmlaSourceForm.connection_reference"/></span>
                                             <input id="mondrianConnectionReference" type="text" name="${status.expression}" value="${status.value}" />
-                                            <button type="button" id="browser_button" class="button action"><span class="wrap"><spring:message code="button.browse"/><span class="icon"></span></span></button>
+                                            <button type="button" id="browser_button" class="button action up"><span class="wrap"><spring:message code="button.browse"/><span class="icon"></span></span></button>
                                             <c:if test="${status.error}">
                                                 <span class="message warning">${status.errorMessage}</span>
                                             </c:if>

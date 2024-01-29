@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -26,6 +26,10 @@ public enum AuditEventType {
     LOGOUT("logout"),
 
     RUN_REPORT("runReport"),
+    RUN_DASHBOARD("runDashboard"),
+
+    EXECUTION_QUERY_DETAILS("executionQueryDetails"),
+    SCHEDULE_OUTPUT_DETAILS("scheduleOutputDetails"),
 
     SCHEDULE_REPORT("scheduleReport"),
     DELETE_REPORT_SCHEDULING("deleteReportScheduling"),
@@ -79,6 +83,7 @@ public enum AuditEventType {
 
     AD_HOC_EDITING("adHocEditing"),
     UPDATE_AD_HOC_OPTIONS("updateAdhocOptions"),
+    UPDATE_GENERAL_SETTINGS ("updateGeneralSettings"),
     CLEAR_AD_HOC_CACHE_ENTRY("clearAdhocCacheEntry"),
 
     DASHBOARD_EDITING("dashboardEditing"),

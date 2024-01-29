@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -27,6 +27,7 @@ import java.sql.SQLException;
 import java.util.Map;
 import java.util.Properties;
 
+import io.opentelemetry.extension.annotations.WithSpan;
 import net.sf.jasperreports.data.jdbc.JdbcDataAdapter;
 import net.sf.jasperreports.data.jdbc.JdbcDataAdapterService;
 import net.sf.jasperreports.engine.JRRuntimeException;
@@ -44,6 +45,7 @@ public class JDBCQueryDataSourceService extends JdbcDataAdapterService {
 		super(new ParameterContributorContext(jasperReportsContext, null, null), jdbcDataAdapter);
 	}
 
+    @WithSpan
     public Connection getConnection() throws SQLException{
         JdbcDataAdapter jdbcDataAdapter = getJdbcDataAdapter();
         Connection connection;

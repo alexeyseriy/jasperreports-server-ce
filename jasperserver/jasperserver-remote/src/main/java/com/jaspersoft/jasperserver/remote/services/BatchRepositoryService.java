@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -67,7 +67,7 @@ public interface BatchRepositoryService {
      * @throws ResourceNotFoundException if specified folder uri not exists
      *
      */
-    RepositorySearchResult<ClientResourceLookup> getResourcesForLookupClass(String lookupClass, String q, String folderUri, List<String> type, List<String> excludeType, List<String> containerType, List<String> excludeFolders, Integer start, Integer limit, Boolean recursive, Boolean showHiddenItems, String sortBy, AccessType accessType, User user, Boolean forceFullPage) throws IllegalParameterValueException, ResourceNotFoundException;
+    RepositorySearchResult<ClientResourceLookup> getResourcesForLookupClass(String lookupClass, String q, String folderUri, List<String> type, List<String> excludeType, List<String> containerType, List<String> excludeFolders, Integer start, Integer limit, Boolean recursive, Boolean showHiddenItems, String sortBy, AccessType accessType, Boolean favorites, User user, Boolean forceFullPage) throws IllegalParameterValueException, ResourceNotFoundException;
 
 
     /**
@@ -89,7 +89,7 @@ public interface BatchRepositoryService {
      * @throws ResourceNotFoundException if specified folder uri not exists
      *
      */
-    RepositorySearchResult<ClientResourceLookup> getResources(String q, String folderUri, List<String> type, List<String> excludeType, List<String> containerType, List<String> excludeFolders, Integer start, Integer limit, Boolean recursive, Boolean showHiddenItems, String sortBy, AccessType accessType, User user, Boolean forceFullPage) throws IllegalParameterValueException, ResourceNotFoundException;
+    RepositorySearchResult<ClientResourceLookup> getResources(String q, String folderUri, List<String> type, List<String> excludeType, List<String> containerType, List<String> excludeFolders, Integer start, Integer limit, Boolean recursive, Boolean showHiddenItems, String sortBy, AccessType accessType, Boolean favorites, User user, Boolean forceFullPage) throws IllegalParameterValueException, ResourceNotFoundException;
 
     /**
      * Searches resources

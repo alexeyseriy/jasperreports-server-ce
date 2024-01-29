@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -42,6 +42,7 @@ import org.springframework.security.access.AccessDeniedException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 import static com.jaspersoft.jasperserver.api.common.domain.impl.ExecutionContextImpl.getRestrictedRuntimeExecutionContext;
 
@@ -169,11 +170,11 @@ public class ResourceReferenceConverter<T extends ClientReferenceable> {
             // if it is local resource, reference with local resource must be returned or update will fail
             // NOTE: it is always preferable to pass resultToUpdate to get actual resource from there to avoid rereading and possible errors.
             String ownersUri = options == null ? null : options.getOwnersUri();
-            Resource referencedResource = validateAndGetReference(ctx, uriFromClient, ownersUri);
+            Resource referencedResource = validateAndGetReference(ctx, uriFromClient, ownersUri, options);
             if(options!=null && options.getAdditionalProperties()!=null && options.getAdditionalProperties().get("source")!=null)   {
                 return new ResourceReference(referencedResource);
             }
-            final boolean local = ownersUri != null && uriFromClient.startsWith(ownersUri + "_files" + Folder.SEPARATOR);
+            final boolean local = (getUUIDFromUri(uriFromClient) != null) || (ownersUri != null && uriFromClient.startsWith(ownersUri + "_files" + Folder.SEPARATOR));
             result = resultToUpdate == null ? new ResourceReference(referencedResource) : resultToUpdate;
             if (!local) {
                 result.setReference(uriFromClient);
@@ -183,6 +184,12 @@ public class ResourceReferenceConverter<T extends ClientReferenceable> {
     }
 
     protected Resource validateAndGetReference(ExecutionContext ctx, String referenceUri, String ownersUri) throws IllegalParameterValueException {
+        return validateAndGetReference(ctx, referenceUri, ownersUri, null);
+    }
+
+
+    protected Resource validateAndGetReference(ExecutionContext ctx, String referenceUri, String ownersUri, ToServerConversionOptions options) throws IllegalParameterValueException {
+
         if (referenceUri == null) {
             throw new MandatoryParameterNotFoundException("resourceReference.uri");
         }
@@ -192,11 +199,25 @@ public class ResourceReferenceConverter<T extends ClientReferenceable> {
         }
         // we need to update reference
         // but first check if URI is valid before fetching it
-        if (referenceUri.isEmpty() || !referenceUri.startsWith(Folder.SEPARATOR)) {
-            throw new ReferencedResourceNotFoundException(referenceUri, "uri");
-        }
 
-        final Resource resource = repositoryService.getResource(ctx, referenceUri);
+        UUID uuidl = getUUIDFromUri(referenceUri);
+        Resource resource = null;
+
+        if (uuidl != null) {
+            if ((options != null) && (options.contextsManager != null)) {
+                try {
+                    resource = (Resource) options.contextsManager.getRawContext(uuidl);
+                } catch (Exception ex) {
+                    throw new ReferencedResourceNotFoundException(referenceUri, "uri");
+                }
+            }
+        } else {
+            if (referenceUri.isEmpty() || !referenceUri.startsWith(Folder.SEPARATOR)) {
+                throw new ReferencedResourceNotFoundException(referenceUri, "uri");
+            }
+
+            resource = repositoryService.getResource(ctx, referenceUri);
+        }
         if (resource == null) {
             // resource with such URI doesn't exist
             throw new ReferencedResourceNotFoundException(referenceUri, "uri");
@@ -207,6 +228,18 @@ public class ResourceReferenceConverter<T extends ClientReferenceable> {
             }
         }
         return resource;
+    }
+
+    static public UUID getUUIDFromUri(String referenceUri) {
+        UUID uuidl = null;
+        if (referenceUri != null && referenceUri.toLowerCase().startsWith("uuid:")) {
+            try {
+                uuidl = UUID.fromString(referenceUri.substring(5));
+            } catch (Exception ex) {
+                // return NULL if UUID can't be created.
+            }
+        }
+        return uuidl;
     }
 
     protected ResourceReference toServerLocalResource(ExecutionContext ctx,ClientResource clientObject, ResourceReference resultToUpdate, ToServerConversionOptions options) throws IllegalParameterValueException, MandatoryParameterNotFoundException {

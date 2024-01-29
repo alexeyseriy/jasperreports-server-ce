@@ -1,6 +1,6 @@
 <%@ page contentType="text/html; charset=utf-8" %>
 <%--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -45,11 +45,12 @@ Usage:
 
 
 <t:insertTemplate template="/WEB-INF/jsp/templates/container.jsp">
+    <t:putAttribute name="containerAttributes" value="role='dialog' aria-labelledby='reportGeneratorPropertiesTitle' aria-modal='true'" />
     <t:putAttribute name="containerClass">panel dialog overlay moveable sizeable centered_horz centered_vert ${containerClass}</t:putAttribute>
     <t:putAttribute name="containerElements"><div class="sizer diagonal"></div></t:putAttribute>
     <t:putAttribute name="headerClass" value="mover"/> 
     <t:putAttribute name="containerID" value="reportGeneratorProperties"/>
-    <t:putAttribute name="containerTitle">${containerTitle}</t:putAttribute>
+    <t:putAttribute name="containerTitle"><div id="reportGeneratorPropertiesTitle">${containerTitle}</div></t:putAttribute>
     <t:putAttribute name="bodyContent">
         <div id="advTreePanel" class="hidden">
             <span class="wrap"><spring:message code="dialog.create.report.select.view"/></span>

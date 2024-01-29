@@ -1,5 +1,5 @@
 <%--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -93,6 +93,25 @@
             </c:choose>
             <t:putAttribute name="pageHeaderText" value="${primaryContainerTitle}" cascade="false"/>
         </t:insertTemplate>
+
+        <t:insertTemplate template="/WEB-INF/jsp/templates/container.jsp">
+            <t:putAttribute name="containerID" value="folders"/>
+            <t:putAttribute name="containerClass" value="column decorated secondary sizeable ${mode == 'search' ? 'hidden' : ''}"/>
+            <t:putAttribute name="containerElements">
+                <div class="sizer horizontal"></div>
+                <button class="button minimize"></button>
+                <div class="icon minimize"></div>
+            </t:putAttribute>
+            <t:putAttribute name="containerTitle"><spring:message code="SEARCH_FOLDERS" javaScriptEscape="true"/></t:putAttribute>
+            <t:putAttribute name="containerTitleEmpty" value="${false}"></t:putAttribute>
+            <t:putAttribute name="swipeScroll" value="${isIPad}"/>
+            <t:putAttribute name="bodyID">foldersPodContent</t:putAttribute>
+            <t:putAttribute name="bodyContent">
+                <ul id="foldersTree" style="position:absolute;" class="list responsive collapsible folders" ${mode == "browse" ? "data-tab-index='3' data-component-type='tree'" : ""}></ul>
+                <div id="ajaxbuffer" style="display:none"></div>
+            </t:putAttribute>
+        </t:insertTemplate>
+
         <t:insertTemplate template="/WEB-INF/jsp/templates/container.jsp">
             <t:putAttribute name="containerID" value="results"/>
             <t:putAttribute name="containerClass" value="column decorated primary"/>
@@ -121,57 +140,50 @@
                 <div class="toolbar">
                 <t:insertTemplate template="/WEB-INF/jsp/templates/control_searchLockup.jsp">
                     <t:putAttribute name="containerID" value="secondarySearchBox"/>
-                    <t:putAttribute name="containerAttr">
-                        <c:if test="${mode == 'search'}">data-tab-index="3" data-component-type="search"</c:if>
-                    </t:putAttribute>
                     <t:putAttribute name="inputID" value="secondarySearchInput"/>
+                    <t:putAttribute name="label">${primaryContainerTitle}</t:putAttribute>
                 </t:insertTemplate>
-                <ul id="sortMode" class=""></ul>
-                    <ul class="list buttonSet">
-                    	<li class="node open">
-                   			 <ul class="list buttonSet">
-		                        <li class="leaf"><button id="run" class="button capsule text up first"><span class="wrap"><spring:message code="RM_BUTTON_RUN" javaScriptEscape="true"/></span><span class="icon"></span></button></li>
-		                        <li class="leaf"><button id="edit" class="button capsule text up middle"><span class="wrap"><spring:message code="RM_BUTTON_WIZARD" javaScriptEscape="true"/></span><span class="icon"></span></button></li>
-		                        <li class="leaf"><button id="open" class="button capsule text up last"><span class="wrap"><spring:message code="RM_BUTTON_OPEN" javaScriptEscape="true"/></span><span class="icon"></span></button></li>
-<!--
-							</ul>
-						</li>
-                    	<li class="node open">
-                   			 <ul class="list buttonSet">
--->
-		                        <li class="leaf"><button id="copy" class="button capsule text up first"><span class="wrap"><spring:message code="RM_BUTTON_COPY_RESOURCE" javaScriptEscape="true"/></span><span class="icon"></span></button></li>
-		                        <li class="leaf"><button id="cut" class="button capsule text up middle"><span class="wrap"><spring:message code="RM_BUTTON_MOVE_RESOURCE" javaScriptEscape="true"/></span><span class="icon"></span></button></li>
-		                        <li class="leaf"><button id="paste" class="button capsule text up last"><span class="wrap"><spring:message code="RM_BUTTON_COPY_HERE" javaScriptEscape="true"/></span><span class="icon"></span></button></li>
-<!--
-							</ul>
-						</li>
-                    	<li class="node open">
-                   			 <ul class="list buttonSet">
--->
-		                        <li class="leaf"><button id="remove" class="button capsule text up"><span class="wrap"><spring:message code="SEARCH_BULK_DELETE" javaScriptEscape="true"/></span><span class="icon"></span></button></li>
-							</ul>
-						</li>
-                    </ul>
+                    <c:if test="${mode == 'library'}">
+                        <div class="control switch" data-name="showFavoritesOnlySwitch">
+                            <input id="favorites-only" type="checkbox">
+                            <label class="wrap" for="favorites-only">
+                                <div class="label"><spring:message code="SEARCH_SORT_BY_FAVORITES" javaScriptEscape="true"/></div>
+                                <div class="track"></div>
+                            </label>
+                        </div>
+                    </c:if>
+                    <div class="list buttonSet js-toolbar" role="toolbar" tabindex="0" js-navtype="toolbarV2" aria-controls="resultsList" aria-label="<spring:message code='toolbar.aria.label.toolbarContainer' />">
+                        <div class="leaf"><button id="run" tabindex="-1" class="button capsule text up first" js-navtype="none"><span class="wrap"><spring:message code="RM_BUTTON_RUN" javaScriptEscape="true"/></span><span class="icon"></span></button></div>
+                        <div class="leaf"><button id="edit" tabindex="-1" class="button capsule text up middle" js-navtype="none"><span class="wrap"><spring:message code="RM_BUTTON_WIZARD" javaScriptEscape="true"/></span><span class="icon"></span></button></div>
+                        <div class="leaf"><button id="open" tabindex="-1" class="button capsule text up last" js-navtype="none"><span class="wrap"><spring:message code="RM_BUTTON_OPEN" javaScriptEscape="true"/></span><span class="icon"></span></button></div>
+                        <div class="leaf"><button id="copy" tabindex="-1" class="button capsule text up first" js-navtype="none"><span class="wrap"><spring:message code="RM_BUTTON_COPY_RESOURCE" javaScriptEscape="true"/></span><span class="icon"></span></button></div>
+                        <div class="leaf"><button id="cut" tabindex="-1" class="button capsule text up middle" js-navtype="none"><span class="wrap"><spring:message code="RM_BUTTON_MOVE_RESOURCE" javaScriptEscape="true"/></span><span class="icon"></span></button></div>
+                        <div class="leaf"><button id="paste" tabindex="-1" class="button capsule text up last" js-navtype="none"><span class="wrap"><spring:message code="RM_BUTTON_COPY_HERE" javaScriptEscape="true"/></span><span class="icon"></span></button></div>
+                        <div class="leaf"><button id="remove" tabindex="-1" class="button capsule text up" js-navtype="none"><span class="wrap"><spring:message code="SEARCH_BULK_DELETE" javaScriptEscape="true"/></span><span class="icon"></span></button></div>
+                    </div>
+                    <ul id="sortMode" class=""></ul>
                 </div>
                 <div class="sub header hidden">
                     <ul id="filterPath" class=""></ul>
                 </div>
-                <ul class="list collapsible tabular resources fourColumn header" id="resultsListHeader">
-                    <li class="resources first leaf scheduled" id="resultsListHeader_item1">
-                        <div class="wrap draggable">
-                            <div class="column one">
-                                <div class="scheduled icon button"></div>
-                                <div class="separator"></div>
-                                <div class="disclosure icon button"></div>
+                <ul role="none" class="list collapsible tabular resources fourColumn header hidden" id="resultsListHeader">
+                    <li role="none" class="resources first leaf scheduled" id="resultsListHeader_item1"> <!-- removed id -->
+                        <div role="row" aria-selected="false" class="wrap draggable">
+                            <div role="none" class="column one">
+                                <div role="columnheader" aria-selected="false" class="favorite icon button"></div>
+                                <div role="none" class="separator"></div>
+                                <div role="columnheader" aria-selected="false" aria-label="<spring:message code="repository.resource.header.schedule" javaScriptEscape="true"/>" class="scheduled icon button"></div>
+                                <div role="none" class="separator"></div>
+                                <div role="none" class="disclosure icon button"></div>
                             </div>
-                            <div class="column two">
-                                <h3 class="resourceName"><spring:message code="repository.resource.header.name" javaScriptEscape="true"/></h3>
-                                <p class="resourceDescription"><spring:message code="repository.resource.header.description" javaScriptEscape="true"/></p>
+                            <div role="none" class="column two">
+                                <p role="columnheader" aria-selected="false" class="resourceName"><spring:message code="repository.resource.header.name" javaScriptEscape="true"/></p>
+                                <p role="columnheader" aria-selected="false" class="resourceDescription"><spring:message code="repository.resource.header.description" javaScriptEscape="true"/></p>
                             </div>
-                            <div class="column three resourceType"><spring:message code="repository.resource.header.type" javaScriptEscape="true"/></div>
-                            <div class="column four">
-                                <p class="createdDate"><spring:message code="repository.resource.header.createdDate" javaScriptEscape="true"/></p>
-                                <p class="modifiedDate"><spring:message code="repository.resource.header.modifiedDate" javaScriptEscape="true"/></p>
+                            <div role="columnheader" aria-selected="false" class="column three resourceType"><spring:message code="repository.resource.header.type" javaScriptEscape="true"/></div>
+                                <div role="none" class="column four">
+                                <p role="columnheader" aria-selected="false" class="createdDate"><spring:message code="repository.resource.header.createdDate" javaScriptEscape="true"/></p>
+                                <p role="columnheader" aria-selected="false" class="modifiedDate"><spring:message code="repository.resource.header.modifiedDate" javaScriptEscape="true"/></p>
                             </div>
                         </div>
                     </li>
@@ -181,7 +193,7 @@
             <t:putAttribute name="bodyAttributes">tabindex="-1"</t:putAttribute>
 			<!-- Include swipeScroll here -->
             <t:putAttribute name="bodyContent">
-                <ol id="resultsList" class="" tabIndex="0" data-tab-index="4" data-component-type="list" js-navtype="dynamiclist"></ol>
+                <ul id="resultsList" class="" tabIndex="0" data-tab-index="4" data-component-type="list" js-navtype="dynamiclist"></ul>
                 <t:insertTemplate template="/WEB-INF/jsp/templates/nothingToDisplay.jsp">
                     <t:putAttribute name="bodyContent">
                         <div class="header ">
@@ -214,6 +226,13 @@
                     <div class="panel open"> <!-- new element -->
                         <div class="header">
                             <button class="buttonIconToggle"></button>
+                            <div class="title" role="heading" aria-level="2"><spring:message code="SEARCH_FAVORITE_HEADING" javaScriptEscape="true"/></div>
+                        </div>
+                        <div class="subcontainer ui-resizable"></div>
+                    </div>
+                    <div class="panel open"> <!-- new element -->
+                        <div class="header">
+                            <button class="buttonIconToggle"></button>
                             <div class="title"><spring:message code="SEARCH_ACCESS_HEADING" javaScriptEscape="true"/></div>
                         </div>
                             <div class="subcontainer ui-resizable"></div>
@@ -243,23 +262,6 @@
                             <div class="subcontainer ui-resizable"></div>
                     </div>
                 </div>
-            </t:putAttribute>
-        </t:insertTemplate>
-
-        <t:insertTemplate template="/WEB-INF/jsp/templates/container.jsp">
-            <t:putAttribute name="containerID" value="folders"/>
-            <t:putAttribute name="containerClass" value="column decorated secondary sizeable ${mode == 'search' ? 'hidden' : ''}"/>
-                <t:putAttribute name="containerElements">
-                    <div class="sizer horizontal"></div>
-                    <button class="button minimize"></button>
-                    <div class="icon minimize"></div>
-                </t:putAttribute>
-            <t:putAttribute name="containerTitle"><spring:message code="SEARCH_FOLDERS" javaScriptEscape="true"/></t:putAttribute>
-            <t:putAttribute name="swipeScroll" value="${isIPad}"/>
-            <t:putAttribute name="bodyID">foldersPodContent</t:putAttribute>
-            <t:putAttribute name="bodyContent">
-                <ul id="foldersTree" style="position:absolute;" class="list responsive collapsible folders" ${mode == "browse" ? "data-tab-index='3' data-component-type='tree'" : ""}></ul>
-                <div id="ajaxbuffer" style="display:none"></div>
             </t:putAttribute>
         </t:insertTemplate>
 

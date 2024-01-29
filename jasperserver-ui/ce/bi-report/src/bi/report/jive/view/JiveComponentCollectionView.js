@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved. Confidentiality & Proprietary.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved. Confidentiality & Proprietary.
  * Licensed pursuant to commercial TIBCO End User License Agreement.
  */
 
@@ -75,10 +75,14 @@ JiveComponentCollectionView.prototype = {
         var self = this,
             dfd = new $.Deferred();
 
-        self.subviewsReadyDfd && self.subviewsReadyDfd.then(function () {
-            var subViewsRenderDeferreds = _.invoke(self.subviews, "render", $el, options);
-            $.when.apply($, subViewsRenderDeferreds).then(dfd.resolve, dfd.reject);
-        }, dfd.reject);
+        if(self.subviewsReadyDfd) {
+            self.subviewsReadyDfd.then(function () {
+                var subViewsRenderDeferreds = _.invoke(self.subviews, "render", $el, options);
+                $.when.apply($, subViewsRenderDeferreds).then(dfd.resolve, dfd.reject);
+            }, dfd.reject);
+        } else {
+            dfd.reject()
+        }
         return dfd;
     },
     sizableSubviews: function () {

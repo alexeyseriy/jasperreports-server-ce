@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -78,8 +78,8 @@ JRS.CreateReport = (function(jQuery, jrsConfigs) {
             getDialog(uri).show();
         },
 
-        selectGenerator: function(advUri) {
-            getDialog(advUri).show();
+        selectGenerator: function(advUri, event) {
+            getDialog(advUri).show(false, event);
         }
     };
 })(jQuery, __jrsConfigs__);

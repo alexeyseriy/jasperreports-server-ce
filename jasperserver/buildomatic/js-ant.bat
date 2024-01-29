@@ -39,4 +39,17 @@ goto :setArgs
 
 IF "%BUILDOMATIC_MODE%"=="" set BUILDOMATIC_MODE=interactive
 
+rem Directory paths are relative to JRS_HOME\buildomatic.
+for /f tokens^=2-5^ delims^=.-_^" %%j in ('java -fullversion 2^>^&1') do @set "jver=%%j"
+echo %jver%
+IF %jver% GEQ 17 (
+  echo "Copying additional jar file(s) that are needed very specific to jdk 17+ runtime."
+  copy /Y .\install_resources\extra-jars-jdk17\asm*.jar .\lib
+  copy /Y .\install_resources\extra-jars-jdk17\nashorn*.jar .\lib
+) ELSE (
+  echo "Deleting any existing jar file(s) that are needed very specific to jdk 17+ runtime."
+  del /F /Q .\lib\asm*.jar
+  del /F /Q .\lib\nashorn*.jar
+)
+
 %ANT_RUN% -nouserlib -lib . -lib lib  -f build.xml %CMD_LINE_ARGS%

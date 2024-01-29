@@ -221,6 +221,7 @@ module.exports = (env = {}, argv = {mode: 'development'}) => {
             'administer/administerLoggingMain': "./src/administer/administerLoggingMain",
             'administer/administerAnalysisOptionsMain': "./src/administer/administerAnalysisOptionsMain",
             'administer/resetSettings/resetSettingsMain': "./src/administer/resetSettings/resetSettingsMain",
+            'administer/administerGeneralSettingsMain': "./src/administer/administerGeneralSettingsMain",
             'manage/manageRolesMain': "./src/manage/manageRolesMain",
             'manage/manageUsersMain': "./src/manage/manageUsersMain",
             'dataSource/dataSourceMain': "./src/dataSource/dataSourceMain",

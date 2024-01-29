@@ -1,8 +1,5 @@
 {
-  "ignoreList": [
-    "lodash",
-    "jquery-ui"
-  ],
+  "ignoreList": [ ],
   "ignoreDevList": [
     "lodash",
     "underscore",

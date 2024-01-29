@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -58,8 +58,7 @@ export default {
 
         var $el = $(element),
             canFocus = false,
-            nodeName = $el.prop('nodeName'),
-            tabindex = $el.attr('tabindex');
+            nodeName = $el.prop('nodeName');
 
         // These elements are always focusable (...unless you're in Safari
         // and haven't turned on keyboard accessibility!)
@@ -108,10 +107,14 @@ export default {
             nodeName = el.prop('nodeName'),
             tabindex = el.attr('tabindex');
 
+        if (!el.is(':visible')) {
+            return false;
+        }
+
         // These elements are always focusable...
         if (el.is(':input') || ($.inArray(nodeName, ['A', 'BUTTON', 'INPUT', 'SELECT', 'OBJECT', 'TEXTAREA']) > -1)) {
             // ...unless they've been disabled.
-            if (el.is(':enabled')) {
+            if (!el.is(':disabled')) {
                 canFocus = true;
             }
         }
@@ -136,6 +139,63 @@ export default {
         return canFocus;
     },
 
+    // Recursively walk through element and it's children
+    // to find first focusable element
+    getFirstFocusableElement: function (element) {
+        return this._ensureFocusingGuidelines(element, this._getFirstFocusableElement(element));
+    },
+
+    // Recursively walk through element and it's children in a reverse order
+    // to find last focusable element
+    getLastFocusableElement: function (element) {
+        return this._ensureFocusingGuidelines(element, this._getLastFocusableElement(element));
+    },
+
+    // Find focusable element which is placed after passed element
+    getNextFocusableElement: function (element) {
+        if (!element) {
+            return element;
+        }
+
+        const nextElement = element.nextSibling;
+        if (!nextElement) {
+            return this.getNextFocusableElement(element.parentNode);
+        }
+
+        const focus = this.getFirstFocusableElement(nextElement);
+
+        if (focus) {
+            return focus;
+        }
+
+        return this.getNextFocusableElement(nextElement)
+    },
+
+    // Find focusable element which is placed before passed element
+    getPreviousFocusableElement: function (element) {
+        if (!element) {
+            return element;
+        }
+
+        const previousElement = element.previousSibling;
+        if (!previousElement) {
+            const parentNode = element.parentNode;
+            if (this.isUserFocusable(parentNode)) {
+                return parentNode;
+            }
+
+            return this.getPreviousFocusableElement(parentNode);
+        }
+
+        const focus = this.getLastFocusableElement(previousElement);
+
+        if (focus) {
+            return focus;
+        }
+
+        return this.getPreviousFocusableElement(previousElement)
+    },
+
     // This function temporarily makes an element unfocusable.  It is
     // normally used to make a container unfocusable while focused on a
     // contained element, so that SHIFT-TAB will navigate to the PRIOR
@@ -147,13 +207,17 @@ export default {
     // - Redundant calls are harmless.
     suspendFocusability: function (element) {
         if (this.nullOrUndefined(element)) {
-            logger.warn('stdnav.suspendFocusability called on null or undefined element');
+            logger.debug('stdnav.suspendFocusability called on null or undefined element');
+            return;
+        }
+        if (!this.isUserFocusable(element)) {
+            logger.debug('stdnav.suspendFocusability called on element which is not userFocusable');
             return;
         }
         var $el = $(element);
         if (!this.nullOrUndefined($el.attr('js-suspended-tabindex'))) {
             // Redundant call, abort.
-            logger.warn('stdnav.suspendFocusability called on already suspended element ' + element.nodeType + '#' + element.id);
+            logger.debug('stdnav.suspendFocusability called on already suspended element ' + element.nodeType + '#' + element.id);
             return;
         }
         var currentTabindex = $el.attr('tabindex');
@@ -175,7 +239,7 @@ export default {
         var suspendedTabindex = $el.attr('js-suspended-tabindex');
         if (this.nullOrUndefined(suspendedTabindex)) {
             // Out-of-order call, abort.
-            logger.warn('stdnav.resumeFocusability called on non-suspended element ' + element.nodeName + '#' + element.id);
+            logger.debug('stdnav.resumeFocusability called on non-suspended element ' + element.nodeName + '#' + element.id);
             return;
         }
         if (suspendedTabindex === 'none') {
@@ -199,6 +263,7 @@ export default {
     // is an ancestor of the element passed-- this avoid breaking
     // SHIFT-TAB, since most containers will auto-promote focus to their
     // children.
+
     ensureFocusabilityBeyond: function(element){
         var $suspendees=$('[suspended-tabindex]');
         $suspendees.each(function(suspendee){
@@ -356,6 +421,78 @@ export default {
         }
     },
 
+    _ensureFocusingGuidelines(rootElement, foundElement){
+        var res = foundElement;
+        if (foundElement) {
+            var $foundElement = $(foundElement);
+
+            if ($foundElement.prop('tagName').toLowerCase() === 'input' &&
+                $foundElement.prop('type').toLowerCase() === 'radio' &&
+                !$foundElement.prop('checked')) {
+
+                res = $(rootElement).find('[name=' + $foundElement.prop('name')+ ']').toArray().find(function(radioButton){
+                    return $(radioButton).prop('checked');
+                }) || foundElement;
+            }
+        }
+
+        return res;
+    },
+
+    // Recursively walk through element and it's children
+    // to find first focusable element
+    _getFirstFocusableElement: function (element) {
+        if (!$(element).is(':visible')) {
+            return undefined;
+        }
+
+        if (this.isUserFocusable(element)) {
+            return element;
+        }
+
+        for (let i = 0; i < element.childNodes.length; i++) {
+            const child = element.childNodes[i];
+
+            if (this.isUserFocusable(child)) {
+                return child;
+            }
+
+            const focusableChild = this._getFirstFocusableElement(child);
+            if (focusableChild) {
+                return focusableChild;
+            }
+        }
+
+        return undefined;
+    },
+
+    // Recursively walk through element and it's children in a reverse order
+    // to find last focusable element
+    _getLastFocusableElement: function (element) {
+        if (!$(element).is(':visible')) {
+            return undefined;
+        }
+
+        for (let i = element.childNodes.length - 1; i >= 0; i--) {
+            let child = element.childNodes[i];
+
+            const focusableChild = this._getLastFocusableElement(child);
+            if (focusableChild) {
+                return focusableChild;
+            }
+
+            if (this.isUserFocusable(child)) {
+                return child;
+            }
+        }
+
+        if (this.isUserFocusable(element)) {
+            return element;
+        }
+
+        return undefined;
+    },
+
     // Callback run when an element in the DOM has acquired focus.
     _onFocusIn: function (ev) {
         this._currentFocus = ev.target;
@@ -435,7 +572,7 @@ export default {
                 // Figure out the new superfocus, partly so that we can tell if the
                 // superfocus has changed.
                 this._currentSuperfocus = this.runAction('fixsuperfocus', this._currentFocus);
-                if (this._currentSuperfocus === null) {
+                if (!this._currentSuperfocus) {
                     // Superfocus could not be determined; fall back to BODY.
                     this._currentSuperfocus = $('body')[0];
                 }

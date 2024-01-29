@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -465,7 +465,7 @@ public class OlapConnectionServiceImpl implements OlapConnectionService, ReportD
         try {
             initializeAndShow(omp, olapUnit.getURIString(), model, olapUnit);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException(e.getMessage(), e.getCause());
         }
 
         return omp;

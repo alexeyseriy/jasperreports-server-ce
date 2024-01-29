@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved. Confidentiality & Proprietary.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved. Confidentiality & Proprietary.
  * Licensed pursuant to commercial TIBCO End User License Agreement.
  */
 
@@ -428,7 +428,7 @@ _.extend(ReportController.prototype, Backbone.Events, {
 
         return dfd;
     },
-
+    applyParametersTimeout: null,
     applyReportParameters: function(refresh) {
         var dfd = new $.Deferred(),
             self = this;
@@ -440,15 +440,20 @@ _.extend(ReportController.prototype, Backbone.Events, {
                 status: "cancelled"
             });
 
-        this.model
-            .applyParameters(refresh)
-            .then(function() {
-                self.trigger(reportEvents.AFTER_REPORT_EXECUTION);
-                self.fetchExportDfd = self.fetchPageHtmlExportAndJiveComponents();
-                return self.fetchExportDfd;
-            }, dfd.reject)
-            .then(dfd.resolve, dfd.reject);
-
+        if (this.applyParametersTimeout) {
+            clearTimeout(this.applyParametersTimeout)
+        }
+        this.applyParametersTimeout = setTimeout(() => {
+            this.model
+                .applyParameters(refresh)
+                .then(function () {
+                    self.trigger(reportEvents.AFTER_REPORT_EXECUTION);
+                    self.fetchExportDfd = self.fetchPageHtmlExportAndJiveComponents();
+                    return self.fetchExportDfd;
+                }, dfd.reject)
+                .then(dfd.resolve, dfd.reject);
+            this.applyParametersTimeout = null;
+        }, 600)
         return dfd;
     },
 
@@ -649,8 +654,8 @@ _.extend(ReportController.prototype, Backbone.Events, {
 
             exportModel.run().then(wait).then(function() {
                 //TODO: extend link with export mime-type info, resource name
-                dfd.resolve({href: exportModel.urlOutput()}, function(options){
-                    options = _.defaults(options || {}, {
+                dfd.resolve({href: exportModel.urlOutput()}, function(urlOutputOptions){
+                    urlOutputOptions = _.defaults(urlOutputOptions || {}, {
                         url: exportModel.urlOutput(),
                         type: "GET",
                         headers: {
@@ -661,18 +666,18 @@ _.extend(ReportController.prototype, Backbone.Events, {
                             suppressContentDisposition: true
                         }
                     });
-                    return request(options);
+                    return request(urlOutputOptions);
                 });
             }, function() {
                 if (exportModel.isFailed() || exportModel.isCancelled()) {
-                    var err = biComponentErrorFactoryReportProxy.reportStatus({
+                    var isFailedError = biComponentErrorFactoryReportProxy.reportStatus({
                         source: "export",
                         format: options.outputFormat,
                         status: exportModel.get("status"),
                         errorDescriptor: exportModel.get("errorDescriptor")
                     });
 
-                    dfd.reject(err);
+                    dfd.reject(isFailedError);
                 }
             });
         }

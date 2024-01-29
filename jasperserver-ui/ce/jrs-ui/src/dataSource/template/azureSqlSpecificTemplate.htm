@@ -16,7 +16,7 @@
         <label title="{{- i18n['resource.dataSource.azureSql.setting.keyStoreUri.title']}}" class="control input text">
             <span class="wrap">{{- i18n['resource.dataSource.azureSql.setting.keyStoreUri']}} ({{- i18n['required.field']}}):</span>
             <input type="text" value="{{- modelAttributes.keyStoreUri }}" name="keyStoreUri">
-            <button class="button action" type="button" name="repositoryBrowserButton">
+            <button class="button action up" type="button" name="repositoryBrowserButton">
                 <span class="wrap">{{- i18n['dialog.file.browse'] }}...<span class="icon"></span></span>
             </button>
             <span class="message warning"></span>
@@ -38,7 +38,7 @@
 
     <legend><span>{{- i18n['resource.dataSource.azureSql.tree']}}</span></legend>
 
-    <button class="button action" id="updateDatabaseTree">
+    <button class="button action up" id="updateDatabaseTree">
         <span class="wrap">{{- i18n['resource.dataSource.azureSql.updateTree']}}<span class="icon"></span></span>
     </button>
 

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -108,10 +108,9 @@
     <beans profile="jrs">
 	<!-- Cache Manager -->
 	<bean id="controlLogicCacheManager" class="com.jaspersoft.jasperserver.inputcontrols.cascade.cache.ControlLogicCacheManagerImpl">
-	    <!-- seconds before a user cache is invalid -->
-		<property name="userCacheTimeout" value="600"/>
-		<!-- seconds between server cleanup process checks for invalid user sessions -->
-		<property name="cacheCleanTriggerTime" value="60"/>
+        <!-- seconds between server cleanup process checks for invalid user sessions -->
+        <property name="cacheCleanTriggerTime" value="60"/>
+        <property name="inputControlCache" ref="inputControlCache"/>
 	</bean>
     </beans>
     <beans profile="engine">

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -75,4 +75,6 @@ public interface RepositorySearchCriteria extends Cloneable {
     RepositorySearchCriteria clone() throws CloneNotSupportedException;
     String getLookupClass();
     void setLookupClass(final String lookupClass);
+    void setFavorites(boolean favorites);
+    boolean isFavorites();
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -409,7 +409,7 @@ export default Dialog.extend({
         var resourceUri = itemSelected ? itemSelected.uri : undefined;
         var resourceType = itemSelected ? itemSelected.resourceType : undefined;
         var resourceLabel = itemSelected ? itemSelected.label : undefined;
-        if (!(itemSelected || resourceUri || resourceType)) {
+        if (!itemSelected) {
             this.disableButton('apply');
             this.$('.itemDescription').empty();
             return;
@@ -474,11 +474,6 @@ export default Dialog.extend({
         var treeScrollArea = this.resourcesTreeView.$el.parent();
         this.resourcesTreeView._onceVisible.done(_.bind(function () {
             this.resourcesTreeView._selectTreeNode(itemToSelect, treeScrollArea);
-        }, this));
-        var listScrollArea = $(this.resourcesListView.$el.find('div.subcontainer')[0]);
-        this.resourcesListView._onceVisible.done(_.bind(function () {
-            //TODO: Not Yet Ready
-            //this.resourcesListView._selectTreeNode(itemToSelect, listScrollArea);
         }, this));
     },
     _onResize: function () {

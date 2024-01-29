@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -23,6 +23,7 @@ package com.jaspersoft.jasperserver.api.engine.scheduling.domain;
 import com.jaspersoft.jasperserver.api.JasperServerAPI;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Execution runtime information provided by the scheduled for active jobs.
@@ -85,8 +86,13 @@ public class ReportJobRuntimeInformation implements Serializable {
 	public static final byte STATE_ERROR = 5;
 	
 	private Byte state;
+	private List<Byte> states;
 	private Date previousFireTime;
 	private Date nextFireTime;
+	private Date previousFireTimeFrom;
+	private Date previousFireTimeTo;
+	private Date nextFireTimeFrom;
+	private Date nextFireTimeTo;
 	
 	/**
 	 * Creates an empty object.
@@ -169,5 +175,52 @@ public class ReportJobRuntimeInformation implements Serializable {
 	public void setStateCode(Byte state) {
 		this.state = state;
 	}
-	
+
+	public Date getPreviousFireTimeFrom() {
+		return previousFireTimeFrom;
+	}
+
+	public void setPreviousFireTimeFrom(Date previousFireTimeFrom) {
+		this.previousFireTimeFrom = previousFireTimeFrom;
+	}
+
+	public Date getPreviousFireTimeTo() {
+		return previousFireTimeTo;
+	}
+
+	public void setPreviousFireTimeTo(Date previousFireTimeTo) {
+		this.previousFireTimeTo = previousFireTimeTo;
+	}
+
+	public Date getNextFireTimeFrom() {
+		return nextFireTimeFrom;
+	}
+
+	public void setNextFireTimeFrom(Date nextFireTimeFrom) {
+		this.nextFireTimeFrom = nextFireTimeFrom;
+	}
+
+	public Date getNextFireTimeTo() {
+		return nextFireTimeTo;
+	}
+
+	public void setNextFireTimeTo(Date nextFireTimeTo) {
+		this.nextFireTimeTo = nextFireTimeTo;
+	}
+
+	public List<Byte> getStates() {
+		return getStateCodes();
+	}
+
+	public void setStates(List<Byte> states) {
+		setStateCodes(states);
+	}
+
+	public List<Byte> getStateCodes() {
+		return this.states;
+	}
+
+	public void setStateCodes(List<Byte> states) {
+		this.states = states;
+	}
 }

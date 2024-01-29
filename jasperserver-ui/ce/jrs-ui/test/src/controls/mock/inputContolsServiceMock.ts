@@ -129,6 +129,11 @@ const getInputControlsServiceMock = (opts: {
                 })
             }, 'success') as unknown as JQueryXHR;
         },
+        getReportRawParameterValues() {
+            const dfd = $.Deferred();
+
+            return dfd.resolve({}, 'success') as unknown as JQueryXHR;
+        }
     };
 };
 

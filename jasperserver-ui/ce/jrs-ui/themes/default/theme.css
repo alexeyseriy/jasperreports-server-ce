@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2021 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -44,7 +44,7 @@
     9. JIF SCRIPTING CLASSES
 
    -----------------------------------
-    File last modified Jan 19, 2021
+    File last modified Feb 8, 2023
    -----------------------------------  */
 
 /* ----------------- */
@@ -54,15 +54,20 @@
 /* ----------------- */
 :root{
     --theme-light:          #e0f0f9;
-    --theme-medium-light:   #0081cb;
-    --theme-medium-dark:    #055dab;
+    --theme-medium-light:   #0078bd;
+    --theme-medium-dark:    #01529a;
     --theme-dark:           #062e79;
 
-    --adhoc-field:          #4cbcdb;
-    --adhoc-field-text:     #0295bd;
-    --adhoc-measure-light:  #c9e696;
-    --adhoc-measure-dark:   #83af35;
-    --adhoc-measure-text:   #5e8c08;
+    --adhoc-field:          #91d9ed;
+    --adhoc-field-border:   #53b7d3;
+    --adhoc-field-text:     #027392;
+    --adhoc-measure-light:  #dff8b0;
+    --adhoc-measure-dark:   #b6d978;
+    --adhoc-measure-border: #6f9d1e;
+    --adhoc-measure-text:   #527218;
+
+    --adhoc-field-token-text:     #0f4552;
+    --adhoc-measure-token-text:   #314a04;
 
     --background-white:     #ffffff;
     --background-grey-02:   #fafafa;
@@ -74,6 +79,8 @@
     --background-grey-20:   #cccccc;
     --background-grey-29:   #b5b5b5;
     --background-grey-40:   #999999;
+    --background-grey-47:   #878787; /* added for accessibility contrast story */
+    --background-grey-54:   #757575; /* added for accessibility contrast story */
 
     --border-white:         #ffffff;
     --border-grey-06:       #f0f0f0;
@@ -83,6 +90,7 @@
     --border-grey-20:       #cccccc;
     --border-grey-29:       #b5b5b5;
     --border-grey-40:       #999999;
+    --border-grey-47:       #878787;
     --border-grey-60:       #666666;
 
 }
@@ -133,9 +141,9 @@
     background-position: 0 0;
     background-size: contain;
     border: none;
-    height: 23px;
-    width: 200px;
-    margin: 9px 4px 0 8px;
+    height: 24px;
+    width: 140px;
+    margin: 8px 4px 0 8px;
 }
 
 
@@ -150,7 +158,6 @@ body {
 }
 
 body {
-	overflow-x: hidden;
 	position: relative;
 }
 
@@ -212,29 +219,6 @@ a {
 	text-decoration: none;
 }
 
-a:focus,
-a:hover,
-a:active {
-	text-decoration: underline;
-}
-
-a.disabled,
-a.disabled:hover,
-a.disabled.over,
-a.disabled:active,
-a.disabled.pressed {
-	cursor: default;
-	text-decoration: none;
-}
-
-.selected a:focus,
-.selected a:hover,
-.selected a.over,
-.selected a:active,
-.selected a.pressed {
-	color: inherit;
-}
-
 address	{
     font-style: italic;
 	margin: 0 0 1.5em;
@@ -256,8 +240,6 @@ tt {
 	line-height: 1.5;
 }
 
-
-
 .dimmer {
 	filter: alpha(opacity=60);
 }
@@ -273,6 +255,52 @@ tt {
 		progid:DXImageTransform.Microsoft.Shadow(Strength=4, Direction=270, Color='#7d7d7d'),
 		progid:DXImageTransform.Microsoft.Shadow(Strength=3, Direction=315, Color='#7d7d7d');
 } /* can we delete this? */
+
+/* States */
+a:focus,
+a:hover,
+a:active {
+    text-decoration: underline;
+}
+
+a:active {
+    color: var(--theme-dark);
+}
+
+a.disabled,
+a.disabled:hover,
+a.disabled.over,
+a.disabled:active,
+a.disabled.pressed {
+    cursor: default;
+    text-decoration: none;
+}
+
+.selected a:focus,
+.selected a:hover,
+.selected a.over,
+.selected a:active,
+.selected a.pressed {
+    color: inherit;
+}
+
+/* Keyboard Focus */
+:focus:not(.focus-visible) {
+    outline: none
+}
+
+a:focus-visible:not(.button) {
+    background-color: #bde7ff;
+    box-shadow: 0 -2px #bde7ff, 0 2px var(--theme-dark);
+    color: var(--theme-dark) !important;
+    text-decoration: none;
+}
+
+.message.focus-visible {
+    background-color: #bde7ff;
+    color: #212121;
+    outline: 2px solid var(--theme-dark);
+}
 
 
 
@@ -296,7 +324,6 @@ tt {
     line-height: 1.182em;
 }
 
-
 .data.table .caption,
 .larger,
 .wrapper.table .caption {
@@ -304,13 +331,12 @@ tt {
 	line-height: 1.636em;
 }
 
-ul.decorated,
 #calculatedField .operator,
 .fsection,
 .large,
 .list.settings .node>.wrap .title,
 .menu,
-.searchLockup>input {
+.searchLockup > input {
 	font-size: 12px;
 	line-height: 1.272em;
 }
@@ -346,56 +372,7 @@ ul.decorated,
 /* -------------- */
 /* .white */
 .palette01,
-.button.action.over,
-.button.up.over,
-.button.up.primary.over,
-.button.up.pressed,
-.button.up.primary.pressed,
-.button.down.over,
-.button.down.pressed,
-.button.capsule.down.over,
-.button.capsule.down.pressed,
-.button.capsule.superfocus.subfocus:hover,
-#loginPage #rotating .list.decorated,
-#loginPage .launcher,
-.menu .wrap.over,
-.menu .wrap.pressed,
-.button.up.primary,
-.menu.primaryNav .up,
-.menu.primaryNav .wrap,
-.menu.primaryNav .up.over,
-.menu.primaryNav .up.pressed,
-.menu.primaryNav .wrap.over,
-.menu.primaryNav .wrap.pressed,
-.tabSet.buttons.vertical .button,
-.tabSet.buttons .selected .button,
-.tabSet.buttons .button.over,
-#metaLinks li,
-#metaLinks a,
-#metaLinks a:hover,
-#metaLinks a:active,
-#messageList .leaf.selected .column p,
-#selectedSubDataSourcesList .leaf.selected .dataSourceName,
-.list.collapsible > li > .selected > .wrap,
-.list.filters > .leaf > .wrap.pressed,
-.list.type_basic .wrap.pressed > .jrbookmark,
-.selected>.wrap .launcher,
-.selected>.wrap .resourceName,
-.selected>.wrap .resourceDescription,
-.selected>.wrap .resourcePath,
-.pressed .resourceName,
-.pressed .resourceDescription,
-.pressed .resourcePath,
-.list.collapsible > li > .wrap.pressed,
-.list.collapsible .selected > .wrap,
-.list.resources .selected p.resourceName,
-#entitiesList .leaf.selected > .wrap,
-#entitiesList .leaf .wrap.pressed,
-#entitiesList .leaf.selected .ID,
-.authorityPicker .selected,
-.authorityPicker .highlighted.selected,
-.workflow-buttonContainer .button,
-#joinsList .leaf.selected > .wrap {
+.selected > .wrap .launcher {
 	color: #fff;
 }
 
@@ -411,17 +388,13 @@ ul.decorated,
 .button.action.checking.pressed,
 .disabled,
 .button.disabled,
-[disabled],
-.button[disabled],
-.button.primary[disabled] {
+[disabled] {
 	color: #aaa;
 }
 
 /* .gray40 */
-.control.path,
 .filters .fieldName,
 .filters .condition,
-.hint,
 .horizontal,
 .palette04,
 .sub.header,
@@ -430,11 +403,8 @@ ul.decorated,
 }
 
 /* .gray60 */
-.palette05,
-label,
 legend,
 legend.label > .wrap,
-ul.decorated,
 #addResource_locateDataSource #newDataSourceLink.disabled,
 #addResource_locateQuery #newQueryLink.disabled,
 #addResource_inputControl_information .list.twoColumn > .node > .wrap,
@@ -442,42 +412,16 @@ ul.decorated,
 .attributesViewer .baseTable,
 .attributesTable > .thead .table-column,
 .attributesTable > .tbody .table-row,
-.button,
-.button.action.pressed,
-.control > .wrap,
-.control.path > .step.last > .wrap,
-.control.path > .step.last > .wrap.over,
-.control.path > .step.last > .wrap.pressed,
-#entitiesList .leaf > .wrap,
 .foundItem,
 .group legend.label,
-.header,
-.label,
-.label.wrap,
 .list.collapsible > li > .header.wrap,
 .list.inputSet,
 .list.settings .node > .wrap .title,
 .list.twoColumn > .node > .wrap,
 .LogCollectors .collectorsList tr td,
 .manager .entities.header > .leaf > .wrap,
-#messageDetail .message .label .wrap,
-#messageListHeader .leaf p,
-#messageList .leaf .wrap,
-#metaLinks,
 .resourceBlock .fileType,
-#resultsContainer p:not(.resourceName),
-#resultsListHeader h3,
-#resultsListHeader p,
-#results .resourceType,
-#serverError h3,
-.tabSet.text > .tab > .wrap,
-.tabSet.text > .tab > .wrap.over,
-.tabSet.text > .label > .wrap,
-.tabular,
-.workflow-description,
-.workflow-description a:link,
-.workflow-description a:visited,
-.workflow-description a:active {
+#serverError h3 {
 	color: #666;
 }
 
@@ -495,108 +439,16 @@ body,
 	color: #444;
 }
 
-/* .black */
-.palette07 {
-	color: #000;
-}
-
-/* selection colors */
-.palette08,
-.button.action.primary.disabled,
-.button.action.primary[disabled],
-.tabSet.buttons.vertical [disabled] {
-	color: #80b3df;
-}
-
-/* .sky */
-.palette09 {
-	color: #4698be;
-}
-
-.palette10,
-a#about:active,
-#metaLinks a:active {
-	color: #8CD9FE;
-}
-
-
 /* theme medium-dark blue */
 .palette11,
-.column.decorated.minimized .vtitle,
-.content .header > .title,
-.flow #stepDisplay .column.primary .header .title,
-.flow #stepDisplay .column.secondary .header .title,
 .fsection,
-.homeSidebar-title,
-.launcher,
-.list.filters > li.selected>.wrap,
-.list.filters > li.selected>.wrap.pressed,
-.list.filters > li.selected>.wrap .launcher,
-.list.settings .panel.pane.settings .header > .title,
-.list.stepIndicator .selected>.wrap,
-.list.type_basic .wrap a,
-#loginPage #metaLinks li,
-#loginPage #metaLinks a,
-#loginPage #metaLinks a:hover,
-#loginPage #metaLinks a:active,
-#needHelp,
 .panel.info.system .message,
-.plusminus .node > .wrap > .jrbookmark,
-#reportContainer a,
-.resourceBlock a:link,
-.resourceBlock a:visited,
-.resourceBlock a:hover,
-.resourceBlock a:active,
-.resourceBlock-title,
-.resourceName,
-#scheduler_editor #stepDisplay > fieldset > legend,
-.tabSet.horizontal.buttons .selected > .button > .wrap,
-.tabSet.horizontal.buttons .button.over,
-.tabSet.horizontal.buttons .button.pressed,
-.textAccent02,
-.tabSet.text .selected.tab > .wrap,
-.tabSet.text .selected.tab > .wrap.over,
-.tabSet.text .selected.tab > .wrap.pressed,
-.workflow-title,
-.workflow-description a:hover {
-    color: #055dab;
-}
-
-/* theme dark blue */
-#manage_orgs .column.tabbed .tabs .tab.selected .wrap,
-#manage_users .column.tabbed .tabs .tab.selected .wrap {
-    color: #062e79;
+.textAccent02 {
+    color: var(--theme-medium-dark);
 }
 
 #reportContainer .inputControls a {
     color: inherit;
-}
-
-/* .cerulean */
-.palette12,
-a:active,
-.control.path .step .wrap.pressed,
-#reportContainer a:active,
-.tabSet.text >.tab > .wrap.pressed {
-	color: #0061a2;
-}
-
-/* .orange */
-.palette13,
-.textAccent {
-	color: #fc870e;
-}
-
-/* .orange2 */
-.palette14,
-#needHelp:active {
-	color: #fb5b0d;
-}
-
-/* .orange3 */
-.palette15,
-.button.capsule.down {
-	color: #7a3e10;
 }
 
 /* .orange4 */
@@ -613,16 +465,14 @@ a:active,
 .errorMessage,
 .invalid>.wrap,
 .error>.message.warning a.details:active {
-	/* color: #f00; */
-    color: #d81e29;  /* NEW 2020 */
+    color: #d81e29;
 }
 
 /* green */
 .palette18,
 .notification.success>.message.warning,
 .success {
-    /* color: #4eae00; */
-    color: #7a9f35; /* NEW 2020 */
+    color: #7a9f35;
 }
 
 .palette01_bkgd {background-color:#fff;}
@@ -650,7 +500,10 @@ a:active,
 /* --------------- */
 /*  6. UTILITY     */
 /* --------------- */
-.offLeft, .offLeft span,.wrap.offLeft,.wrap.header.offLeft {
+.offLeft,
+.offLeft span,
+.wrap.offLeft,
+.wrap.header.offLeft {
     /* hide, but leave it available to screen reader */
 	position: absolute !important;
 	left: -9999px;
@@ -660,8 +513,8 @@ a:active,
 
 .centering {
     /* only centers if object has explicit width */
-	margin:0 auto;
-	position:relative;
+	margin: 0 auto;
+	position: relative;
 }
 
 * {
@@ -773,56 +626,12 @@ input[type=password]::-ms-reveal {
  *              extension, and not in use by all control types.
  */
 .superfocus {}
-
-/*
-:focus {
-    outline: 1px dotted royalblue;
-}
-*/
-
-/*
-.folders.node.selected:focus,
-.folders.node.open:focus,
-.list.collapsible.superfocus {
-    outline: none;
-}
-*/
-
-/*
-input[type="text"]:focus,
-input[type="password"]:focus,
-button.action:focus,
-#loginPage #metaLinks:focus {
-    outline: 2px dotted orange;
-}
-*/
-
-#metaLinks li.subfocus:not(select) {
-    background-color: #055dab;
-}
-
-/* #searchInput:focus {
-    outline: 2px dotted orange;
-    margin-top: 2px;
-    margin-left: 2px;
-    height: 18px;
-    width: 170px;
-} */
-
-.subfocus {
-}
+:focus {}
+.subfocus {}
 
 /* button focus */
 .button.action.pressed.subfocus {
 	outline: none;
-}
-
-.buttonIconToggle.isOpen:focus {
-	background-position: -48px -1004px;
-}
-
-.buttonIconToggle.isClosed:focus {
-	background-position: -80px -1008px;
 }
 
 .resourceBlock .fileName.subfocus a {
@@ -845,20 +654,13 @@ button.action:focus,
 	text-decoration: underline;
 }
 
-#loginPage #metaLinks li.subfocus:not(select) {
-	background-color: #fff;
-	text-decoration: underline;
-}
-
 /* control focus */
 @media screen and (-webkit-min-device-pixel-ratio:0)
 {
 	select:focus {
-		outline: 2px solid #9dccfd
+        outline: 2px solid #062e79;
 	}
 }
-
-
 
 
 

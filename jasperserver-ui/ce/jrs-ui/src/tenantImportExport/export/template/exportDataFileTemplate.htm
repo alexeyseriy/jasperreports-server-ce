@@ -5,7 +5,7 @@
     <div class="group">
         <div class="control input" data-bind="validationErrorClass:fileName" data-model-attr="fileName">
             <span class="wrap">{{- i18n["export.dialog.file.properties.data.file.name"]}}</span>
-            <input type="text" class="fileName"  data-bind="value:fileName, events:['keyup']"/>
+            <input type="text" class="fileName"  data-bind="value:fileName, events:['keyup']" aria-label="{{- i18n['export.dialog.file.properties.data.file.name']}}"/>
             <p class="message hint jr-jEncryptionHint">{{- encryptionHint }}</p>
             <span class="message warning fileNameMessage" data-bind="validationErrorText:fileName" data-model-attr="fileName"></span>
         </div>

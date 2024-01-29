@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -47,12 +47,7 @@ import com.jaspersoft.jasperserver.inputcontrols.cascade.InputControlValidationE
 import com.jaspersoft.jasperserver.api.engine.export.HyperlinkProducerFactoryFlowFactory;
 import com.jaspersoft.jasperserver.war.util.JSExceptionUtils;
 import com.jaspersoft.jasperserver.war.util.SessionObjectSerieAccessor;
-import net.sf.jasperreports.engine.JRParameter;
-import net.sf.jasperreports.engine.JRPrintAnchorIndex;
-import net.sf.jasperreports.engine.JRRuntimeException;
-import net.sf.jasperreports.engine.JasperPrint;
-import net.sf.jasperreports.engine.JasperReportsContext;
-import net.sf.jasperreports.engine.ReportContext;
+import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.export.GenericElementJsonHandler;
 import net.sf.jasperreports.engine.fill.JRFillInterruptedException;
 import net.sf.jasperreports.web.JRInteractiveException;
@@ -112,6 +107,9 @@ public class ViewReportAction extends ReportParametersAction
     private static final String ATTRIBUTE_PUBLIC_FOLDER_URI = "publicFolderUri";
     private static final String ATTRIBUTE_TEMP_FOLDER_URI = "tempFolderUri";
     public static final String ATTRIBUTE_EMPTY_REPORT_MESSAGE = "emptyReportMessage";
+
+	private static final String REPORT_EXECUTION_ID = "reportExecutionId";
+
 	public static final String ATTRIBUTE_HAS_INVISIBLE_IC_VALIDATION_ERRORS = "hasInvisibleICValidationErrors";
 	public static final String ATTRIBUTE_INVISIBLE_IC_VALIDATION_ERROR_MESSAGES = "invisibleICValidationErrorMessages";
     
@@ -889,10 +887,21 @@ public class ViewReportAction extends ReportParametersAction
 		requestScope.put(ATTRIBUTE_ORGANIZATION_ID, securityContextProvider.getContextUser().getTenantId());
         requestScope.put(ATTRIBUTE_PUBLIC_FOLDER_URI, configuration.getPublicFolderUri());
         requestScope.put(ATTRIBUTE_TEMP_FOLDER_URI, configuration.getTempFolderUri());
+
+        String executionId = context.getExternalContext().getRequestParameterMap().get("_executionId");
+        if (executionId != null) {
+            requestScope.put(REPORT_EXECUTION_ID, executionId);
+        }
+
         requestScope.put(REPORT_PARAMETER_VALUES, new JSONObject(getInputControlsState(context)).toString());
         // UI needs access to POST parameters.
         requestScope.put(ALL_REQUEST_PARAMETERS, getRequestParametersAsJSON(context));
 
+		JRPropertiesUtil propertiesUtil = JRPropertiesUtil.getInstance(jasperReportsContext);
+		Integer tabsMaxCount = propertiesUtil.getIntegerProperty("com.jaspersoft.jasperserver.viewer.report.tabs.max.count", 4);
+		Integer tabsLabelsMaxLength = propertiesUtil.getIntegerProperty("com.jaspersoft.jasperserver.viewer.report.tabs.labels.max.length", 16);
+		requestScope.put("reportViewerTabsMaxCount", tabsMaxCount);
+		requestScope.put("reportViewerTabsLabelsMaxLength", tabsLabelsMaxLength);
 
 		StringBuilder exportersList = new StringBuilder("[");
 		boolean firstItem = true;

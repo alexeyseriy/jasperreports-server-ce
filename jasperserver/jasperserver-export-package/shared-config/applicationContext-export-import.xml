@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -406,6 +406,40 @@
         <property name="updateArg" value="update"/>
     </bean>
 
+
+    <!-- favorite module -->
+
+    <bean id="favoritesExporterModule" class="com.jaspersoft.jasperserver.export.modules.favorites.FavoritesExporter" parent="baseExporterModule" scope="prototype">
+        <property name="id" value="favorites"/>
+        <property name="configuration" ref="favoriteModuleConfiguration"/>
+        <property name="urisArg" value="uris"/>
+    </bean>
+
+    <bean id="favoritesImporterModule" class="com.jaspersoft.jasperserver.export.modules.favorites.FavoritesImporter" parent="baseImporterModule" scope="prototype">
+        <property name="id" value="favorites"/>
+        <property name="configuration" ref="favoriteModuleConfiguration"/>
+        <property name="prependPathArg" value="prepend-path"/>
+        <property name="maxFavoritesPerIteration" value="10000"/>
+    </bean>
+
+    <bean id="favoriteModuleConfiguration" class="com.jaspersoft.jasperserver.export.modules.favorites.FavoritesModuleConfiguration">
+        <property name="repository" ref="${bean.unsecureRepositoryService}"/>
+        <property name="favoriteResourceService" ref="${bean.favoriteResourceService}"/>
+        <property name="favoritesDir" value="favorites"/>
+        <property name="indexFavoriteElement" value="favorite"/>
+        <property name="favoriteIndexFilename" value="index.xml"/>
+        <property name="serializer">
+            <bean class="com.jaspersoft.jasperserver.export.io.CastorSerializer">
+                <property name="castorMappings">
+                    <list>
+                        <value>classpath:com/jaspersoft/jasperserver/export/mapping/favorites/Favorite.xml</value>
+                        <value>classpath:com/jaspersoft/jasperserver/export/mapping/favorites/FavoriteIndex.xml</value>
+                    </list>
+                </property>
+            </bean>
+        </property>
+    </bean>
+
     <bean id="exportImportModuleRegister" class="com.jaspersoft.jasperserver.export.modules.ModuleRegisterImpl" scope="prototype">
         <property name="exporterModules">
             <list>
@@ -415,6 +449,7 @@
                 <ref bean="calendarsExporter"/>
                 <ref bean="reportJobsExporter"/>
                 <ref bean="accessEventsExporter"/>
+                <ref bean="favoritesExporterModule"/>
             </list>
         </property>
         <property name="importerModules">
@@ -425,6 +460,7 @@
                 <ref bean="calendarsImporter"/>
                 <ref bean="reportJobsImporter"/>
                 <ref bean="accessEventsImporter"/>
+                <ref bean="favoritesImporterModule"/>
             </list>
         </property>
     </bean>
@@ -610,6 +646,7 @@
                 <value>skip-attribute-values</value>
                 <value>resource-types</value>
                 <value>skip-dependent-resources</value>
+                <value>skip-favorite-resources</value>
                 <value>secret-key</value>
                 <value>keyalias</value>
                 <value>keypass</value>

@@ -1,6 +1,6 @@
 <%@ page contentType="text/html; charset=utf-8" %>
 <%--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -25,10 +25,12 @@
 
 <!-- Login Help Dialog -->
 <t:insertTemplate template="/WEB-INF/jsp/templates/container.jsp">
+    <t:putAttribute name="containerAttributes" value="role='dialog' aria-labelledby='helpLoggingInTitle' aria-describedby='helpLoggingInBody' aria-modal='true'" />
     <t:putAttribute name="containerClass" value="panel dialog overlay moveable centered_horz centered_vert hidden"/>
     <t:putAttribute name="containerID" value="helpLoggingIn"/>
-    <t:putAttribute name="containerTitle"><spring:message code='LOGIN_HELP'/></t:putAttribute>
+    <t:putAttribute name="containerTitle"><h2 id="helpLoggingInTitle"><spring:message code='LOGIN_HELP'/></h2></t:putAttribute>
     <t:putAttribute name="headerClass" value="mover"/>
+    <t:putAttribute name="bodyID" value="helpLoggingInBody" />
     <t:putAttribute name="bodyContent">
         <p class="message"><spring:message code='LOGIN_SIGN_IN_AS'/>:</p>
         <ul class="decorated">

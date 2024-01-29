@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -30,10 +30,9 @@ import com.jaspersoft.jasperserver.api.metadata.common.domain.RepositoryConfigur
 import com.jaspersoft.jasperserver.api.metadata.common.domain.Resource;
 import com.jaspersoft.jasperserver.api.metadata.common.domain.ResourceLookup;
 import com.jaspersoft.jasperserver.api.metadata.common.service.RepositoryService;
-import com.jaspersoft.jasperserver.api.search.QueryModificationEvaluator;
-import com.jaspersoft.jasperserver.api.search.SearchCriteriaFactory;
-import com.jaspersoft.jasperserver.api.search.SearchFilter;
-import com.jaspersoft.jasperserver.api.search.SearchSorter;
+import com.jaspersoft.jasperserver.api.metadata.common.service.impl.hibernate.FavoriteResourceService;
+import com.jaspersoft.jasperserver.api.metadata.user.domain.User;
+import com.jaspersoft.jasperserver.api.search.*;
 import com.jaspersoft.jasperserver.search.common.*;
 import com.jaspersoft.jasperserver.search.filter.TextFilter;
 import com.jaspersoft.jasperserver.search.mode.SearchMode;
@@ -56,10 +55,8 @@ import org.springframework.webflow.core.collection.SharedAttributeMap;
 import org.springframework.webflow.execution.Event;
 import org.springframework.webflow.execution.RequestContext;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Action class that contains actions related to repository search functionality.
@@ -113,6 +110,8 @@ public class RepositorySearchAction extends BaseSearchAction {
     protected RepositoryService repository;
     protected RepositoryService unsecuredRepository;
     protected NavigationActionModelSupport navigationActionModelSupport;
+    @javax.annotation.Resource(name = "${bean.favoriteResourceService}")
+    protected FavoriteResourceService favoriteResourceService;
 
     @javax.annotation.Resource(name="resourceService")
     protected ResourceService resourceService;
@@ -180,7 +179,7 @@ public class RepositorySearchAction extends BaseSearchAction {
 
         SharedAttributeMap sessionMap = context.getExternalContext().getSessionMap();
         if (sessionMap.contains(ATTRIBUTE_REPOSITORY_SYSTEM_CONFIRM)) {
-            context.getRequestScope().put(ATTRIBUTE_SYSTEM_CONFIRM, 
+            context.getRequestScope().put(ATTRIBUTE_SYSTEM_CONFIRM,
                     sessionMap.get(ATTRIBUTE_REPOSITORY_SYSTEM_CONFIRM));
             sessionMap.remove(ATTRIBUTE_REPOSITORY_SYSTEM_CONFIRM);
         }
@@ -387,7 +386,7 @@ public class RepositorySearchAction extends BaseSearchAction {
 
         try {
             JSONConverter converter = getConverter(context);
-            JSONObject jsonResults = converter.createResult(results, state, 
+            JSONObject jsonResults = converter.createResult(results, state,
                     state.getFilterPath(getConfiguration(context), messages));
             JSONObject response = converter.createJSONResponse(jsonResults);
 
@@ -408,15 +407,38 @@ public class RepositorySearchAction extends BaseSearchAction {
             int itemsToLoad = resourceLoadStrategy.getItemsToLoadCount(itemsPerPage, results.size());
 
             List<ResourceLookup> accessibleResults = performSearch(context, executionContext, state, filters, itemsToLoad);
+            List<String> uriList = new ArrayList<>(accessibleResults.size());
 
             for (Resource resource : accessibleResults) {
                 results.add(resourceService.getResourceDetails(resource));
+                uriList.add(resource.getURIString());
             }
-
+            User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            List<String> favResources = favoriteResourceService.getFavoritesURIList(user, uriList);
+            for (ResourceDetails resource : results) {
+                if (favResources.stream().anyMatch(r -> r.equals(resource.getURIString()))) {
+                        resource.setFavorite();
+                }
+            }
+            String favoriteFilter = state.getCustomFiltersMap().get("favoriteFilter");
+            if (favoriteFilter != null && favoriteFilter.equals("favoriteFilter-favorites")) {
+                for (ResourceDetails resource : results)
+                    if(resource.hasChildren() && !hasFavoriteChildren(resource)){
+                        resource.setHasChildren(false);
+                    }
+            }
             state.updateResultState(state.getResultIndex() + itemsToLoad, state.getResultsCount());
         } while (results.size() < itemsPerPage && state.getResultIndex() < state.getResultsCount());
 
         return results;
+    }
+
+    private boolean hasFavoriteChildren(ResourceDetails resource) {
+        List<ResourceDetails> childResourceList = repositorySearchService.getResourceChildren(resource.getResourceType(), resource.getURIString());
+        List<String> childResourceURIList = childResourceList.stream().map(res->res.getURIString()).collect(Collectors.toList());
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        List<String> favResources = favoriteResourceService.getFavoritesURIList(user, childResourceURIList);
+        return favResources.isEmpty()?false:true;
     }
 
     protected List<ResourceLookup> performSearch(RequestContext context, ExecutionContext executionContext, State state, List<SearchFilter> filters, int itemsToLoad) {
@@ -491,7 +513,7 @@ public class RepositorySearchAction extends BaseSearchAction {
                 return customFilter.getDefaultOption().equals(filterOption);
             }
         }
-        
+
         return false;
     }
 
@@ -540,6 +562,24 @@ public class RepositorySearchAction extends BaseSearchAction {
             String resourceUri = getParameter(context, PARAMETER_RESOURCE_URI);
 
             List<ResourceDetails> resourceList = repositorySearchService.getResourceChildren(resourceType, resourceUri);
+            List<String> uriList = new ArrayList<>(resourceList.size());
+            for (ResourceDetails resource : resourceList) {
+                uriList.add(resource.getURIString());
+            }
+            User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            List<String> favResources = favoriteResourceService.getFavoritesURIList(user, uriList);
+            for (ResourceDetails resource : resourceList) {
+                if (favResources.stream().anyMatch(r -> r.equals(resource.getURIString()))) {
+                    resource.setFavorite();
+                }
+            }
+            State state = getSearchHolder(context).getState(getMode(context));
+            String favoriteFilter = state.getCustomFiltersMap().get("favoriteFilter");
+
+            if (favoriteFilter != null && favoriteFilter.equals("favoriteFilter-favorites")) {
+                List<ResourceDetails> favresourceList = resourceList.stream().filter(r->r.isFavorite()).collect(Collectors.toList());
+                resourceList=favresourceList;
+            }
 
             final JSONArray resources = jsonConverter.resourcesToJson(resourceList);
 

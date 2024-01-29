@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -105,22 +105,24 @@ describe('Core events', function () {
                 expect(primaryNavModule.showNavButtonMenu.lastCall.args[1]).toEqual(element);
             });
         });
-        describe('mouseup', function () {
+        describe('click', function () {
             it('should initialize global mouseup events(home, layoutModule.NAVIGATION_PATTERN)', function () {
                 sandbox.stub(primaryNavModule, 'navigationOption');
-                jQuery('#' + layoutModule.MAIN_NAVIGATION_HOME_ITEM_ID).find(layoutModule.BUTTON_PATTERN).simulate('mouseup');
+                jQuery('#' + layoutModule.MAIN_NAVIGATION_HOME_ITEM_ID).find(layoutModule.BUTTON_PATTERN).simulate('click');
                 expect(primaryNavModule.navigationOption).toHaveBeenCalledWith('home');
             });
             it('should initialize global mouseup events(library, layoutModule.NAVIGATION_PATTERN)', function () {
                 sandbox.stub(primaryNavModule, 'navigationOption');
-                jQuery('#' + layoutModule.MAIN_NAVIGATION_LIBRARY_ITEM_ID).find(layoutModule.BUTTON_PATTERN).simulate('mouseup');
+                jQuery('#' + layoutModule.MAIN_NAVIGATION_LIBRARY_ITEM_ID).find(layoutModule.BUTTON_PATTERN).simulate('click');
                 expect(primaryNavModule.navigationOption).toHaveBeenCalledWith('library');
             });
             it('should initialize global mouseup events(other, layoutModule.NAVIGATION_PATTERN)', function () {
                 sandbox.stub(primaryNavModule, 'navigationOption');
-                jQuery('#main_view').find(layoutModule.BUTTON_PATTERN).simulate('mouseup');
+                jQuery('#main_view').find(layoutModule.BUTTON_PATTERN).simulate('click');
                 expect(primaryNavModule.navigationOption).not.toHaveBeenCalled();
             });
+        });
+        describe('mouseup', function () {
             it('should initialize global mouseup events(not selected, layoutModule.TABSET_TAB_PATTERN)', function () {
                 let el = jQuery("[tabId='#attributesTab']");
                 el.simulate('mouseup');
@@ -151,6 +153,11 @@ describe('Core events', function () {
         it('should know, if item is selected(not item)', function () {
             expect(buttonManager.isSelected((jQuery('#minimized')[0]))).toBeFalsy();
         });
+        it('should not set layoutModule.HOVERED_CLASS if item is selected', function () {
+            sandbox.stub(buttonManager, 'isSelected').returns(true);
+            buttonManager.over(jQuery('#menuMutton')[0]);
+            expect(jQuery('#menuMutton').hasClass(layoutModule.HOVERED_CLASS)).not.toBeTruthy();
+        });
         it('should know, if item is selected(select by function)', function () {
             expect(buttonManager.isSelected(true, function () {
                 return (jQuery('#anchor')[0]);
@@ -163,11 +170,6 @@ describe('Core events', function () {
             sandbox.stub(buttonManager, 'isSelected').returns(false);
             buttonManager.over(jQuery('#menuMutton')[0]);
             expect(jQuery('#menuMutton').hasClass(layoutModule.HOVERED_CLASS)).toBeTruthy();
-        });
-        it('should not set layoutModule.HOVERED_CLASS if item is selected', function () {
-            sandbox.stub(buttonManager, 'isSelected').returns(true);
-            buttonManager.over(jQuery('#menuMutton')[0]);
-            expect(jQuery('#menuMutton').hasClass(layoutModule.HOVERED_CLASS)).not.toBeTruthy();
         });
         it('should set layoutModule.HOVERED_CLASS for element, got by function', function () {
             sandbox.stub(buttonManager, 'isSelected').returns(false);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -22,7 +22,15 @@
 import SingleSelectListModel from './SingleSelectListModel';
 import ListWithSelectionAsObjectHashModel from '../../scalableList/model/ListWithSelectionAsObjectHashModel';
 var listPrototype = ListWithSelectionAsObjectHashModel.prototype;
+
 var SingleSelectListModelNew = SingleSelectListModel.extend({
+
+    initialize: function(options) {
+        SingleSelectListModel.prototype.initialize.call(this, options);
+
+        this.caseSensitiveSelection = typeof options.caseSensitiveSelection !== 'undefined' ? options.caseSensitiveSelection : true;
+    },
+
     _addToSelection: listPrototype._addToSelection,
     _removeFromSelection: listPrototype._removeFromSelection,
     _clearSelection: listPrototype._clearSelection,

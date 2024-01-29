@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -72,7 +72,10 @@ export default Dialog.extend({
         }, this);
         Dialog.prototype.initialize.apply(this, arguments);
     },
-    openRepoDialog: function (repoData) {
+    openRepoDialog: function (repoData, event) {
+        let eventTarget = event
+            && ((event.type === 'mouseup' && event.target.ancestors().filter(element => element.hasClassName("selected"))[0])
+                || (event.type === 'dataavailable' && event.target));
         var uris = parseRepoData(repoData);
         var organizationsFolderUri = jrsConfigs.organizationsFolderUri || '/organizations';
         var orgTemplateFolderUri = jrsConfigs.orgTemplateFolderUri || '/org_template';
@@ -84,7 +87,7 @@ export default Dialog.extend({
                 isSubOrgLevel: isSubOrgLevel
             }, subtitle = ' ' + i18n2['export.dialog.repository.title'];
         this.addCssClasses('repository-export-dialog');
-        this._openExportDialog(renderOptions, subtitle);
+        this._openExportDialog(renderOptions, subtitle, eventTarget);
         this.exportView.model.set({
             'uris': uris,
             'includeScheduledReportJobs': hasReports(repoData)
@@ -112,10 +115,11 @@ export default Dialog.extend({
         this.close();
         this.$el.find('.export-view').html('');
     },
-    _openExportDialog: function (renderOptions, subtitle) {
+    _openExportDialog: function (renderOptions, subtitle, focusElement) {
         var title = i18n2['export.dialog.title'] + (subtitle ? subtitle : '');
         this.setContent(this.exportView.render(renderOptions).$el);
-        this.setTitle(title);    //TODO: Find out why applyEpoxyBindings and delegateEvents should be called after new content is set.
+        this.setTitle(title);
+        this.setReturnFocus(focusElement);
         //TODO: Find out why applyEpoxyBindings and delegateEvents should be called after new content is set.
         this.exportView.applyEpoxyBindings();
         this.exportView.delegateEvents();

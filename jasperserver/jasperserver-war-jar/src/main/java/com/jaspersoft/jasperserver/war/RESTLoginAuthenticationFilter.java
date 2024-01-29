@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -21,30 +21,38 @@
 
 package com.jaspersoft.jasperserver.war;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jaspersoft.jasperserver.api.security.ResponseHeaderUpdater;
 import com.jaspersoft.jasperserver.api.security.encryption.EncryptionRequestUtils;
+import com.jaspersoft.jasperserver.api.security.internalAuth.InternalDaoAuthenticationProvider;
+import com.jaspersoft.jasperserver.dto.common.ErrorDescriptor;
 import org.apache.commons.lang.CharEncoding;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
+import org.springframework.util.Assert;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
+import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URLDecoder;
+import java.util.Locale;
 
 import static org.springframework.web.bind.annotation.RequestMethod.OPTIONS;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
@@ -69,11 +77,16 @@ public class RESTLoginAuthenticationFilter implements Filter {
     public void init(FilterConfig filterConfig) throws ServletException {
     }
 
+    @Autowired
+    private MessageSource messageSource;
+
+    private static Locale locale;
+
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
-
+        removeSessionAttributesForLoginLockout(httpRequest);
         if (responseHeadersUpdater != null) {
             responseHeadersUpdater.changeHeaders(httpResponse, httpRequest);
         }
@@ -100,6 +113,7 @@ public class RESTLoginAuthenticationFilter implements Filter {
 
                 Authentication authResult;
                 try {
+
                     authResult = authenticationManager.authenticate(authRequest);
 
                     if (log.isDebugEnabled()) {
@@ -132,10 +146,54 @@ public class RESTLoginAuthenticationFilter implements Filter {
         chain.doFilter(request, response);
     }
 
+    private void removeSessionAttributesForLoginLockout(HttpServletRequest httpServletRequest) {
+        HttpSession httpSession = httpServletRequest.getSession();
+        Assert.notNull(httpSession,"Unexpected error. Session is null");
+        httpSession.removeAttribute(InternalDaoAuthenticationProvider.NUMBER_OF_LOGIN_ATTEMPTS_REMAINING_SESSIONATTR);
+        httpSession.removeAttribute(InternalDaoAuthenticationProvider.USER_PRINCIPAL_SESSIONATTR);
+        httpSession.removeAttribute(InternalDaoAuthenticationProvider.IS_USER_LOCKED_SESSIONATTR);
+        httpSession.removeAttribute(InternalDaoAuthenticationProvider.EMPTY_CREDENTIALS_SESSIONATTR);
+    }
+
     private void sendUnauthorizedResponse(HttpServletResponse httpResponse, int responseCode, String msg)throws IOException {
         httpResponse.setStatus(responseCode);
-        PrintWriter pw = httpResponse.getWriter();
-        pw.print(msg);
+        locale = LocaleContextHolder.getLocale();
+        ErrorDescriptor errorDescriptor = new ErrorDescriptor();
+        errorDescriptor.setErrorCode(String.valueOf(HttpServletResponse.SC_UNAUTHORIZED));
+        RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
+        if (requestAttributes instanceof ServletRequestAttributes) {
+            HttpServletRequest request = ((ServletRequestAttributes)requestAttributes).getRequest();
+            HttpSession httpSession = request.getSession();
+            if(null != httpSession.getAttribute(InternalDaoAuthenticationProvider.EMPTY_CREDENTIALS_SESSIONATTR)){
+                String emptyCredentialsMessage = (String) httpSession.getAttribute(InternalDaoAuthenticationProvider.EMPTY_CREDENTIALS_SESSIONATTR);
+                errorDescriptor.setMessage(emptyCredentialsMessage.isEmpty() ? msg : emptyCredentialsMessage);
+            }
+            else if(null != httpSession.getAttribute(InternalDaoAuthenticationProvider.IS_USER_LOCKED_SESSIONATTR) &&
+                    (boolean)httpSession.getAttribute(InternalDaoAuthenticationProvider.IS_USER_LOCKED_SESSIONATTR)){
+                errorDescriptor.setMessage(messageSource.getMessage("jsp.loginError.userLockedMessage",null,locale));
+            }
+            else if (null != httpSession.getAttribute(
+                    InternalDaoAuthenticationProvider.NUMBER_OF_LOGIN_ATTEMPTS_REMAINING_SESSIONATTR)){
+                int numberOfLoginAttemptsRemaining = (int) httpSession.getAttribute(
+                        InternalDaoAuthenticationProvider.NUMBER_OF_LOGIN_ATTEMPTS_REMAINING_SESSIONATTR);
+                String badCredentialsMessage = messageSource.getMessage("jsp.loginError.invalidCredentials1",null,locale);
+                String nofaMessage = messageSource.getMessage("jsp.loginError.remainingLoginAttempts",null,locale);
+                errorDescriptor.setMessage(badCredentialsMessage+" "+nofaMessage+":"+numberOfLoginAttemptsRemaining);
+            }
+            else{
+                errorDescriptor.setMessage(msg);
+                errorDescriptor.setErrorCode(""+responseCode);
+            }
+            final ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.setDefaultPropertyInclusion(JsonInclude.Value.construct(JsonInclude.Include.NON_NULL,
+                    JsonInclude.Include.ALWAYS));
+            httpResponse.setContentType("application/json");
+            objectMapper.writeValue(httpResponse.getWriter(), errorDescriptor);
+        }
+        else{
+            PrintWriter pw = httpResponse.getWriter();
+            pw.print(msg);
+        }
     }
 
     @Override
@@ -176,5 +234,13 @@ public class RESTLoginAuthenticationFilter implements Filter {
 
     public void setPostOnly(boolean postOnly) {
         this.postOnly = postOnly;
+    }
+
+    public MessageSource getMessageSource() {
+        return messageSource;
+    }
+
+    public void setMessageSource(MessageSource messageSource) {
+        this.messageSource = messageSource;
     }
 }

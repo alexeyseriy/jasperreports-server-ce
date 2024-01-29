@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <!--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -25,12 +25,16 @@
 <hibernate-mapping>
     <class abstract="true" name="com.jaspersoft.jasperserver.api.metadata.common.service.impl.hibernate.persistent.RepoResourceItemBase">
 
-        <!--id name="id" column="id" type="long">
-	    </id-->
-        <composite-id>
-            <key-property name="id" />
-            <key-property name="name" />
-            <key-many-to-one name="parent" column="parent_folder"/>
+        <composite-id name="resourceKey" class="com.jaspersoft.jasperserver.api.metadata.common.service.impl.hibernate.persistent.RepoResourceItemBase$ResourceKey">
+            <key-property name="id" type="long">
+                <column name="id"/>
+            </key-property>
+            <key-property name="name" type="string">
+                <column name="name"/>
+            </key-property>
+            <key-many-to-one name="parent">
+                <column name="parent_folder"/>
+            </key-many-to-one>
         </composite-id>
 
 
@@ -43,7 +47,7 @@
         <property name="creationDate" not-null="true" type="timestamp" column="creation_date"/>
         <property name="updateDate" not-null="true" type="timestamp" column="update_date"/>
 
-<!-- <many-to-one column="parent_folder" not-null="true" name="parent" insert="false" update="false"/> -->       
+        <many-to-one column="parent_folder" not-null="true" name="parent" insert="false" update="false"/>
 
         <!--Workaround for search, allows to search for Resources AND Folders without introducing new table by re-using existing tables for resources and folders -->
         <!-- See HibernateCompositeInterceptor#onPrepareStatement -->

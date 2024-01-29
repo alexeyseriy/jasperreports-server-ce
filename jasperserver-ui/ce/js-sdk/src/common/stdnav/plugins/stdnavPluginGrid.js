@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -155,7 +155,7 @@ $.extend(stdnavPluginGrid.prototype, {
     },
     _onUp: function (element) {
         var sfel = this._findSubfocus(element);
-        var row = $(false);
+        var row;
         var newrow = $(false);
         var newsf = $(false);
         if (sfel.hasClass('gridcell')) {
@@ -187,7 +187,7 @@ $.extend(stdnavPluginGrid.prototype, {
     },
     _onDown: function (element) {
         var sfel = this._findSubfocus(element);
-        var row = $(false);
+        var row;
         var newrow = $(false);
         var newsf = $(false);
         if (sfel.hasClass('gridcell')) {

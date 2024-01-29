@@ -4,7 +4,8 @@ import {
 } from '@material-ui/core';
 import { ColorToClass, SizeToClass } from '../types/ButtonTypes';
 
-export const Button = forwardRef<HTMLButtonElement, MuiButtonProps>(({
+export type ButtonProps = MuiButtonProps;
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(({
     classes = {}, className = '', size = 'medium', color = 'secondary', ...rest
 }, ref) => {
 

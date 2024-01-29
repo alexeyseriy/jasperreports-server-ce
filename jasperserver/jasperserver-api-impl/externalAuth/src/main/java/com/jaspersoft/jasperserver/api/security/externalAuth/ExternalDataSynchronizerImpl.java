@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -31,6 +31,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationServiceException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -110,7 +111,8 @@ public class ExternalDataSynchronizerImpl implements ExternalDataSynchronizer, I
 									transaction.flush();
 									transactionManager.commit(transaction);
 									continueExecution = false;
-								} catch (Exception e) {
+								}
+								catch (Exception e) {
 									logger.error("Exception occurred during synchronization in synchronized mode", e.getMessage());
 									continueExecution = true;
 								} finally {
@@ -137,7 +139,11 @@ public class ExternalDataSynchronizerImpl implements ExternalDataSynchronizer, I
 					newPrincipal.setOriginalAuthentication(auth);
 				}
 			}
-		} catch (Exception e) {
+		}
+		catch(DisabledException disabledException){
+			throw disabledException;
+		}
+		catch (Exception e) {
 			logger.error("Error during synchronization", e);
 			// Because exception happened during successful authentication processing,
 			// we need to clear the session of the authentication token.

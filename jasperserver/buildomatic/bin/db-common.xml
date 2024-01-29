@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -27,8 +27,8 @@
 
     <!-- properties to specify current upgrade source and target version values -->
     <!-- these are used to help specify the sql update script to be executed    -->
-    <property name="defaultUpgradeFromVersion" value="7.9" />
-    <property name="defaultUpgradeToVersion" value="8.0" />
+    <property name="defaultUpgradeFromVersion" value="8.1" />
+    <property name="defaultUpgradeToVersion" value="8.2" />
 
     <target name="drop-js-db"
             description="Drop JasperServer metadata DB">
@@ -1091,9 +1091,73 @@
         </runSQL>
     </target>
 
-	<!-- these upgrades prompt by default, but if you want to script this, you can override it.
-	     Just add a -DpromptUpgrade=false flag when you call js-ant
-	  -->
+    <target name="upgrade-8.0-8.1-ce"
+            description="upgrade from 8.0 to 8.1">
+
+        <echo> </echo>
+        <echo> currentSqlDir = ${currentSqlDir} </echo>
+        <echo> dbType = ${dbType} </echo>
+        <echo> </echo>
+
+        <if>
+            <not>
+                <available file="${currentSqlDir}/upgrade-${dbType}-8.0.0-8.1.0-ce.sql"/>
+            </not>
+            <then>
+                <echo> </echo>
+                <echo>======================================================================</echo>
+                <echo> Error: The upgrade script: upgrade-${dbType}-8.0.0-8.1.0-ce.sql      </echo>
+                <echo> Error: is not currently available.                                   </echo>
+                <echo> Error: Check release notes for availability on your database type    </echo>
+                <echo>======================================================================</echo>
+                <echo> </echo>
+                <fail>Error: The upgrade script: upgrade-${dbType}-8.0.0-8.1.0-ce.sql was not found</fail>
+            </then>
+        </if>
+
+        <echo>run script: ${currentSqlDir}/upgrade-${dbType}-8.0.0-8.1.0-ce.sql </echo>
+        <runSQL jdbcUrl="${js.jdbcUrl}" print="true">
+            <fileset dir="${currentSqlDir}">
+                <include name="upgrade-${dbType}-8.0.0-8.1.0-ce.sql"/>
+            </fileset>
+        </runSQL>
+    </target>
+
+    <target name="upgrade-8.1-8.2-ce"
+            description="upgrade from 8.1 to 8.2">
+
+        <echo> </echo>
+        <echo> currentSqlDir = ${currentSqlDir} </echo>
+        <echo> dbType = ${dbType} </echo>
+        <echo> </echo>
+
+        <if>
+            <not>
+                <available file="${currentSqlDir}/upgrade-${dbType}-8.1.0-8.2.0-ce.sql"/>
+            </not>
+            <then>
+                <echo> </echo>
+                <echo>======================================================================</echo>
+                <echo> Error: The upgrade script: upgrade-${dbType}-8.1.0-8.2.0-ce.sql      </echo>
+                <echo> Error: is not currently available.                                   </echo>
+                <echo> Error: Check release notes for availability on your database type    </echo>
+                <echo>======================================================================</echo>
+                <echo> </echo>
+                <fail>Error: The upgrade script: upgrade-${dbType}-8.1.0-8.2.0-ce.sql was not found</fail>
+            </then>
+        </if>
+
+        <echo>run script: ${currentSqlDir}/upgrade-${dbType}-8.1.0-8.2.0-ce.sql </echo>
+        <runSQL jdbcUrl="${js.jdbcUrl}" print="true">
+            <fileset dir="${currentSqlDir}">
+                <include name="upgrade-${dbType}-8.1.0-8.2.0-ce.sql"/>
+            </fileset>
+        </runSQL>
+    </target>
+
+    <!-- these upgrades prompt by default, but if you want to script this, you can override it.
+         Just add a -DpromptUpgrade=false flag when you call js-ant
+      -->
 	<property name="promptUpgrade" value="true"/>
     <target name="upgrade-7.2-7.5-pro"
             description="upgrade from 7.2 to 7.5">
@@ -1158,6 +1222,72 @@
                 </runSQL>
             </then>
         </if>
+    </target>
+
+    <target name="upgrade-8.0-8.1-pro"
+            description="upgrade from 8.0 to 8.1">
+
+        <echo> </echo>
+        <echo> currentSqlDir = ${currentSqlDir} </echo>
+        <echo> dbType = ${dbType} </echo>
+        <echo> </echo>
+
+        <if>
+            <not>
+                <or>
+                    <available file="${currentSqlDir}/upgrade-${dbType}-8.0.0-8.1.0-pro.sql"/>
+                </or>
+            </not>
+            <then>
+                <echo> </echo>
+                <echo>======================================================================</echo>
+                <echo> Error: The upgrade script: upgrade-${dbType}-8.0.0-8.1.0-pro.sql      </echo>
+                <echo> Error: is not currently available.                                   </echo>
+                <echo> Error: Check release notes for availability on your database type    </echo>
+                <echo>======================================================================</echo>
+                <echo> </echo>
+                <fail>Error: The upgrade script: upgrade-${dbType}-8.0.0-8.1.0-pro.sql was not found</fail>
+            </then>
+        </if>
+        <echo>run script: ${currentSqlDir}/upgrade-${dbType}-8.0.0-8.1.0-pro.sql </echo>
+        <runSQL jdbcUrl="${js.jdbcUrl}" print="true">
+            <fileset dir="${currentSqlDir}">
+                <include name="upgrade-${dbType}-8.0.0-8.1.0-pro.sql"/>
+            </fileset>
+        </runSQL>
+    </target>
+
+    <target name="upgrade-8.1-8.2-pro"
+            description="upgrade from 8.1 to 8.2">
+
+        <echo> </echo>
+        <echo> currentSqlDir = ${currentSqlDir} </echo>
+        <echo> dbType = ${dbType} </echo>
+        <echo> </echo>
+
+        <if>
+            <not>
+                <or>
+                    <available file="${currentSqlDir}/upgrade-${dbType}-8.1.0-8.2.0-pro.sql"/>
+                </or>
+            </not>
+            <then>
+                <echo> </echo>
+                <echo>======================================================================</echo>
+                <echo> Error: The upgrade script: upgrade-${dbType}-8.1.0-8.2.0-pro.sql      </echo>
+                <echo> Error: is not currently available.                                   </echo>
+                <echo> Error: Check release notes for availability on your database type    </echo>
+                <echo>======================================================================</echo>
+                <echo> </echo>
+                <fail>Error: The upgrade script: upgrade-${dbType}-8.1.0-8.2.0-pro.sql was not found</fail>
+            </then>
+        </if>
+        <echo>run script: ${currentSqlDir}/upgrade-${dbType}-8.1.0-8.2.0-pro.sql </echo>
+        <runSQL jdbcUrl="${js.jdbcUrl}" print="true">
+            <fileset dir="${currentSqlDir}">
+                <include name="upgrade-${dbType}-8.1.0-8.2.0-pro.sql"/>
+            </fileset>
+        </runSQL>
     </target>
 
     <target name="upgrade-for-overlay-pro" depends="check-install-type-overlay"
@@ -1516,7 +1646,7 @@
                             <equals arg1="${installType}" arg2="split" />
                         </and>
                         <then>
-                            <recreateDB systemName="audit" dbUsername="${audit.dbUsername}" dbPassword="${audit.dbPassword}" prompt="false" />
+                            <createAuditDBIfNotExists systemName="audit" dbUsername="${audit.dbUsername}" dbPassword="${audit.dbPassword}"/>
                         </then>
                     </if>
                     <if>
@@ -1528,9 +1658,6 @@
                         <elseif>
                             <equals arg1="@{edition}" arg2="pro" />
                             <then>
-                                <antcall target="init-audit-db-@{edition}">
-                                    <param name="stopIfError" value="true" />
-                                </antcall>
                                 <runtarget target="import-minimal-pro" />
                                 <runtarget target="import-upgrade" />
                             </then>
@@ -1540,15 +1667,6 @@
                 <elseif>
                     <equals arg1="@{strategy}" arg2="inDatabase" />
                     <then>
-                        <if>
-                            <equals arg1="${installType}" arg2="split"/>
-                            <then>
-                                <recreateDB systemName="audit" dbUsername="${audit.dbUsername}" dbPassword="${audit.dbPassword}" prompt="false" />
-                                <antcall target="init-audit-db-@{edition}">
-                                    <param name="stopIfError" value="true" />
-                                </antcall>
-                            </then>
-                        </if>
                         <runtarget target="upgrade-@{from}-@{to}-@{edition}" />
                         <runtarget target="import-minimal-for-upgrade-@{edition}" />
                     </then>
@@ -1561,6 +1679,7 @@
                 </then>
             </if>
             <import-profile-attribute key="auditDB" attrValue="${audit.dbName}"/>
+            <import-profile-attribute key="repositoryDB" attrValue="${js.dbName}"/>
         </sequential>
     </macrodef>
 
@@ -1591,6 +1710,7 @@
                 </elseif>
             </if>
             <import-profile-attribute key="auditDB" attrValue="${audit.dbName}"/>
+            <import-profile-attribute key="repositoryDB" attrValue="${js.dbName}"/>
         </sequential>
     </macrodef>
 
@@ -1692,6 +1812,44 @@
     <target name="recreate-sugarcrm-db" description="Recreates SugarCRM database">
       <recreateDB systemName="sugarcrm" />
     </target>
+
+
+    <macrodef name="createAuditDBIfNotExists">
+        <attribute name="systemName" />
+        <attribute name="dbUsername" default="${dbUsername}"/>
+        <attribute name="dbPassword" default="${dbPassword}"/>
+
+        <sequential>
+            <var name="displayNameOfDBToRecreate" value="${@{systemName}.db.displayName}" />
+            <var name="nameOfDBForDBMSToRecreate" value="${@{systemName}.dbName}" />
+
+            <validateDB systemName="@{systemName}"  dbUsername="@{dbUsername}" dbPassword="@{dbPassword}" phase="before" />
+            <if>
+                <isfalse value="${dbExists}" />
+                    <then>
+                        <create-db-set-flag systemName="@{systemName}" />
+                    </then>
+            </if>
+            <if>
+                <istrue value="${@{systemName}DBCreated}" />
+                <then>
+                    <validateDB systemName="@{systemName}" phase="after" failOnDBNotExists="true"
+                                failOnUnrecoverableConnectionError="true" />
+                    <if>
+                        <isfalse value="${dbExists}" />
+                        <then>
+                            <fail>Post-creation check for ${displayNameOfDBToRecreate} database failed: [${nameOfDBForDBMSToRecreate}] database doesn't exist</fail>
+                        </then>
+                        <else>
+                            <antcall target="init-audit-db-pro">
+                                <param name="stopIfError" value="true" />
+                            </antcall>
+                        </else>
+                    </if>
+                </then>
+            </if>
+        </sequential>
+    </macrodef>
 
     <macrodef name="recreateDB">
         <attribute name="systemName" />
@@ -1811,6 +1969,7 @@
             depends="recreate-js-db, recreate-audit-db, fill-js-pro-db-minimal, fill-audit-pro-db-minimal"
             description="Recreates and fills/loads JasperServer Pro (no sample data) database">
         <import-profile-attribute key="auditDB" attrValue="${audit.dbName}"/>
+        <import-profile-attribute key="repositoryDB" attrValue="${js.dbName}"/>
     </target>
 
 

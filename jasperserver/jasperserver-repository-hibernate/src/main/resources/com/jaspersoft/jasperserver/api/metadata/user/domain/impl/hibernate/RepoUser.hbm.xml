@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <!--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -25,7 +25,8 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.hibernate.org/xsd/hibernate-mapping
         http://www.hibernate.org/xsd/hibernate-mapping/hibernate-mapping-4.0.xsd">
-  <class table="JIUser" name="com.jaspersoft.jasperserver.api.metadata.user.domain.impl.hibernate.RepoUser" batch-size="1000">
+  <class table="JIUser" name="com.jaspersoft.jasperserver.api.metadata.user.domain.impl.hibernate.RepoUser" batch-size="1000"
+  dynamic-insert="true" dynamic-update="false">
     <cache usage = "read-write" region="users"/>
     <natural-id-cache region="usersByTenant"/>
     <id type="long" column="id" name="id">
@@ -45,11 +46,27 @@
     <set inverse="true" cascade="all-delete-orphan" name="thumbnails" batch-size="1000">
       <key column="user_id" on-delete="cascade"/>
       <one-to-many class="com.jaspersoft.jasperserver.api.metadata.common.service.impl.hibernate.persistent.RepoReportThumbnail"/>
-    </set>    
+    </set>
+    <set name="profileAttributes"
+         lazy="true"
+         cascade="none"
+         inverse="false"
+         where="principalobjectclass = 'com.jaspersoft.jasperserver.api.metadata.user.domain.impl.hibernate.RepoUser'">
+      <key column="principalobjectid" update="false" on-delete="noaction" foreign-key="none"/>
+      <one-to-many class="com.jaspersoft.jasperserver.api.metadata.user.domain.impl.hibernate.RepoProfileAttribute"/>
+    </set>
     <property name="password" length="250" type="string" column="password"/>
     <property name="externallyDefined" type="boolean" column="externallyDefined"/>
     <property name="enabled" type="boolean" column="enabled"/>
     <property name="previousPasswordChangeTime" type="timestamp" column="previousPasswordChangeTime"/>
+    <!-- Added for Login-Lockout. JS-64103 -->
+    <property name="numberOfFailedLoginAttempts" type="int">
+      <column name="numberOfFailedLoginAttempts" default="0" not-null="false"/>
+    </property>
+    <set inverse="true" cascade="all-delete-orphan" name="favorites" batch-size="1000" outer-join="auto" lazy="extra">
+      <key column="user_id" on-delete="cascade"/>
+      <one-to-many class="com.jaspersoft.jasperserver.api.metadata.common.service.impl.hibernate.persistent.RepoFavoriteResource"/>
+    </set>
   </class>
 
 <!-- create index JIUser_tenantId_index on JIUser (tenantId); -->

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -57,7 +57,8 @@ dynamicTree.TreeNode = function (options) {
     this.editable = false;
     this.isWaiting = false;
     this.hidden = false;
-    this.isDropTarget = false;    // self-indexing
+    this.isDropTarget = false;
+    this.keydownSubFocus = false;   // self-indexing
     // self-indexing
     dynamicTree.nodes[this.id] = this;
 };    /**
@@ -93,7 +94,7 @@ dynamicTree.TreeNode.addVar('DEFAULT_NAME', 'unset name');
 dynamicTree.TreeNode.addVar('NODE_ID_PREFIX', 'node');
 dynamicTree.TreeNode.addVar('SUB_NODE_ID_SUFFIX', 'sub');
 dynamicTree.TreeNode.addVar('HANDLER_ID_PREFIX', 'handler');
-dynamicTree.TreeNode.addVar('NODE_CLASS_NAME', 'node').addVar('LEAF_CLASS_NAME', 'leaf').addVar('OPEN_CLASS_NAME', 'open').addVar('CLOSED_CLASS_NAME', 'closed').addVar('SELECTED_CLASS_NAME', 'selected').addVar('LOADING_CLASS_NAME', 'loading').addVar('ROOTS_CLASS_NAME', 'roots');    //
+dynamicTree.TreeNode.addVar('NODE_CLASS_NAME', 'node').addVar('LEAF_CLASS_NAME', 'leaf').addVar('OPEN_CLASS_NAME', 'open').addVar('CLOSED_CLASS_NAME', 'closed').addVar('SELECTED_CLASS_NAME', 'selected').addVar('LOADING_CLASS_NAME', 'loading').addVar('ROOTS_CLASS_NAME', 'roots').addVar('KEYDOWN_SUB_FOCUS_CLASS_NAME', 'focus-visible');    //
 // Templates for tree UI
 //
 //
@@ -371,8 +372,10 @@ dynamicTree.TreeNode.addMethod('refreshStyle', function (element) {
         jQuery(element).addClass(this.NODE_CLASS_NAME).removeClass(this.LEAF_CLASS_NAME);
         if (!this.isWaiting) {
             if (this.isOpen()) {
+                jQuery(element).attr('aria-expanded', true);
                 jQuery(element).addClass(this.OPEN_CLASS_NAME).removeClass(this.CLOSED_CLASS_NAME);
             } else {
+                jQuery(element).attr('aria-expanded', false);
                 jQuery(element).addClass(this.CLOSED_CLASS_NAME).removeClass(this.OPEN_CLASS_NAME);
             }
         }
@@ -400,6 +403,9 @@ dynamicTree.TreeNode.addMethod('refreshStyle', function (element) {
     var type = this.getType();
     if (type && type.cssClassName) {
         jQuery(element).addClass(type.cssClassName);
+    }
+    if (this.keydownSubFocus) {
+        jQuery(element).addClass(this.KEYDOWN_SUB_FOCUS_CLASS_NAME);
     }
     var subElement = jQuery(element).children();
     this.isDropTarget && subElement && jQuery(subElement).addClass(layoutModule.DROP_TARGET_CLASS);
@@ -578,7 +584,7 @@ dynamicTree.TreeNode.addMethod('deselect', function (event) {
  */
 dynamicTree.TreeNode.addMethod('select', function (event, focus, options) {
     options = options || {};
-    !focus && this.focus();    // Commented out to fix bug http://bugzilla.jaspersoft.com/show_bug.cgi?id=19047
+    options.shouldFocus && !focus && this.focus(event);    // Commented out to fix bug http://bugzilla.jaspersoft.com/show_bug.cgi?id=19047
     // Commented out to fix bug http://bugzilla.jaspersoft.com/show_bug.cgi?id=19047
     if (!this.isSelected()) {
         var tree = dynamicTree.trees[this.getTreeId()];
@@ -595,12 +601,21 @@ dynamicTree.TreeNode.addMethod('select', function (event, focus, options) {
 /**
  * focus on this node's element
  */
-dynamicTree.TreeNode.addMethod('focus', function () {
-    var self = this;
+dynamicTree.TreeNode.addMethod('focus', function (event) {
     if (!isIPad() && this._getElement()) {
-        setTimeout(function () {
-            self._getElement().focus();
-        }, 100);
+        this._getElement().focus({preventScroll: true});
+        var caption = jQuery(this._getElement()).find('.wrap').first()[0];
+        if (caption){
+            caption.scrollIntoView({block: 'nearest', inline: 'nearest'});
+        }
+
+        const eventType = event && event.type;
+        if (eventType === 'keydown') {
+            event.preventDefault();
+            this.keydownSubFocus = true;
+        } else if (eventType === 'mouseup') {
+            this.keydownSubFocus = false;
+        }
     }
 });    /**
  * Returns true if this node is selected in the tree.
@@ -634,7 +649,6 @@ dynamicTree.TreeNode.addMethod('edit', function (evt) {
             return;
         }
         dynamicTree.treeNodeEdited = this;
-        var obj = this;
         var oldName = this.name;
         var titleHolder = jQuery(this._getTitle().parentNode)[0];
         var input = this._getInputTemplateElement();
@@ -656,8 +670,8 @@ dynamicTree.TreeNode.addMethod('edit', function (evt) {
         input.onmouseup = function (e) {
             cancelEventBubbling(e);
         };
-        input.onkeydown = function (evt) {
-            var e = window.event ? window.event : evt;
+        input.onkeydown = function (keyEvt) {
+            var e = window.event ? window.event : keyEvt;
             if (e.keyCode == 13) {
                 input.onblur = null;
                 this.doEndEdit(e);
@@ -691,7 +705,6 @@ dynamicTree.TreeNode.addMethod('editEnded', function () {
     var tree = dynamicTree.trees[this.getTreeId()];
     if (dynamicTree.treeNodeEdited != null) {
         var input = this._getTitleInputElement();
-        var titleHolder = jQuery(input.parentNode)[0];
         var newValue = input.value;
         if (newValue == dynamicTree.treeNodeEdited.name) {
             input.remove();
@@ -758,6 +771,9 @@ dynamicTree.TreeNode.addMethod('handleNode', function (event) {
     } else {
         tree.writeStates(this.id, dynamicTree.TreeNode.State.OPEN);
         tree.fireOpenEvent(this, event);
+    }
+    if (event && event.type === 'keydown') {
+        this.keydownSubFocus = true;
     }
     this.refreshNode();
 });

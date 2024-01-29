@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -345,6 +345,22 @@ public interface ReportSchedulingService {
 	 * @see ValidationErrors#isError()
 	 */
 	ValidationErrors validateJob(ExecutionContext context, ReportJob job);
+
+
+	/**
+	 * Checks the report job output attributes for validation errors.
+	 * 
+	 * <p>
+	 * This method is used to validate dynamic job output attributes before
+	 * using them during a scheduled report execution.
+	 * </p>
+	 * 
+     * @param context the caller execution context
+	 * @param job the job details
+	 * @return a validation object which contains errors if any found
+	 * @see ValidationErrors#isError()
+	 */
+	ValidationErrors validateEffectiveJobOutput(ExecutionContext context, ReportJob job);
 
   /**
    *  Pause currently scheduled jobs execution.

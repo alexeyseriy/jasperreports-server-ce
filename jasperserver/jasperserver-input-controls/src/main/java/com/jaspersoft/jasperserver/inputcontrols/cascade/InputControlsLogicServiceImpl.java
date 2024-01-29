@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -30,6 +30,9 @@ import com.jaspersoft.jasperserver.dto.reports.inputcontrols.InputControlState;
 import com.jaspersoft.jasperserver.dto.reports.inputcontrols.ReportInputControl;
 import com.jaspersoft.jasperserver.dto.reports.inputcontrols.SelectedValuesListWrapper;
 import com.jaspersoft.jasperserver.inputcontrols.cascade.cache.ControlLogicCacheManager;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.extension.annotations.SpanAttribute;
+import io.opentelemetry.extension.annotations.WithSpan;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -105,7 +108,8 @@ public class InputControlsLogicServiceImpl implements InputControlsLogicService 
         });
     }
 
-    public List<ReportInputControl> getInputControlsStructure(String containerUri, final Set<String> inputControlIds) throws CascadeResourceNotFoundException {
+    @WithSpan
+    public List<ReportInputControl> getInputControlsStructure(@SpanAttribute("resourceUri") String containerUri, final Set<String> inputControlIds) throws CascadeResourceNotFoundException {
         controlLogicCacheManager.clearCache();
         try {
             return callControlLogic(containerUri, new ControLogicCaller<List<ReportInputControl>>() {
@@ -125,7 +129,8 @@ public class InputControlsLogicServiceImpl implements InputControlsLogicService 
         }
     }
 
-    public SelectedValuesListWrapper getInputControlsSelectedValues(String reportUnitUri, boolean freshData, boolean withLabel) throws CascadeResourceNotFoundException {
+    @WithSpan
+    public SelectedValuesListWrapper getInputControlsSelectedValues(@SpanAttribute("resourceUri") String reportUnitUri, @SpanAttribute("freshData")boolean freshData, boolean withLabel) throws CascadeResourceNotFoundException {
         final Map<String, String[]> parameters = new HashMap<>();
 
         setCacheParameter(freshData, parameters);
@@ -147,7 +152,8 @@ public class InputControlsLogicServiceImpl implements InputControlsLogicService 
         }
     }
 
-    public List<ReportInputControl> getInputControlsWithValues(String reportUnitUri, Set<String> inputControlIds, Map<String, String[]> rawParameters) throws CascadeResourceNotFoundException {
+    @WithSpan
+    public List<ReportInputControl> getInputControlsWithValues(@SpanAttribute("resourceUri") String reportUnitUri, Set<String> inputControlIds, Map<String, String[]> rawParameters) throws CascadeResourceNotFoundException {
         List<ReportInputControl> result = getInputControlsStructure(reportUnitUri, inputControlIds);
         if (result != null && !result.isEmpty()) {
             final List<InputControlState> states = getValuesForInputControls(reportUnitUri, inputControlIds, rawParameters, false);
@@ -162,7 +168,8 @@ public class InputControlsLogicServiceImpl implements InputControlsLogicService 
         return result;
     }
 
-    public synchronized List<ReportInputControl> reorderInputControls(String containerUri, List<String> newOrder) throws CascadeResourceNotFoundException, InputControlsValidationException {
+    @WithSpan
+    public synchronized List<ReportInputControl> reorderInputControls(@SpanAttribute("resourceUri") String containerUri, List<String> newOrder) throws CascadeResourceNotFoundException, InputControlsValidationException {
         List<ReportInputControl> existing = getInputControlsStructure(containerUri, null), reordered = new ArrayList<ReportInputControl>(existing.size());
         reordered.addAll(existing);
         if (existing.size() != newOrder.size()){
@@ -201,9 +208,9 @@ public class InputControlsLogicServiceImpl implements InputControlsLogicService 
 
         return reordered;
     }
-
-    public List<InputControlState> getValuesForInputControls(String containerUri, final Set<String> inputControlIds,
-            Map<String, String[]> originalParameters, boolean freshData) throws CascadeResourceNotFoundException {
+    @WithSpan
+    public List<InputControlState> getValuesForInputControls(@SpanAttribute("resourceUri") String containerUri, final Set<String> inputControlIds,
+            Map<String, String[]> originalParameters, @SpanAttribute("freshData") boolean freshData) throws CascadeResourceNotFoundException {
         final Map<String, String[]> parameters = originalParameters != null ? new HashMap<String, String[]>(originalParameters) : new HashMap<String, String[]>();
         List<InputControlState> states;
         setCacheParameter(freshData, parameters);
@@ -228,19 +235,37 @@ public class InputControlsLogicServiceImpl implements InputControlsLogicService 
         return states;
     }
 
+    // similar to getValuesForInputControls() function, but it won't load icContainer from URI
+    // use icContainer in memory instead
+    public List<InputControlState> getValuesForInputControlsFromICContainer(InputControlsContainer icContainer, final Set<String> inputControlIds,
+                                                                            Map<String, String[]> originalParameters, boolean freshData) throws CascadeResourceNotFoundException {
+        final Map<String, String[]> parameters = originalParameters != null ? new HashMap<String, String[]>(originalParameters) : new HashMap<String, String[]>();
+        setCacheParameter(freshData, parameters);
+        List<InputControlState> states;
+        defaultEvaluationEventsHandler.beforeEvaluation(icContainer.getURI(), parameters, securityContextProvider.getContextUser());
+        try {
+            states = getControlLogic(icContainer).getValuesForInputControlsFromRawData(icContainer, inputControlIds, parameters);
+        } catch (InputControlsValidationException e) {
+            //Should not happen
+            throw new RuntimeException(e);
+        }
+        defaultEvaluationEventsHandler.afterEvaluation(icContainer.getURI(), parameters, states, securityContextProvider.getContextUser());
+        return states;
+    }
+
     public void setCacheParameter(boolean freshData, Map<String, String[]> parameters) {
-        if(freshData){
+        if (freshData) {
             controlLogicCacheManager.clearCache();
             parameters.put(EhcacheEngineService.IC_REFRESH_KEY, new String[]{"true"});
         }
     }
 
-    protected void reorderControlsInternal(String containerUri, int[] reorderMapping) throws CascadeResourceNotFoundException{
+    protected void reorderControlsInternal(String containerUri, int[] reorderMapping) throws CascadeResourceNotFoundException {
         InputControlsContainer container = cachedRepositoryService.getResource(InputControlsContainer.class, containerUri);
-        List<ResourceReference>  inputControls = container.getInputControls(), reordered = new LinkedList<ResourceReference>();
+        List<ResourceReference> inputControls = container.getInputControls(), reordered = new LinkedList<ResourceReference>();
 
-        if (inputControls.size() == reorderMapping.length){
-            for (int i = 0; i< reorderMapping.length; i++){
+        if (inputControls.size() == reorderMapping.length) {
+            for (int i = 0; i < reorderMapping.length; i++) {
                 reordered.add(inputControls.get(reorderMapping[i]));
             }
 
@@ -277,6 +302,19 @@ public class InputControlsLogicServiceImpl implements InputControlsLogicService 
         return result;
     }
 
+    protected ControlLogic<InputControlsContainer> getControlLogic(InputControlsContainer icContainer) throws CascadeResourceNotFoundException, InputControlsValidationException {
+        String controlLogicAlias = getControlLogicAliasByContainerUri(icContainer.getURI());
+        if (controlLogicAlias != null) {
+            return getControlLogicByAlias(controlLogicAlias);
+        } else {
+            controlLogicAlias = controlLogicReportTypeMapping.get(icContainer.getResourceType());
+            if (controlLogicAlias == null)
+                controlLogicAlias = defaultControlLogicName;
+            return getControlLogicByAlias(controlLogicAlias);
+        }
+    }
+
+
     protected ControlLogic<InputControlsContainer> getControlLogicByAlias(String controlLogicAlias) {
         final ControlLogic<InputControlsContainer> controlLogic = controlLogicRegestry.get(controlLogicAlias);
         if (controlLogic == null)
@@ -294,5 +332,4 @@ public class InputControlsLogicServiceImpl implements InputControlsLogicService 
     public void setControlLogicCacheManager(ControlLogicCacheManager controlLogicCacheManager) {
         this.controlLogicCacheManager = controlLogicCacheManager;
     }
-
 }

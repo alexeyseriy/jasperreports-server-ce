@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -22,8 +22,8 @@ package com.jaspersoft.jasperserver.api.security;
 
 import org.apache.log4j.spi.LoggerFactory;
 import org.owasp.esapi.LogFactory;
-import org.owasp.esapi.reference.Log4JLogFactory;
-import org.owasp.esapi.reference.Log4JLoggerFactory;
+import org.owasp.esapi.logging.log4j.Log4JLogFactory;
+import org.owasp.esapi.logging.log4j.Log4JLoggerFactory;
 
 /**
  * This is a custom ESAPI org.owasp.esapi.reference.Log4JLogFactory.

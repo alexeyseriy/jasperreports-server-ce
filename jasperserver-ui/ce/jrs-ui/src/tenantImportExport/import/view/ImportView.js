@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -99,7 +99,7 @@ var ImportView = Backbone.View.extend({
 
         this.stateModel = new ImportStateModel();
 
-        this.customKeyStateModel = new CustomKeyModel();;
+        this.customKeyStateModel = new CustomKeyModel();
 
         this.loadingDialog = new LoadingDialog({
             content: i18n2["dialog.overlay.loading"]

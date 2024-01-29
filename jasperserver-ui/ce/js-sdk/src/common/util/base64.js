@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -26,7 +26,7 @@ export default {
         // can be fed into btoa.
         return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g,
             function toSolidBytes(match, p1) {
-                return String.fromCharCode('0x' + p1);
+                return String.fromCharCode(parseInt('0x' + p1, 16));
             }));
     },
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -57,6 +57,7 @@ public class MetadataUserDetails implements UserDetails, User {
     private Date previousPasswordChangeTime = null;
     private List attributes = null;
     private String tenantId = null;
+    private Integer numberOfFailedLoginAttempts;
 
     /**
      * Constructor
@@ -76,6 +77,7 @@ public class MetadataUserDetails implements UserDetails, User {
         setRoles(u.getRoles());
         setAttributes(u.getAttributes());
         setTenantId(u.getTenantId());
+        setNumberOfFailedLoginAttempts(u.getNumberOfFailedLoginAttempts());
     }
 
     /**
@@ -385,5 +387,15 @@ public class MetadataUserDetails implements UserDetails, User {
         }
 
         return super.equals(obj);
+    }
+
+    @Override
+    public Integer getNumberOfFailedLoginAttempts() {
+        return numberOfFailedLoginAttempts;
+    }
+
+    @Override
+    public void setNumberOfFailedLoginAttempts(Integer numberOfFailedLoginAttempts) {
+        this.numberOfFailedLoginAttempts = numberOfFailedLoginAttempts;
     }
 }

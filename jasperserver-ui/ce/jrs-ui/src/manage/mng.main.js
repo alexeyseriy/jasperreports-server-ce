@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -93,7 +93,7 @@ orgModule.manager = {
             var entityEvent = event.memo.entityEvent,
                 force = event.memo.force;
 
-            if (force || !this.lastSelectedOrg || this.lastSelectedOrg.id != org.id) {
+            if (force || !this.lastSelectedOrg || this.lastSelectedOrg.id !== org?.id) {
                 var entities = orgModule.entityList.getSelectedEntities();
 
                 if(orgModule.invokeClientAction("cancelIfEdit", { entity: entities[0] || org, entityEvent: entityEvent})) {

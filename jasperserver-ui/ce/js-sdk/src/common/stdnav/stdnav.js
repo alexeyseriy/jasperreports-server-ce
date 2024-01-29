@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -45,6 +45,7 @@ import log from "../logging/logger"
 import stdnavEventHandlers from "./stdnavEventHandlers";
 import stdnavFocusing from "./stdnavFocusing";
 import stdnavModalFocusing from "./stdnavModalFocusing";
+import stdnavAlerting from "./stdnavAlerting";
 import stdnavDebugger from "./stdnavDebugger";
 
 var version = "0.0.1",
@@ -81,13 +82,8 @@ var stdnav = function () {
     // For example: var gridPluginObj = root.stdnav.plugins['grid'];
     this.plugins = {};
 
-    // True if a modal dialog seems to be active (specifically, if
-    // stdnav.beginModalFocus was called).
-    this.modalDialogActive=false;
-
-    // If a modal dialog seems to be active, this is the DOM object of its
-    // root element.  Otherwise, this should be null.
-    this.modalDialogRoot=null;
+    // this is the object of root elements of active dialogs.
+    this.modalDialogRoots = {};
 
     // If set, focus debugging data will be formatted into this element,
     // when it exists, as a simple string.  The element will be updated as
@@ -103,10 +99,9 @@ var stdnav = function () {
 
     // Maximum length of the rendering cache countermeasure string.
     this.maxChaffLength=8;
-
 };
 
-$.extend(stdnav.prototype, stdnavEventHandlers, stdnavFocusing, stdnavModalFocusing, stdnavDebugger, {
+$.extend(stdnav.prototype, stdnavEventHandlers, stdnavFocusing, stdnavModalFocusing, stdnavAlerting, stdnavDebugger, {
     // ===LIMITS AND SAFETY BAILOUTS=======================================
 
     // Prevents runaway recursion in case of a jQuery filter bug or other
@@ -206,7 +201,12 @@ $.extend(stdnav.prototype, stdnavEventHandlers, stdnavFocusing, stdnavModalFocus
         var depth = 0,
             items_at_current_depth = 1,
             items_at_next_depth = 0,
-            iterator = start;
+            iterator = start,
+            enqueueFn = function (index, child) {
+                // Enqueue children for search after this level is completed.
+                search_queue.unshift(child);
+                items_at_next_depth++;
+            };
         while (iterator !== undefined) {
             // See if the iterator is the element we're looking for.
             if ($(iterator).is(target) && (depth > 0)) {
@@ -217,11 +217,7 @@ $.extend(stdnav.prototype, stdnavEventHandlers, stdnavFocusing, stdnavModalFocus
             // See if its children should be enqueued for search.
             if (!($(iterator).is(barrier))) {
                 var children = $(iterator).children();
-                children.each(function (index, child) {
-                    // Enqueue children for search after this level is completed.
-                    search_queue.unshift(child);
-                    items_at_next_depth++;
-                });
+                children.each(enqueueFn);
             }
 
             // See if this was our last element at this depth (our next dequeue
@@ -509,10 +505,8 @@ $.extend(stdnav.prototype, stdnavEventHandlers, stdnavFocusing, stdnavModalFocus
             $('#IECM').html('&nbsp;&nbsp;');
         }
 
-        this.forceFocus($initialFocus[$initialFocus.length-1]);
+        //this.forceFocus($initialFocus[$initialFocus.length-1]);
 
-        $('body').attr('aria-busy', false);
-        $('#ariastatus').attr('aria-label', "Standard Navigation initialized.");
         this.updateDebugInfo();
     },
 
@@ -532,8 +526,8 @@ $.extend(stdnav.prototype, stdnavEventHandlers, stdnavFocusing, stdnavModalFocus
 
     // ===DOM EVENT HANDLERS, EVENT BINDING AND UNBINDING==================
     _bindFocusEvents: function() {
-        this.$body.on('focusin', this._onFocusIn);
-        this.$body.on('focusout', this._onFocusOut);
+        document.addEventListener('focusin', this._onFocusIn);
+        document.addEventListener('focusout', this._onFocusOut);
     },
 
     _bindKeyboardEvents: function () {
@@ -575,8 +569,8 @@ $.extend(stdnav.prototype, stdnavEventHandlers, stdnavFocusing, stdnavModalFocus
     },
 
     _unbindFocusEvents: function () {
-        this.$body.off('focusin', this._onFocusIn);
-        this.$body.off('focusout', this._onFocusOut);
+        document.removeEventListener('focusin', this._onFocusIn);
+        document.removeEventListener('focusout', this._onFocusOut);
     },
 
     // ===BEHAVIOR ASSEMBLY================================================
@@ -794,10 +788,10 @@ $.extend(stdnav.prototype, stdnavEventHandlers, stdnavFocusing, stdnavModalFocus
         // Figure out the default navtype for the node/element type.
         var defaultNavtype;
         var nodeName = el.prop('nodeName');
-        $.each(this.navtype_nodeNames, function (navtype, supportedNodeNames) {
+        $.each(this.navtype_nodeNames, function (navigationType, supportedNodeNames) {
             if ($.inArray(nodeName, supportedNodeNames) > -1) {
                 if (self.isNavigable(element)) {
-                    defaultNavtype = navtype;
+                    defaultNavtype = navigationType;
                 }
             }
         });
@@ -919,7 +913,7 @@ $.extend(stdnav.prototype, stdnavEventHandlers, stdnavFocusing, stdnavModalFocus
     //    the system that something other than StdNav is going to handle the
     //    event.
     _runActionDesc: function (actionDesc, element) {
-        var retval = true;
+        var retval = true, context;
         if ((typeof actionDesc === "string") || (actionDesc instanceof String)) {
             // A string can be used to indicate a simple subfocus change to a new
             // element, for example, "#someOtherDiv".
@@ -950,7 +944,7 @@ $.extend(stdnav.prototype, stdnavEventHandlers, stdnavFocusing, stdnavModalFocus
             } else if (actionDesc.substr(0, 1) == '@') {
                 var funcName, func, paramstr, colon, lparen, rparen;
                 // If no context is specified, use the stdnav instance.
-                var context = this;
+                context = this;
                 if (actionDesc.substr(1, 1) == '@') {
                     context = $(element).data('stdnav-context');
                 } else {
@@ -980,7 +974,7 @@ $.extend(stdnav.prototype, stdnavEventHandlers, stdnavFocusing, stdnavModalFocus
             if (actionDesc[1] === undefined) {
                 logger.debug("undefined actionDesc[1]");
             }
-            var context = actionDesc[0];
+            context = actionDesc[0];
             if ((context === null) || typeof (context) === 'undefined') {
                 context = this;
             }
@@ -996,11 +990,11 @@ $.extend(stdnav.prototype, stdnavEventHandlers, stdnavFocusing, stdnavModalFocus
 });
 
 function isStdnavEnabledForElement(el) {
-    var parents = $(el).parents(),
+    var parents = [el, ...$(el).parents()],
         isEnabled;
 
     for (var n = 0; n < parents.length; n++) {
-        var attrValue = $(parents[n]).attr('js-stdnav');
+        let attrValue = $(parents[n]).attr('js-stdnav');
 
         if (attrValue === 'true') {
             isEnabled = true;
@@ -1016,30 +1010,65 @@ function isStdnavEnabledForElement(el) {
     return Boolean(isEnabled);
 }
 
-function stdnavAvailabilityAroundAspect(invocation, ev) {
-    var args = Array.prototype.slice.call(arguments, 1);
+function stdnavAvailabilityAroundAspect(invocation, callback, ev) {
+    var args = Array.prototype.slice.call(arguments, 2);
 
     if (isStdnavEnabledForElement(ev.target)) {
         return invocation.apply(this, args);
+    } else {
+        callback && callback.apply(this, args)
     }
 
     logger.debug("StdNav is disabled in this subdom, aborting action");
 }
 
+function focusInCallback(ev) {
+    $('.subfocus').removeClass('subfocus');
+    if (this._priorSubfocus){
+        this.runAction('subfocusout', this._priorSubfocus);
+        this._priorSubfocus = undefined;
+    }
+
+    if (this._priorFocus){
+        this.runAction('focusout', this._priorFocus);
+        // If the control was temporarily made focusable, undo that.
+        this._unforceFocus(this._priorFocus);
+        this._priorFocus = undefined
+    }
+
+    $('.superfocus').removeClass('superfocus');
+    if (this._priorSuperfocus){
+        this.runAction('superfocusout', this._priorSuperfocus);
+        this.resumeFocusability(this._priorSuperfocus);
+        this._priorSuperfocus = undefined;
+    }
+}
+
+var handlers = [
+    {name: "_onFocusIn", func: stdnavAvailabilityAroundAspect, callback: focusInCallback},
+    {name: "_onFocusOut", func: stdnavAvailabilityAroundAspect},
+    {name: "_onKeydown", func: stdnavAvailabilityAroundAspect},
+    {name: "_onClick", func: stdnavAvailabilityAroundAspect},
+    {name: "_onDblClick", func: stdnavAvailabilityAroundAspect},
+    {name: "_onMouseDown", func: stdnavAvailabilityAroundAspect},
+    {name: "_onMouseOut", func: stdnavAvailabilityAroundAspect},
+    {name: "_onMouseOver", func: stdnavAvailabilityAroundAspect},
+    {name: "_onMouseUp", func: stdnavAvailabilityAroundAspect},
+    {name: "_onLabeledTagOver", func: stdnavAvailabilityAroundAspect},
+    {name: "_onTouchStart", func: stdnavAvailabilityAroundAspect}
+];
+
 function wrapEventHandlersIntoStdnavAvailabilityAspect(context) {
     var noop = function() {};
 
-    var handlers = ["_onFocusIn", "_onFocusOut", "_onKeydown", "_onClick",
-        "_onDblClick", "_onMouseDown", "_onMouseOut",
-        "_onMouseOver", "_onMouseUp", "_onLabeledTagOver", "_onTouchStart"];
-
     _.each(handlers, function(handler) {
-        var originalHandler = context[handler];
+        const {name, func, callback} = handler;
+        var originalHandler = context[name];
 
         if (originalHandler) {
-            context[handler] = _.bind(stdnavAvailabilityAroundAspect, context, originalHandler);
+            context[name] = _.bind(func, context, originalHandler, callback);
         } else {
-            context[handler] = noop;
+            context[name] = noop;
         }
     });
 }

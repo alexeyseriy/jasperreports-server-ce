@@ -1,6 +1,6 @@
 <%@ page contentType="text/html; charset=utf-8" %>
 <%--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -167,7 +167,7 @@ FINALLY
                                                             <spring:bind path="queryReference.referenceURI">
                                                                 <label  for="resourceUri" class="control browser <c:if test="${status.error}"> error</c:if>">
                                                                     <input id="resourceUri" type="text" name="${status.expression}" value="${queryReference.source == 'CONTENT_REPOSITORY' ? status.value : ''}" title="<spring:message code="resource.report.repository"/>" <c:if test="${empty status.value || queryReference.source != 'CONTENT_REPOSITORY'}">disabled="disabled"</c:if>/>
-                                                                    <button id="browser_button" type="button" class="button action" <c:if test="${empty status.value and queryReference.source != 'CONTENT_REPOSITORY'}">disabled="disabled"</c:if>><span class="wrap"><spring:message code="button.browse"/><span class="icon"></span></span></button>
+                                                                    <button id="browser_button" type="button" class="button action up" <c:if test="${empty status.value and queryReference.source != 'CONTENT_REPOSITORY'}">disabled="disabled"</c:if>><span class="wrap"><spring:message code="button.browse"/><span class="icon"></span></span></button>
                                                                     <c:if test="${queryReference.source == 'CONTENT_REPOSITORY' and status.error}">
                                                                         <span class="message warning">${status.errorMessage}</span>
                                                                     </c:if>

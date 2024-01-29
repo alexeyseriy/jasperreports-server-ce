@@ -1,0 +1,11 @@
+
+Name: Connectors
+Mongodb-Artifacts: bson-3.10.2.jar mongodb-driver-3.10.2.jar mongodb-dri
+ ver-core-3.10.2.jar
+Postgresql-Artifacts: postgresql-42.2.20.jar
+Sqlite-Artifacts: sqlite-jdbc-3.40.0.0.jar
+Ti-Mongodb-Artifacts: TImongodb-6.0.2.000510.jar
+
+Name: Observability
+Javamelody-Artifacts: javamelody-core-1.91.0.jar jrobin-1.5.9.jar
+

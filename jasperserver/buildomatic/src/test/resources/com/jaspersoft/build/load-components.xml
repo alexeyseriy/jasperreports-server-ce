@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<project name="loadfile-test" basedir="../../..">
+
+
+    <target name="init">
+        <echo file="test.log" append="true">${basedir}</echo>
+        <echo file="test.log" append="true"></echo>
+
+        <property name="currentConf" value="${basedir}/src/test/resources/com/jaspersoft/build"/>
+        <property name="resources" value="${basedir}/src/test/resources/com/jaspersoft/build/load-components"/>
+
+        <taskdef resource="tasks.properties" onerror="report">
+            <classpath>
+                <fileset dir="${basedir}/lib">
+                    <include name="*.jar"/>
+                    <exclude name="jacocoant*.jar"/>
+                </fileset>
+            </classpath>
+        </taskdef>
+    </target>
+
+    <target name="setUp">
+        <tempfile property="temp.dir" destDir="${java.io.tmpdir}" prefix="components"/>
+        <mkdir dir="${temp.dir}"/>
+        <echo file="test.log" append="true">${temp.dir}</echo>
+        <echo file="test.log" append="true"></echo>
+        <mkdir dir="${temp.dir}/webapp"/>
+        <mkdir dir="${temp.dir}/webapp/META-INF"/>
+        <touch file="${temp.dir}/webapp/META-INF/MANIFEST.MF"/>
+    </target>
+
+    <!--    -->
+    <target name="emptyMasterProps" depends="init">
+        <property file="${currentConf}/components.properties"/>
+
+        <loadcomponents property="test1" enableIndex="enabled.idx" disableIndex="disabled.idx" target="${temp.dir}">
+            <file file="${resources}/components/META-INF/components.properties"/>
+        </loadcomponents>
+    </target>
+
+    <target name="enableAllComponents" depends="init">
+        <!-- mocking master.properties -->
+        <property name="components.enabled" value="true"/>
+
+        <property file="${currentConf}/components.properties"/>
+
+        <loadcomponents property="test2" enableIndex="enabled.idx" disableIndex="disabled.idx" target="${temp.dir}">
+            <file file="${resources}/components/META-INF/components.properties"/>
+        </loadcomponents>
+    </target>
+
+    <target name="disableAllComponents" depends="init">
+        <!-- mocking master.properties -->
+        <property name="components.enabled" value="false"/>
+
+        <property file="${currentConf}/components.properties"/>
+
+        <loadcomponents property="test3" enableIndex="enabled.idx" disableIndex="disabled.idx" target="${temp.dir}">
+            <file file="${resources}/components/META-INF/components.properties"/>
+        </loadcomponents>
+    </target>
+
+    <target name="disableAllConnectors" depends="init">
+        <!-- mocking master.properties -->
+        <property name="components.enabled" value="true"/>
+        <property name="components.connectors.enabled" value="false"/>
+
+        <property file="${currentConf}/components.properties"/>
+
+        <loadcomponents property="test4" enableIndex="enabled.idx" disableIndex="disabled.idx" target="${temp.dir}">
+            <file file="${resources}/components/META-INF/components.properties"/>
+        </loadcomponents>
+    </target>
+
+    <target name="disableAllObservability" depends="init">
+        <!-- mocking master.properties -->
+        <property name="components.enabled" value="true"/>
+        <property name="components.observability.enabled" value="false"/>
+
+        <property file="${currentConf}/components.properties"/>
+
+        <loadcomponents property="test5" enableIndex="enabled.idx" disableIndex="disabled.idx" target="${temp.dir}">
+            <file file="${resources}/components/META-INF/components.properties"/>
+        </loadcomponents>
+    </target>
+
+    <target name="disableSingleConnector" depends="init">
+        <!-- mocking master.properties -->
+        <!--        <property name="components.enabled" value="true" />-->
+        <property name="connectors.athena.enabled" value="false"/>
+
+        <property file="${currentConf}/components.properties"/>
+
+        <loadcomponents property="test6" enableIndex="enabled.idx" disableIndex="disabled.idx" target="${temp.dir}">
+            <file file="${resources}/components/META-INF/components.properties"/>
+        </loadcomponents>
+    </target>
+
+    <target name="overrideZipFromCustomPackage" depends="init">
+        <property file="${resources}/test_master.properties"/>
+
+        <property file="${currentConf}/components.properties"/>
+
+        <loadcomponents property="test7" enableIndex="enabled.idx" disableIndex="disabled.idx" target="${temp.dir}">
+            <file file="${resources}/custom-components/META-INF/components.properties"/>
+        </loadcomponents>
+
+        <loadcomponents property="test7" enableIndex="enabled.idx" disableIndex="disabled.idx" target="${temp.dir}">
+            <zipentry
+                    zipfile="${resources}/components-package-3.0.0-SNAPSHOT.zip"
+                    name="META-INF/components.properties"/>
+        </loadcomponents>
+    </target>
+
+    <target name="loadEnabledComponentPropsFromManifest" depends="init">
+
+        <!--        <property file="${resources}/test_master.properties"/>-->
+
+        <property file="${currentConf}/components.properties"/>
+
+
+        <loadcomponents property="driversProps"
+                        enableIndex="enabled.idx" disableIndex="disabled.idx" target="${temp.dir}">
+            <file file="${resources}/war/META-INF/MANIFEST.MF"/>
+        </loadcomponents>
+
+    </target>
+
+    <target name="disableComponentsFromManifest" depends="init">
+        <property name="components.enabled" value="false"/>
+
+        <!--        <property file="${resources}/test_master.properties"/>-->
+
+        <property file="${currentConf}/components.properties"/>
+
+        <loadcomponents property="driversProps"
+                        enableIndex="enabled.idx" disableIndex="disabled.idx" target="${temp.dir}">
+            <file file="${resources}/war/META-INF/MANIFEST.MF"/>
+        </loadcomponents>
+    </target>
+
+    <target name="disableConnectorsFromManifest" depends="init">
+        <property name="components.connectors.enabled" value="false"/>
+
+        <!--        <property file="${resources}/test_master.properties"/>-->
+
+        <property file="${currentConf}/components.properties"/>
+
+        <loadcomponents property="driversProps"
+                        enableIndex="enabled.idx" disableIndex="disabled.idx" target="${temp.dir}">
+            <file file="${resources}/components/META-INF/components.properties"/>
+        </loadcomponents>
+
+        <loadcomponents property="driversProps"
+                        enableIndex="enabled.idx" disableIndex="disabled.idx" target="${temp.dir}">
+            <file file="${resources}/war/META-INF/MANIFEST.MF"/>
+        </loadcomponents>
+    </target>
+
+    <target name="enableObservabilityFromManifest" depends="init">
+        <property name="components.observability.enabled" value="true"/>
+        <!--        <property file="${resources}/test_master.properties"/>-->
+
+        <property file="${currentConf}/components.properties"/>
+
+        <loadcomponents property="driversProps"
+                        enableIndex="enabled.idx" disableIndex="disabled.idx" target="${temp.dir}">
+            <file file="${resources}/components/META-INF/components.properties"/>
+        </loadcomponents>
+
+        <loadcomponents property="driversProps"
+                        enableIndex="enabled.idx" disableIndex="disabled.idx" target="${temp.dir}">
+            <file file="${resources}/war/META-INF/MANIFEST.MF"/>
+        </loadcomponents>
+    </target>
+
+    <target name="correctManifestForPropSource" depends="init">
+        <property name="components.observability.enabled" value="true"/>
+        <!--        <property file="${resources}/test_master.properties"/>-->
+
+        <property file="${currentConf}/components.properties"/>
+
+        <loadcomponents property="driversProps"
+                        enableIndex="enabled.idx" disableIndex="disabled.idx" target="${temp.dir}"
+                        destManifest="${resources}/war/META-INF/MANIFEST.MF">
+            <file file="${resources}/components/META-INF/components.properties"/>
+        </loadcomponents>
+
+    </target>
+
+    <target name="upgradeLib" depends="init">
+        <property file="${currentConf}/components.properties"/>
+
+        <loadcomponents property="upgradeLibTestProp" enableIndex="enabled.idx" disableIndex="disabled.idx" target="${temp.dir}">
+            <file file="${resources}/custom-components/META-INF/components.properties"/>
+        </loadcomponents>
+        <loadcomponents property="upgradeLibTestProp"
+                        enableIndex="enabled.idx" disableIndex="disabled.idx" target="${temp.dir}">
+            <file file="${resources}/components/META-INF/components.properties"/>
+        </loadcomponents>
+        <loadcomponents property="upgradeLibTestProp"
+                        enableIndex="enabled.idx" disableIndex="disabled.idx" target="${temp.dir}">
+            <file file="${resources}/war2/META-INF/MANIFEST.MF"/>
+        </loadcomponents>
+    </target>
+    <target name="enableSingleConnectorURL" depends="init">
+        <!-- mocking master.properties -->
+        <property name="connectors.simba-athena.enabled" value=""/>
+        <property name="connectors.simba-athena.artifacts" value=""/>
+        <property name="connectors.simba-athena.url" value="https://s3.amazonaws.com/athena-downloads/drivers/JDBC/SimbaAthenaJDBC-2.0.35.1000/AthenaJDBC42-2.0.35.1000.jar"/>
+        <property file="${currentConf}/components.properties"/>
+
+        <loadcomponents property="test6" enableIndex="enabled.idx" disableIndex="disabled.idx" target="${temp.dir}">
+            <file file="${resources}/components/META-INF/components.properties"/>
+        </loadcomponents>
+    </target>
+    <target name="ShouldRenameDownladedJAR" depends="init">
+        <!-- mocking master.properties -->
+        <property name="connectors.simba-athena.enabled" value=""/>
+        <property name="connectors.simba-athena.artifacts" value="AthenaJDBC42.jar"/>
+        <property name="connectors.simba-athena.url" value="https://s3.amazonaws.com/athena-downloads/drivers/JDBC/SimbaAthenaJDBC-2.0.35.1000/AthenaJDBC42-2.0.35.1000.jar"/>
+        <property file="${currentConf}/components.properties"/>
+
+        <loadcomponents property="test6" enableIndex="enabled.idx" disableIndex="disabled.idx" target="${temp.dir}">
+            <file file="${resources}/components/META-INF/components.properties"/>
+        </loadcomponents>
+    </target>
+    <target name="cleanUp">
+        <delete file="loadfile1.tmp"/>
+    </target>
+
+</project>

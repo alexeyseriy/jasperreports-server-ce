@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -29,6 +29,7 @@ import com.jaspersoft.jasperserver.api.metadata.common.service.impl.hibernate.Pe
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * <p></p>
@@ -37,24 +38,30 @@ import java.util.Date;
  * @version $Id$
  */
 public abstract class RepoResourceItemBase implements IdedRepoObject, Serializable {
-    protected long id;
     protected int version;
 
     protected Date creationDate;
     protected Date updateDate;
 
-    protected String name = null;
     protected String label = null;
     protected String description = null;
 
-    protected RepoFolder parent;
+    public ResourceKey getResourceKey() {
+        return resourceKey;
+    }
+
+    public void setResourceKey(ResourceKey resourceKey) {
+        this.resourceKey = resourceKey;
+    }
+
+    protected ResourceKey resourceKey;
 
     @Override
     public final ResourceLookup toClientLookup() {
         ResourceLookup resourceLookup = new ResourceLookupImpl();
 
-        resourceLookup.setParentFolder(this.getParent().getResourceURI());
-        resourceLookup.setName(getName());
+        resourceLookup.setParentFolder(this.resourceKey.getParent().getResourceURI());
+        resourceLookup.setName(resourceKey.getName());
 
         resourceLookup.setVersion(version);
 
@@ -81,11 +88,11 @@ public abstract class RepoResourceItemBase implements IdedRepoObject, Serializab
     }
 
     public long getId() {
-        return id;
+        return resourceKey.getId();
     }
 
     public void setId(long id) {
-        this.id = id;
+        this.resourceKey.id = id;
     }
 
     public int getVersion() {
@@ -113,11 +120,11 @@ public abstract class RepoResourceItemBase implements IdedRepoObject, Serializab
     }
 
     public String getName() {
-        return name;
+        return resourceKey.getName();
     }
 
     public void setName(String name) {
-        this.name = name;
+        this.resourceKey.name = name;
     }
 
     public String getLabel() {
@@ -137,11 +144,11 @@ public abstract class RepoResourceItemBase implements IdedRepoObject, Serializab
     }
 
     public RepoFolder getParent() {
-        return parent;
+        return resourceKey.getParent();
     }
 
     public void setParent(RepoFolder parent) {
-        this.parent = parent;
+        this.resourceKey.parent = parent;
     }
 
     public abstract String getResourceType();
@@ -153,18 +160,64 @@ public abstract class RepoResourceItemBase implements IdedRepoObject, Serializab
 
         RepoResourceItemBase that = (RepoResourceItemBase) o;
 
-        if (id != that.id) return false;
-        if (name != null ? !name.equals(that.name) : that.name != null) return false;
-        if (parent != null ? !parent.getResourceURI().equals(that.parent.getResourceURI()) : that.parent != null) return false;
+        if (resourceKey.id != that.resourceKey.id) return false;
+        if (!Objects.equals(resourceKey.name, that.resourceKey.name)) return false;
+        if (resourceKey.parent != null ? !resourceKey.parent.getResourceURI().equals(that.resourceKey.parent.getResourceURI()) : that.resourceKey.parent != null) return false;
 
         return true;
     }
 
     @Override
     public int hashCode() {
-        int result = (int) (id ^ (id >>> 32));
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + (parent != null ? parent.getResourceURI().hashCode() : 0);
+        int result = (int) (resourceKey.id ^ (resourceKey.id >>> 32));
+        result = 31 * result + (resourceKey.name != null ? resourceKey.name.hashCode() : 0);
+        result = 31 * result + (resourceKey.parent != null ? resourceKey.parent.getResourceURI().hashCode() : 0);
         return result;
+    }
+
+    public static class ResourceKey implements Serializable {
+
+        protected long id;
+
+        public long getId() {
+            return id;
+        }
+
+        public void setId(long id) {
+            this.id = id;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            ResourceKey that = (ResourceKey) o;
+            return id == that.id && Objects.equals(name, that.name) && Objects.equals(parent, that.parent);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(id, name, parent);
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public RepoFolder getParent() {
+            return parent;
+        }
+
+        public void setParent(RepoFolder parent) {
+            this.parent = parent;
+        }
+
+        protected String name = null;
+
+        protected RepoFolder parent;
     }
 }

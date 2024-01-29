@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved. Confidentiality & Proprietary.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved. Confidentiality & Proprietary.
  * Licensed pursuant to commercial TIBCO End User License Agreement.
  */
 
@@ -170,8 +170,8 @@ function generateIdsForColumns(index, columns) {
         }
         for (var key in level) {
             subArr = level[key];
-            for (var i = 0, l = subArr.length; i < l; i++) {
-                subArr[i].id += '/' + name;
+            for (var j = 0, l = subArr.length; j < l; j++) {
+                subArr[j].id += '/' + name;
             }
             generateIdsForColumns(index + 1, level[key]);
             name++;

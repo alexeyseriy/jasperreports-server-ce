@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -54,12 +54,12 @@ var Truncator = Class.create({
         var columnWidth = null;
         if (fixedWidth) {
             columnWidth = fixedWidth;
-        } else {
-        }    /*
-              Note: commenting this out cause it is causing an error.
-              getMarginLeft, getMarginRight, getPaddingLeft and getPaddingRight where part of the old search layout..
-              will send an email out on this...
-             */
+        }
+        /*
+          Note: commenting this out cause it is causing an error.
+          getMarginLeft, getMarginRight, getPaddingLeft and getPaddingRight where part of the old search layout..
+          will send an email out on this...
+        */
         //            var parent = $(elements[0].parentNode);
         //            var columnWidth = parent.getWidth() - parent.getMarginLeft() - parent.getMarginRight() - parent.getPaddingLeft() - parent.getPaddingRight();
         //            var columnWidth = parent.getWidth() - getBufferWidth(parent, true);

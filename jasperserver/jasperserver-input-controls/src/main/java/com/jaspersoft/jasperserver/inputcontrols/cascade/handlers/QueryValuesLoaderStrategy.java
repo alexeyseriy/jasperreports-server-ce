@@ -67,7 +67,7 @@ public class QueryValuesLoaderStrategy implements ValuesLoaderStrategy {
         // if criteria is not null, construct new query with criteria
         // if fails to update query with new criteria info, roll back to search criteria in memory
         try {
-            String newSQL = filterResolver.updateQueryWithNewSearchCriteria(query.getSql(), parametersWithSchema, inputControl.getQueryValueColumn(), criteria);
+            String newSQL = filterResolver.updateQueryWithNewSearchCriteria(query.getSql(), parametersWithSchema, inputControl, criteria);
 
             if (newSQL != null) {
                 // update new query with criteria filter

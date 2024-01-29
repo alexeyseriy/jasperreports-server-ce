@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -39,6 +39,7 @@ import com.jaspersoft.jasperserver.inputcontrols.cascade.InputControlValidationE
 import com.jaspersoft.jasperserver.inputcontrols.cascade.InputControlsLogicService;
 import com.jaspersoft.jasperserver.inputcontrols.cascade.InputControlsValidationException;
 import com.jaspersoft.jasperserver.war.util.SessionObjectSerieAccessor;
+import net.sf.jasperreports.engine.JasperReportsContext;
 import net.sf.jasperreports.web.servlets.JasperPrintAccessor;
 import net.sf.jasperreports.web.servlets.ReportPageStatus;
 import org.junit.Before;
@@ -112,6 +113,9 @@ public class ViewReportActionTest {
     private RepositoryService repositoryService;
 
     private RequestContext requestContext = mock(RequestContext.class);
+
+    @Mock
+    private JasperReportsContext jasperReportsContext;
 
     @Before
     public void setUp() {
@@ -338,6 +342,7 @@ public class ViewReportActionTest {
         doReturn(setupParameterMap(requestParams)).when(requestContext).getRequestParameters();
 
         doReturn(httpServletRequestMock).when(externalContext).getNativeRequest();
+        doReturn(setupParameterMap(requestParams)).when(externalContext).getRequestParameterMap();
     }
 
     private void mockRequestContext(

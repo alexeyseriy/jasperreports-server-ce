@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -40,6 +40,6 @@ public interface ReportExecutionJobFileSaving {
     /*
      * users can plug in their custom codes to override the save feature
      */
-    public void save(ReportExecutionJob job, ReportOutput output, boolean useFolderHierarchy, ReportJob jobDetails);
+    public void save(ReportExecutionJob job, ReportOutput output, boolean useFolderHierarchy, ReportJob jobDetails,boolean isDashboardExecution);
 
 }

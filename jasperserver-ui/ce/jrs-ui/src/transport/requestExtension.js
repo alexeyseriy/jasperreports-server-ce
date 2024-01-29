@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -51,12 +51,12 @@ export const request = function () {
     // TODO: observableRequest functionality is temporary here. This should be revised after Amber release.
 
     var $document = $(document);
-    function isSameOrigin(serverOrigin) {
-        return origin === serverOrigin;
+    function isSameOrigin(sameServerOrigin) {
+        return origin === sameServerOrigin;
     }
 
-    function isSameDomainWithDifferentPath(serverOrigin) {
-        return currentUri.search(serverOrigin + configs.urlContext) < 0;
+    function isSameDomainWithDifferentPath(sameDomainServerOrigin) {
+        return currentUri.search(sameDomainServerOrigin + configs.urlContext) < 0;
     }
 
 

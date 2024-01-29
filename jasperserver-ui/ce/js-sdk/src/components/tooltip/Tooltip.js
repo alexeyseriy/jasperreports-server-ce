@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -29,7 +29,7 @@ import log from "../../common/logging/logger";
 import Event from '../utils/Event';
 import TooltipView from './view/TooltipView';
 import TooltipModel from './model/TooltipModel';
-import placements from './enum/tooltipPlacements';
+import tooltipPlacements from './enum/tooltipPlacements';
 
 let logger = log.register("tooltip");
 
@@ -135,7 +135,7 @@ var Tooltip = Backbone.View.extend({
     },
     _positionTooltip: function () {
         var position, options = {
-            placements: placements,
+            placements: tooltipPlacements,
             placement: this.tooltipModel.get('placement'),
             offset: this.tooltipModel.get('offset'),
             targetRect: this._getPosition(this.$el),
@@ -163,7 +163,7 @@ var Tooltip = Backbone.View.extend({
         return _.extend({}, elRect, scroll, outerDims, elOffset);
     }
 }, {
-    PLACEMENTS: placements,
+    PLACEMENTS: tooltipPlacements,
     getTooltipPosition: function (options) {
         var top = 0, left = 0, placements = options.placements, placement = options.placement, targetRect = options.targetRect, tooltipRect = options.tooltipRect, offset = options.offset, tooltipMargins = options.tooltipMargins, tooltipPaddings = options.tooltipPaddings;
         switch (placement) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -36,7 +36,6 @@ var accessibilityModule = {
     delayTime: 500,
     components: [],
     currentTabIndex: -1,
-    disabled: true,
     initialize: function () {
         var elements = jQuery('*[' + this.ATTR_TAB_INDEX + ']');
         elements.each(function (element) {
@@ -44,12 +43,6 @@ var accessibilityModule = {
             tabIndex > 0 && (this.components[tabIndex] = element);
         }.bind(this));
         this.enable();
-    },
-    enable: function () {
-        this.disabled = false;
-    },
-    disable: function () {
-        this.disabled = true;
     },
     _focusByType: {
         'tree': function (component) {
@@ -185,22 +178,5 @@ var accessibilityModule = {
         component && this._blurComponent(component);
     }
 };
-document.observe('key:tab', function (event) {
-    if (!accessibilityModule.disabled) {
-        var tabIndex = accessibilityModule.getTabIndex(event.element());
-        accessibilityModule.blurCurrent();
-        isShiftHeld(event) ? accessibilityModule.focusPrevious(tabIndex) : accessibilityModule.focusNext(tabIndex);
-        event.preventDefault();
-        event.stopPropagation();
-        return false;
-    }
-});    //document.onfocusout = function(e) {
-//    var event = e ? e : Event.extend(window.event);
-//    var tabIndex = accessibilityModule.getTabIndex(event.target);
-//
-//    accessibilityModule.blurByIndex(tabIndex);
-//};
-//
-//document.addEventListener && document.addEventListener('blur', document.onfocusout, true);
 
 export default accessibilityModule;

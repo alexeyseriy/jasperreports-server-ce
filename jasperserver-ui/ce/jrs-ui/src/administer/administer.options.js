@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -33,6 +33,7 @@ import jQuery from 'jquery';
 
 var Options = {
     SAVE_PFX: 'save',
+    TOGGLE_PFX: 'toggle',
     CANCEL_PFX: 'cancel',
     ERROR_PFX: 'error_',
     INPUT_PFX: 'input_',
@@ -57,17 +58,24 @@ var Options = {
                 return;
             }
             var button = matchAny(elem, ['#' + Options.SAVE_PFX], true);
-            if (button) {
+            if (button && !button.disabled) {
                 Event.stop(e);
-                var name = button.name;
+                Options.saveValue(button.name);
+                return;
+            }
+            const toggleButton = matchAny(elem, ['#' + Options.TOGGLE_PFX], true);
+            if (toggleButton) {
+                Event.stop(e);
+                const name = toggleButton.getElementsByTagName("input")[0].name;
                 Options.saveValue(name);
                 return;
             }
+
             button = matchAny(elem, ['#' + Options.CANCEL_PFX], true);
-            if (button) {
+            if (button && !button.disabled) {
                 Event.stop(e);
                 Options.resetValue(button.name, button.value);
-            }    // observe inputs
+            }
             // observe inputs
             if (matchAny(elem, [
                 '.checkBox > input',
@@ -103,14 +111,21 @@ var Options = {
         });
     },
     saveValue: function (nm) {
-        var input = document.getElementById(Options.INPUT_PFX + nm);
-        var params = {
+        const input = document.getElementById(Options.INPUT_PFX + nm);
+        let inputValue;
+        if(nm ==='showDistinctRowValues'){
+            inputValue = input.type == 'checkbox' ? !input.checked : input.value
+        }else{
+            inputValue = input.type == 'checkbox' ? input.checked : input.value
+        }
+        const params = {
             name: nm,
-            value: input.type == 'checkbox' ? input.checked : input.value,
+            value: inputValue,
             _flowExecutionKey: Administer.flowExecutionKey,
             _eventId: 'saveSingleProperty'
         };
-        var url = 'flow.html?' + Object.toQueryString(params);
+
+        const url = 'flow.html?' + Object.toQueryString(params);
         Administer._sendRequest(url, params, Options._updateCallback);
     },
     resetValue: function (nm, vl) {

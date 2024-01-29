@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -349,6 +349,103 @@ describe('dynamicTree', function () {
                 var rootNodeTarget = $('#' + rootNode.NODE_ID_PREFIX + rootNode.id).children();
                 rootNodeTarget.simulate('dblclick');
                 expect(rootNode.handleNode).toHaveBeenCalled();
+            });
+            it('should _selectOrEditNode with no focus', function () {
+                tree.renderTree();
+                var rootNodeTarget = $('#' + rootNode.NODE_ID_PREFIX + rootNode.id).children();
+                rootNodeTarget.simulate('mousedown');
+                rootNodeTarget.simulate('mouseup');
+                var editSpy = spyOn(tree.selectedNodes[0], "edit")
+                tree._selectOrEditNode(null, tree.selectedNodes[0], false, false, false, {shouldFocus: false});
+                expect(editSpy).toHaveBeenCalled();
+            });
+            it('should _selectInwards not to expand', function () {
+                tree.renderTree();
+                var rootNodeTarget = $('#' + rootNode.NODE_ID_PREFIX + rootNode.id).children();
+                rootNodeTarget.simulate('mousedown');
+                rootNodeTarget.simulate('mouseup');
+                var selectSpy = spyOn(tree.selectedNodes[0].childs[0], 'select');
+                tree._selectInwards(tree.selectedNodes[0]);
+                expect(selectSpy).toHaveBeenCalled();
+            });
+            it('should _selectInwards to expand', function () {
+                tree.renderTree();
+                var rootNodeTarget = $('#' + rootNode.NODE_ID_PREFIX + rootNode.id).children();
+                rootNodeTarget.simulate('mousedown');
+                rootNodeTarget.simulate('mouseup');
+                spyOn(tree.selectedNodes[0], 'isOpen').and.returnValue(false);
+                var handleNodeSpy = spyOn(tree.selectedNodes[0], 'handleNode');
+                tree._selectInwards(tree.selectedNodes[0]);
+                expect(handleNodeSpy).toHaveBeenCalled();
+            });
+            it('should _selectOutwards to expand', function () {
+                tree.renderTree();
+                var rootNodeTarget = $('#' + rootNode.NODE_ID_PREFIX + rootNode.id).children();
+                rootNodeTarget.simulate('mousedown');
+                rootNodeTarget.simulate('mouseup');
+                var handleNodeSpy = spyOn(tree.selectedNodes[0], 'handleNode');
+                tree._selectOutwards(tree.selectedNodes[0]);
+                expect(handleNodeSpy).toHaveBeenCalled();
+            });
+            it('should _selectOutwards not to expand', function () {
+                tree.renderTree();
+                var rootNodeTarget = $('#' + rootNode.NODE_ID_PREFIX + rootNode.id).children();
+                rootNodeTarget.simulate('mousedown');
+                rootNodeTarget.simulate('mouseup');
+                spyOn(tree.selectedNodes[0], 'isOpen').and.returnValue(false);
+                var handleNodeSpy = spyOn(tree.selectedNodes[0], 'handleNode');
+                tree._selectOutwards(tree.selectedNodes[0]);
+                expect(handleNodeSpy).not.toHaveBeenCalled();
+            });
+            it('should expand or collapse', function () {
+                tree.renderTree();
+                var rootNodeTarget = $('#' + rootNode.NODE_ID_PREFIX + rootNode.id).children();
+                rootNodeTarget.simulate('mousedown');
+                rootNodeTarget.simulate('mouseup');
+                spyOn(tree.selectedNodes[0], 'isOpen').and.returnValue(false);
+                var handleNodeSpy = spyOn(tree.selectedNodes[0], 'handleNode');
+                tree._expandOrCollapse(tree.selectedNodes[0]);
+                expect(handleNodeSpy).toHaveBeenCalled();
+            });
+            it('should select next node', function () {
+                tree.renderTree();
+                var rootNodeTarget = $('#' + rootNode.NODE_ID_PREFIX + rootNode.id).children();
+                rootNodeTarget.simulate('mousedown');
+                rootNodeTarget.simulate('mouseup');
+                var selectSpy = spyOn(tree.selectedNodes[0].childs[0], 'select');
+                spyOn(tree.selectedNodes[0], 'deselect').and.returnValue(true);
+                tree._selectNextNode(tree.selectedNodes[0]);
+                expect(selectSpy).toHaveBeenCalled();
+            });
+            it('should select previous node', function () {
+                tree.renderTree();
+                var rootNodeTarget = $('#' + rootNode.NODE_ID_PREFIX + rootNode.id).children();
+                rootNodeTarget.simulate('mousedown');
+                rootNodeTarget.simulate('mouseup');
+                var selectSpy = spyOn(tree.selectedNodes[0].childs[0], 'select');
+                spyOn(tree.selectedNodes[0], 'deselect').and.returnValue(true);
+                tree._selectPreviousNode(tree.selectedNodes[0]);
+                expect(selectSpy).not.toHaveBeenCalled();
+            });
+            it('should select first visible node', function () {
+                tree.renderTree();
+                var rootNodeTarget = $('#' + rootNode.NODE_ID_PREFIX + rootNode.id).children();
+                rootNodeTarget.simulate('mousedown');
+                rootNodeTarget.simulate('mouseup');
+                var selectSpy = spyOn(tree.selectedNodes[0], 'select');
+                spyOn(tree.selectedNodes[0].childs[0], 'select').and.returnValue(true);
+                tree._selectFirstVisibleNode(tree.selectedNodes[0].childs[0]);
+                expect(selectSpy).toHaveBeenCalled();
+            });
+            it('should select last visible node', function () {
+                tree.renderTree();
+                var rootNodeTarget = $('#' + rootNode.NODE_ID_PREFIX + rootNode.id).children();
+                rootNodeTarget.simulate('mousedown');
+                rootNodeTarget.simulate('mouseup');
+                var selectSpy = spyOn(tree.selectedNodes[0].childs[2], 'select');
+                spyOn(tree.selectedNodes[0].childs[0], 'select').and.returnValue(true);
+                tree._selectLastVisibleNode(tree.selectedNodes[0].childs[0]);
+                expect(selectSpy).toHaveBeenCalled();
             });
         });
     });

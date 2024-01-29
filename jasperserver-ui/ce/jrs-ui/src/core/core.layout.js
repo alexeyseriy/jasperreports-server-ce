@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -59,8 +59,8 @@ var layoutModule = {
     TREE_CONTAINER_PATTERN: '.collapsible',
     TOOLBAR_CAPSULE_PATTERN: '#toolbar .capsule',
     NAVIGATION_MUTTON_PATTERN: 'li.mutton',
-    NAVIGATION_PATTERN: '#navigationOptions li',
-    NAVIGATION_HOVER_PATTERN: '#navigationOptions li.over',
+    NAVIGATION_PATTERN: '.js-navigationOptions li',
+    NAVIGATION_HOVER_PATTERN: '.js-navigationOptions li.over',
     META_LINKS_PATTERN: '#metaLinks #main_logOut_link',
     BUTTON_SET_BUTTON: '.buttonSet > *',
     TABSET_TAB_PATTERN: '.tab',
@@ -73,6 +73,7 @@ var layoutModule = {
     LIST_ITEM_WRAP_PATTERN: '.wrap',
     DISCLOSURE_BUTTON_PATTERN: '.disclosure',
     // Entries in menu bars, popup menus, dropdown menus, and context menus.
+    MENU_PATTERN: '#menu',
     MENU_LIST_PATTERN: '#menu li',
     // Visual separators in menus that aren't focusable or cursorable.
     SEPARATOR_PATTERN: '.separator',
@@ -108,6 +109,7 @@ var layoutModule = {
     LAST_CLASS: 'last',
     FIRST_CLASS: 'first',
     SCHEDULED_CLASS: 'scheduled',
+    FAVORITE_CLASS: 'favorite',
     // The main menu bar, and any other menu bars.  Not used for context menus.
     MENU_ROOT_CLASS: 'menuRoot',
     // Multi-purpose:
@@ -444,7 +446,6 @@ var layoutModule = {
             pointerX: 'clientX'
         };    //generic code starts here
         //generic code starts here
-        var sizer = dragger.element;
         dragData.sizeableAnchorage = dragger.alignment[dragData.axis] === dragData.myAlignments[0] ? dragData.myAlignments[1] : dragData.myAlignments[0];
         var p = event.changedTouches ? event.changedTouches[0][c[pointerName]] : event[pointerName]();
         var dragDelta = dragger[pointerName] ? p - dragger[pointerName] : 0;
@@ -668,7 +669,7 @@ var layoutModule = {
         jQuery('.column.secondary > div.content > .body').show().height();
     },
     minimize: function (elem, noEffects) {
-        var primaryPanel, ppOffset;
+        var primaryPanel;
         noEffects = true;
         var element = jQuery(elem).hasClass ? elem : jQuery(elem)[0];
         var toMinimize = jQuery(element).hasClass('column') ? element : element.up('.column');
@@ -693,13 +694,11 @@ var layoutModule = {
             jQuery('div.content', toMinimize).hide();
         }
         if (primaryPanel) {
-            ppOffset = jQuery(primaryPanel).css(thisAlignment);
             if (noEffects) {
                 var title = jQuery('div.title', toMinimize).eq(0);
                 var vTitle = jQuery('div.vtitle', toMinimize);
                 var headerText = title.html();
-                var w = title.width();
-                w = jQuery.trim(title.text()).length * 7;
+                var w = jQuery.trim(title.text()).length * 7;
                 primaryPanel.style[thisAlignment] = '24px';
                 jQuery(toMinimize).addClass('minimized');
                 jQuery(toMinimize).removeClass('maximized');
@@ -796,6 +795,7 @@ var layoutModule = {
         jQuery.each(panels, function (i, panel) {
             if (panel.jo.length && panel.jo.is(':visible')) {
                 if (panel.minimized) {
+                    jQuery(panel.jo).children('button.minimize').attr('aria-expanded', false);
                     panel.jo.removeClass('maximized').addClass('minimized');
                     layoutModule.minimize(panel.jo[0], true);
                 } else {
@@ -806,6 +806,7 @@ var layoutModule = {
                             panel.width = panel.minWidth;
                         }
                     }
+                    jQuery(panel.jo).children('button.minimize').attr('aria-expanded', true);
                     panel.jo.removeClass('minimized').addClass('maximized');
                     jMainPanelElement.css(panel.isLeft ? 'left' : 'right', panel.width + 'px');
                     panel.jo.css('width', panel.width + 'px');

@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -326,7 +326,12 @@
                         </if>
                     </then>
                     <else>
-                        <xslt in="${warTargetDir}/WEB-INF/web.xml" out="${warTargetDir}/WEB-INF/web-temp.xml" style="bin/web-xml-cleanup.xsl"/>
+                        <xslt
+                                in="${warTargetDir}/WEB-INF/web.xml"
+                                out="${warTargetDir}/WEB-INF/web-temp.xml"
+                                style="bin/web-xml-cleanup.xsl">
+                            <factory name="net.sf.saxon.TransformerFactoryImpl" />
+                        </xslt>
                         <delete file="${warTargetDir}/WEB-INF/web.xml"/>
                         <move file="${warTargetDir}/WEB-INF/web-temp.xml" tofile="${warTargetDir}/WEB-INF/web.xml"/>
                     </else>
@@ -647,6 +652,7 @@ tomcat copies to this location from the jasperserver war file META-INF/context.x
                     <equals arg1="${appServerType}" arg2="wildfly"/>
                     <then>
                         <copy file="${currentConf}/../../install_resources/jboss7/wildfly/jboss-deployment-structure.xml" toDir="${warTargetDir}/META-INF" overwrite="true"/>
+                        <copy file="${currentConf}/../../install_resources/jboss7/wildfly/undertow-handlers.conf" toDir="${warTargetDir}/WEB-INF" overwrite="true"/>
                     </then>
                 </if>
                 <if>
@@ -723,7 +729,7 @@ tomcat copies to this location from the jasperserver war file META-INF/context.x
                               tofile="${fixedAppServerDir}/modules/jaspersoft/org/apache/batik/main/module.xml"
                               overwrite="true"/>
                         <copy toDir="${fixedAppServerDir}/modules/jaspersoft/org/apache/batik/main">
-                              <fileset dir="${warTargetDir}/WEB-INF/lib" includes="batik-anim-1.14.jar, batik-awt-util-1.14.jar, batik-bridge-1.14.jar, batik-constants-1.14.jar, batik-css-1.14.jar, batik-dom-1.14.jar, batik-ext-1.14.jar, batik-gvt-1.14.jar, batik-i18n-1.14.jar, batik-parser-1.14.jar, batik-script-1.14.jar, batik-svg-dom-1.14.jar, batik-svggen-1.14.jar, batik-transcoder-1.14.jar, batik-util-1.14.jar, batik-xml-1.14.jar, batik-shared-resources-1.14.jar, xml-apis-ext-1.3.04.jar, xmlgraphics-commons-2.6.jar"/>
+                              <fileset dir="${warTargetDir}/WEB-INF/lib" includes="batik-anim-1.16.jar, batik-awt-util-1.16.jar, batik-bridge-1.16.jar, batik-constants-1.16.jar, batik-css-1.16.jar, batik-dom-1.16.jar, batik-ext-1.16.jar, batik-gvt-1.16.jar, batik-i18n-1.16.jar, batik-parser-1.16.jar, batik-script-1.16.jar, batik-svg-dom-1.16.jar, batik-svggen-1.16.jar, batik-transcoder-1.16.jar, batik-util-1.16.jar, batik-xml-1.16.jar, batik-shared-resources-1.16.jar, xml-apis-ext-1.3.04.jar, xmlgraphics-commons-2.7.jar"/>
                         </copy>
 
                         <copy file="${currentConf}/../../install_resources/jboss7/module_descriptors/module_javax_validation_api.xml"
@@ -889,7 +895,7 @@ tomcat copies to this location from the jasperserver war file META-INF/context.x
                         -->
                         <delete>
                              <fileset dir="${warTargetDir}/WEB-INF/lib"
-                                      includes="batik-anim-1.14.jar, batik-awt-util-1.14.jar, batik-bridge-1.14.jar, batik-constants-1.14.jar, batik-css-1.14.jar, batik-dom-1.14.jar, batik-ext-1.14.jar, batik-gvt-1.14.jar, batik-i18n-1.14.jar, batik-parser-1.14.jar, batik-script-1.14.jar, batik-svg-dom-1.14.jar, batik-svggen-1.14.jar, batik-transcoder-1.14.jar, batik-util-1.14.jar, batik-xml-1.14.jar, batik-shared-resources-1.14.jar, xml-apis-ext-1.3.04.jar, xmlgraphics-commons-2.6.jar"/>
+                                      includes="batik-anim-1.16.jar, batik-awt-util-1.16.jar, batik-bridge-1.16.jar, batik-constants-1.16.jar, batik-css-1.16.jar, batik-dom-1.16.jar, batik-ext-1.16.jar, batik-gvt-1.16.jar, batik-i18n-1.16.jar, batik-parser-1.16.jar, batik-script-1.16.jar, batik-svg-dom-1.16.jar, batik-svggen-1.16.jar, batik-transcoder-1.16.jar, batik-util-1.16.jar, batik-xml-1.16.jar, batik-shared-resources-1.16.jar, xml-apis-ext-1.3.04.jar, xmlgraphics-commons-2.7.jar"/>
                         </delete>
                         <!--   http://bugzilla.jaspersoft.com/show_bug.cgi?id=32933
                                2013-06-24  thorick
@@ -922,7 +928,6 @@ tomcat copies to this location from the jasperserver war file META-INF/context.x
         <if>
             <equals arg1="${appServerType}" arg2="glassfish" />
             <then>
-                <copy file="${installResourceDir}/extra-jars/serializer-2.7.2.jar" toDir="${warTargetDir}/WEB-INF/lib" overwrite="true"/>
                 <replace file="${currentConf}/glassfish-web.xml" token="@webAppName@" value="${webAppName}"/>
                 <copy file="${currentConf}/glassfish-web.xml" toDir="${warTargetDir}/WEB-INF" overwrite="true"/>
                 <delete>
@@ -951,18 +956,14 @@ tomcat copies to this location from the jasperserver war file META-INF/context.x
                         import groovy.xml.DOMBuilder
 
                         def document = DOMBuilder.parse(new FileReader(args[0]))
-                        def context = document.documentElement
-
-                        def jsDbResourceFound = false
+                        def context = document.documentElement                
 
                         context.childNodes.each { node ->
                         if (node.nodeType == org.w3c.dom.Node.ELEMENT_NODE &amp;&amp; node.nodeName == "Resource") {
-                        if (jsDbResourceFound) {
-                        context.removeChild(node)
-                        }
-                        else {
-                        jsDbResourceFound = true
-                        }
+                            def jndiName =  node.getAttributes().getNamedItem("name").getNodeValue()
+                            if (!( jndiName.equals("jdbc/jasperserver") || jndiName.equals("jdbc/jasperserverAudit") )) {
+                                context.removeChild(node)
+                            }
                         }
                         }
 

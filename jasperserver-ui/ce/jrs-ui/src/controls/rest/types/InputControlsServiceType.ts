@@ -90,4 +90,5 @@ export interface InputControlsServiceType {
         inputControlIds: string[]): JQueryXHR,
     getInputControlsPaginatedValues(reportUri: string, options: PaginatedValuesOptions[]): JQueryXHR
     getInputControlsOnlySelectedValue(reportUri: string, options: SelectedOnlyOptions): JQueryXHR
+    getReportRawParameterValues(executionId: string): JQueryXHR
 }

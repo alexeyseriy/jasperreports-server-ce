@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -25,18 +25,24 @@ import jrsConfigs from 'js-sdk/src/jrs.configs';
 import aboutDialog from '../components/components.about';
 import webHelp from '../components/components.webHelp';
 import $ from 'jquery';
+import 'focus-visible';
 
 // Basic stdnav plugins from js-sdk
 import stdnav from 'js-sdk/src/common/stdnav/stdnav';
+import stdnavPluginModalTrap from 'js-sdk/src/common/stdnav/plugins/stdnavPluginModalTrap';
 import stdnavPluginAnchor from 'js-sdk/src/common/stdnav/plugins/stdnavPluginAnchor';
 import stdnavPluginButton from 'js-sdk/src/common/stdnav/plugins/stdnavPluginButton';
 import stdnavPluginGrid from 'js-sdk/src/common/stdnav/plugins/stdnavPluginGrid';
 import stdnavPluginList from 'js-sdk/src/common/stdnav/plugins/stdnavPluginList';
 import stdnavPluginTable from 'js-sdk/src/common/stdnav/plugins/stdnavPluginTable';
 import stdnavPluginActionMenu from '../stdnav/plugins/stdnavPluginActionMenu';
+import stdnavPluginActionMenuTrap from '../stdnav/plugins/stdnavPluginActionMenuTrap';
+import stdnavPluginMainMenu from '../stdnav/plugins/stdnavPluginMainMenu';
 import stdnavPluginDynamicList from '../stdnav/plugins/stdnavPluginDynamicList';
 import stdnavPluginForms from '../stdnav/plugins/stdnavPluginForms';
+import stdnavTabList from '../stdnav/plugins/stdnavTabList';
 import stdnavPluginToolbar from '../stdnav/plugins/stdnavPluginToolbar';
+import stdnavPluginToolbarV2 from '../stdnav/plugins/stdnavPluginToolbarV2';
 import stdnavPluginWorkflowCard from 'js-sdk/src/common/stdnav/plugins/stdnavPluginWorkflowCard';
 import '../config/dateAndTimeSettings';
 
@@ -55,16 +61,24 @@ if (helpLink) {
 if (jrsConfigs.enableAccessibility === 'true') {
     // Basic stdnav plugins from js-sdk
     stdnav.activate();
-    stdnavPluginAnchor.activate(stdnav);
-    stdnavPluginButton.activate(stdnav);
-    stdnavPluginForms.activate(stdnav);
-    stdnavPluginGrid.activate(stdnav);
-    stdnavPluginList.activate(stdnav);
-    stdnavPluginTable.activate(stdnav);    // JasperServer-specific stdnav plugins from jrs-ui
-    // JasperServer-specific stdnav plugins from jrs-ui
-    stdnavPluginActionMenu.activate(stdnav);
-    stdnavPluginDynamicList.activate(stdnav);
-    stdnavPluginToolbar.activate(stdnav);
-    stdnavPluginWorkflowCard.activate(stdnav);
+
+    [
+        stdnavPluginModalTrap,
+        stdnavPluginAnchor,
+        stdnavPluginButton,
+        stdnavPluginForms,
+        stdnavPluginGrid,
+        stdnavPluginList,
+        // stdnavPluginTable,
+        stdnavPluginActionMenu,
+        stdnavPluginActionMenuTrap,
+        stdnavPluginMainMenu,
+        stdnavPluginDynamicList,
+        stdnavPluginToolbar,
+        stdnavTabList,
+        stdnavPluginToolbarV2,
+        stdnavPluginWorkflowCard
+    ].forEach(plugin => plugin.activate(stdnav))
+
     stdnav.start();
 }

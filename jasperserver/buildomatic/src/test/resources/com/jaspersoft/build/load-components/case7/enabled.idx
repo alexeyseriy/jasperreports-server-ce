@@ -1,0 +1,16 @@
+js-elasticsearch-connector/elasticsearch-jdbc-8.2.0.jar
+js-tdv-connector/tdv-csjdbc8-8.2.0.jar
+mongodb-connector/mongo-java-driver-3.10.2.jar
+snowflake-connector/snowflake-jdbc-3.13.5.jar
+ti-autorest-connector/TIautorest-6.0.0.004291.jar
+ti-cassandra-connector/TIcassandra-6.0.3.jar
+ti-db2-connector/TIdb2-5.1.4.000288.jar
+ti-googlebigquery-connector/TIgooglebigquery-6.0.0.001573.jar
+ti-hive-connector/TIhive-5.14.1.jar
+ti-impala-connector/TIimpala-5.14.2.jar
+ti-mongodb-connector/TImongodb-6.0.2.000510.jar
+ti-oracle-connector/TIoracle-6.0.0.000032.jar
+ti-redshift-connector/TIredshift-5.14.1.jar
+ti-sforce-connector/TIsforce-6.0.0.001533.jar
+ti-sparksql-connector/TIsparksql-6.0.1.000124.jar
+ti-sqlserver-connector/TIsqlserver-6.0.0.000541.jar

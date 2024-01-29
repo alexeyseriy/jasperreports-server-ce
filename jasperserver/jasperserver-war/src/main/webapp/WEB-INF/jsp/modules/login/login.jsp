@@ -1,6 +1,6 @@
 <%@ page contentType="text/html; charset=utf-8" %>
 <%--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -72,17 +72,32 @@
 
         <div class="wrapper">
             <t:insertTemplate template="/WEB-INF/jsp/templates/container.jsp">
-                <t:putAttribute name="containerClass" value="panel info"/>
-                <t:putAttribute name="containerID" value="copy"/>
-                <t:putAttribute name="bodyContent">
-                    <div id="welcome" class="row">
-                        <h1>
-                            <span class="logo" aria-label="TIBCO Jaspersoft"></span>
-                        	<span class="text"><spring:message code='LOGIN_WELCOME_OS'/></span>
-
-
-                        </h1>
-                    </div>
+            <t:putAttribute name="containerClass" value="panel info"/>
+            <t:putAttribute name="containerID" value="copy"/>
+            <t:putAttribute name="bodyContent">
+                <div id="welcome" class="row">
+                    <h1>
+                        <span class="logo" aria-label="Jaspersoft"></span>
+                        <span class="text"><spring:message code='LOGIN_WELCOME_OS'/></span>
+                    </h1>
+                </div>
+                <div  id="rotating" class="row">
+                    <jsp:include page="rotating/login_rotating_${jsEditionClass}_${randomRotatingPageNumber}.jsp"/>
+                </div>
+                <ul
+                        id="metaLinks"
+                        class="horizontal"
+                        role="menubar"
+                        tabindex="0"
+                        aria-label="<spring:message code='menu.name.user'/>"
+                        aria-orientation="horizontal"
+                >
+                    <li id="help" role="menuitem">
+                        <a href="#" id="helpLink" tabindex="-1">
+                            <spring:message code="decorator.helpLink"/>
+                        </a>
+                    </li>
+                </ul>
 <%--
                     <div id="buttons" class="row">
                         <div class="primary">
@@ -100,13 +115,10 @@
                         </div>
                     </div>
 --%>
-                    <div  id="rotating" class="row">
-                        <jsp:include page="rotating/login_rotating_${jsEditionClass}_${randomRotatingPageNumber}.jsp"/>
-                    </div>
                 </t:putAttribute>
             </t:insertTemplate>
 
-            <form id="loginForm" method="POST" action="j_spring_security_check"
+            <form id="loginForm" method="POST" action="j_spring_security_check" js-navtype="none"
                   <c:if test="${autoCompleteLoginForm == 'false'}">autocomplete="off"</c:if>>
                 <t:insertTemplate template="/WEB-INF/jsp/templates/login.jsp">
                     <t:putAttribute name="jsEdition">${jsEditionClass}</t:putAttribute>
@@ -145,6 +157,17 @@
                                 </c:otherwise>
                             </c:choose>
                         </c:if>
+                        <c:if test="${userPrincipal != null && isUserLockFeatureEnabled}">
+                            <c:choose>
+                                <c:when test="${isUserLocked}">
+                                    <p class="errorMessage"><spring:message code='jsp.loginError.userLockedMessage'/></p>
+                                </c:when>
+                                <c:otherwise>
+                                    <p class="errorMessage"><spring:message code='jsp.loginError.remainingLoginAttempts'/> : ${sessionScope.numberOfLoginAttemptsRemaining}</p>
+                                </c:otherwise>
+                            </c:choose>
+                        </c:if>
+
                         <c:if test="${showPasswordChange eq 'true' and weakPassword != 'true'}">
                             <p class="errorMessage"><spring:message code='jsp.loginError.expiredPassword1'/></p>
                             <p class="errorMessage"><spring:message code='jsp.loginError.expiredPassword2'/></p>

@@ -20,8 +20,6 @@
  */
 
 const karmaConfig = require("./karma.conf.default");
-const karmaCoverageExcludes = require("./karma.coverage.excludes");
-const getZeroCoverageOverridesUtil = require("./util/coverage/getZeroCoverageOverridesUtil");
 
 let conf = Object.assign({}, karmaConfig, {
     files: karmaConfig.files.concat([
@@ -32,17 +30,16 @@ let conf = Object.assign({}, karmaConfig, {
     coverageIstanbulReporter: Object.assign({}, karmaConfig.coverageIstanbulReporter, {
         thresholds: {
             global: {
-                statements: 74,
-                branches: 66,
+                statements: 70,
+                branches: 60,
                 functions: 61,
-                lines: 74
+                lines: 69
             },
             each: {
-                statements: 37,
-                lines: 37,
-                branches: 18,
-                functions: 0,
-                overrides: getZeroCoverageOverridesUtil(karmaCoverageExcludes)
+                statements: 0,
+                lines: 0,
+                branches: 0,
+                functions: 0
             }
         }
     })

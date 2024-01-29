@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -88,15 +88,11 @@ public class HtmlReportOutput extends AbstractReportOutput
         return forceToUseHTMLExporter;
     }
 
-	/** 
-	 * @see com.jaspersoft.jasperserver.api.engine.scheduling.quartz.Output#getOutput()
-	 */
-	public ReportOutput getOutput(
-			ReportJobContext jobContext,
-			JasperPrint jasperPrint) throws JobExecutionException
+    @Override
+	protected ReportOutput createOutput(ReportJobContext jobContext, String filename, 
+			JasperPrint jasperPrint, Integer startPageIndex, Integer endPageIndex)
 	{
 		try {
-			String filename = jobContext.getBaseFilename() + "." + getFileExtension();
 			String childrenFolderName = jobContext.getChildrenFolderName(filename);
 
             AbstractHtmlExporter<HtmlReportConfiguration, HtmlExporterConfiguration> exporter = null;
@@ -145,6 +141,9 @@ public class HtmlReportOutput extends AbstractReportOutput
 				exporter.setExporterOutput(exporterOutput);
 
 				SimpleHtmlReportConfiguration htmlReportConfig = new SimpleHtmlReportConfiguration();
+				htmlReportConfig.setStartPageIndex(startPageIndex);
+				htmlReportConfig.setEndPageIndex(endPageIndex);
+				
 				boolean sendMail = jobContext.getReportJob().getMailNotification() != null; 
 				htmlReportConfig.setOverrideHints(true);
 				htmlReportConfig.setConvertSvgToImage(sendMail);
@@ -206,6 +205,12 @@ public class HtmlReportOutput extends AbstractReportOutput
 	@Override
 	public String getFileType() {
 		return ContentResource.TYPE_HTML;
+	}
+
+	@Override
+	protected DataContainer export(ReportJobContext jobContext, JasperPrint jasperPrint, Integer startPageIndex,
+			Integer endPageIndex) {
+		throw new UnsupportedOperationException();
 	}
 }
 

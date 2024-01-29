@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -175,6 +175,26 @@ public class BaseClientExecutionValidatorTest {
 
         assertTrue(exceptions.isEmpty());
     }
+
+    @Test
+    public void validate_uuid_valid() {
+        when(dataSourceReference.getUri()).thenReturn("uuid:0f85ea9b-63f0-4083-844d-ce2e4e1bc51c");
+        List<Exception> exceptions = validator.validate(execution);
+        assertTrue(exceptions.isEmpty());
+    }
+
+    @Test(expected = Exception.class)
+    public void validate_uuid_invalid() {
+        when(dataSourceReference.getUri()).thenReturn("0f85ea9b-63f0-4083-844d-ce2e4e1bc51c");
+        validator.validate(execution);
+    }
+
+    @Test(expected = Exception.class)
+    public void validate_uuid_invalid2() {
+        when(dataSourceReference.getUri()).thenReturn("uuid:0z85ea9b-63f0-4083-844d-ce2e4e1bc51c");
+        validator.validate(execution);
+    }
+
 
     @Test(expected = Exception.class)
     public void validate_repositoryThrowsUnhandledException_exceptionExpected() {

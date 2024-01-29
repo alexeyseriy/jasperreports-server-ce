@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -20,6 +20,7 @@
  */
 package com.jaspersoft.jasperserver.remote.services.impl;
 
+import com.jaspersoft.jasperserver.api.ErrorDescriptorException;
 import com.jaspersoft.jasperserver.api.common.domain.ExecutionContext;
 import com.jaspersoft.jasperserver.api.common.domain.impl.ExecutionContextImpl;
 import com.jaspersoft.jasperserver.api.common.util.TimeZoneContextHolder;
@@ -35,19 +36,18 @@ import com.jaspersoft.jasperserver.api.metadata.common.domain.InputControlsConta
 import com.jaspersoft.jasperserver.api.metadata.common.domain.Resource;
 import com.jaspersoft.jasperserver.api.metadata.jasperreports.domain.ReportUnit;
 import com.jaspersoft.jasperserver.api.metadata.xml.domain.impl.Argument;
+import com.jaspersoft.jasperserver.dto.common.ErrorDescriptor;
+import com.jaspersoft.jasperserver.inputcontrols.cascade.CachedRepositoryService;
+import com.jaspersoft.jasperserver.inputcontrols.cascade.CascadeResourceNotFoundException;
 import com.jaspersoft.jasperserver.remote.ReportExporter;
 import com.jaspersoft.jasperserver.remote.ServiceException;
 import com.jaspersoft.jasperserver.remote.ServicesConfiguration;
 import com.jaspersoft.jasperserver.remote.exception.ExportExecutionRejectedException;
-import com.jaspersoft.jasperserver.api.ErrorDescriptorException;
 import com.jaspersoft.jasperserver.remote.exception.ResourceNotFoundException;
-import com.jaspersoft.jasperserver.dto.common.ErrorDescriptor;
 import com.jaspersoft.jasperserver.remote.services.ReportExecutionOptions;
 import com.jaspersoft.jasperserver.remote.services.ReportExecutor;
 import com.jaspersoft.jasperserver.remote.utils.AuditHelper;
 import com.jaspersoft.jasperserver.remote.utils.RepositoryHelper;
-import com.jaspersoft.jasperserver.inputcontrols.cascade.CachedRepositoryService;
-import com.jaspersoft.jasperserver.inputcontrols.cascade.CascadeResourceNotFoundException;
 import net.sf.jasperreports.engine.JRAbstractExporter;
 import net.sf.jasperreports.engine.JRExporterParameter;
 import net.sf.jasperreports.engine.JRParameter;
@@ -59,7 +59,6 @@ import net.sf.jasperreports.engine.JasperReportsContext;
 import net.sf.jasperreports.engine.ReportContext;
 import net.sf.jasperreports.engine.SimpleReportContext;
 import net.sf.jasperreports.export.ExporterInputItem;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -123,19 +122,9 @@ public class ReportExecutorImpl implements ReportExecutor {
             throw new ErrorDescriptorException(new ErrorDescriptor()
                     .setErrorCode("webservices.error.errorExecutingReportUnit").setParameters(report.getURI()));
         }
-        
-        // if ignorePagination isn't set, then use value from defaultIgnorePagination, which become not null just after
-        // reportUnitResult available.
-        PaginationParameters pagination = reportExecutionOptions.getPaginationParameters();
-        if ((pagination == null || pagination.getPaginated() == null) 
-        		&& reportExecutionOptions.getDefaultIgnorePagination() != null) {
-        	pagination = new PaginationParameters(pagination);
-        	pagination.setPaginated(!reportExecutionOptions.getDefaultIgnorePagination());
-        }
-        if (pagination != null) {
-        	pagination.setReportParameters(parameters);
-        }
-        
+
+        parameters = configurePagination(parameters, reportExecutionOptions);
+
         // run the report
         ReportUnitResult reportUnitResult = strategy.runReport(report, parameters, engine,
                 getJasperReportsContext(reportExecutionOptions.isInteractive()), reportExecutionOptions);
@@ -146,6 +135,25 @@ public class ReportExecutorImpl implements ReportExecutor {
         }
 
         return reportUnitResult;
+    }
+
+    protected Map<String, Object> configurePagination(Map<String, Object> parameters, ReportExecutionOptions reportExecutionOptions) {
+        // if IS_IGNORE_PAGINATION isn't set, then use value from defaultIgnorePagination,
+        // which become not null just after reportUnitResult available.
+        PaginationParameters pagination = reportExecutionOptions.getPaginationParameters();
+        if ((pagination == null || pagination.getPaginated() == null)
+                && reportExecutionOptions.getDefaultIgnorePagination() != null
+                // Skip if ignore pagination parameter is provided
+                && !hasIsIgnorePaginationParameter(parameters)) {
+            pagination = new PaginationParameters(pagination);
+            pagination.setPaginated(!reportExecutionOptions.getDefaultIgnorePagination());
+        }
+        if (pagination != null) {
+            if (parameters == null) parameters = new HashMap<>();
+        	pagination.setReportParameters(parameters);
+        }
+
+        return parameters;
     }
 
     protected <T extends Resource> T getResource(Class<T> resourceClass, String resourceUri) throws ResourceNotFoundException {
@@ -252,6 +260,7 @@ public class ReportExecutorImpl implements ReportExecutor {
                     }
 
                     saveAutoDataSnapshot(executionContext, reportResource, reportContext);
+                    refreshReportUnitInContext(reportResource, reportContext);
                     break;
                 case UPDATED:
                     if (options.isSaveDataSnapshot()) {
@@ -267,6 +276,15 @@ public class ReportExecutorImpl implements ReportExecutor {
                 default:
                     //NOP
                     break;
+            }
+        }
+
+        private void refreshReportUnitInContext(Resource reportResource, ReportContext reportContext) {
+            // DataSnapshot saving will increase version number in repository and reportContext will be outdated. JS-63876
+            if (dataSnapshotService.isSnapshotRecordingEnabled()) {
+                ReportUnit freshReportUnit = getResource(
+                        ReportUnit.class, reportResource.getURI());
+                reportContext.setParameterValue(ReportUnitRequest.REPORT_CONTEXT_PARAMETER_REPORT_UNIT, freshReportUnit);
             }
         }
 
@@ -337,7 +355,8 @@ public class ReportExecutorImpl implements ReportExecutor {
 
             request.setAsynchronous(options.isAsync());
             request.setCreateAuditEvent(true);
-
+            request.setScheduleExecutionID(executionOptions.getScheduleExecutionID());
+            request.setScheduleResourceType(executionOptions.getScheduleResourceType());
             return request;
         }
     }
@@ -412,4 +431,9 @@ public class ReportExecutorImpl implements ReportExecutor {
 		String reportUnitURI = strategy.getConcreteReportURI(report);
 		return engine.getMainJasperReport(createExecutionContext(), reportUnitURI);
 	}
+
+    private boolean hasIsIgnorePaginationParameter(Map<String, ?> parameters) {
+        if (parameters == null) return false;
+        return parameters.get(JRParameter.IS_IGNORE_PAGINATION) instanceof Boolean;
+    }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -59,7 +59,6 @@ export default Backbone.View.extend({
             var chBoxValue = false, radioValue = '';
             switch (mn.resultSendType) {
             case 'SEND':
-                chBoxValue = false;
                 radioValue = 'asRepoLinks';
                 break;
             case 'SEND_EMBED':
@@ -71,11 +70,9 @@ export default Backbone.View.extend({
                 radioValue = 'asAttachedZip';
                 break;
             case 'SEND_ATTACHMENT':
-                chBoxValue = false;
                 radioValue = 'asAttachedFiles';
                 break;
             case 'SEND_ATTACHMENT_ZIP_ALL':
-                chBoxValue = false;
                 radioValue = 'asAttachedZip';
                 break;
             }

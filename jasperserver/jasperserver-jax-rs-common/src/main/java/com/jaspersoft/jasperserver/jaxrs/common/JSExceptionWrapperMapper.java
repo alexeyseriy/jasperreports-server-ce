@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -24,9 +24,10 @@ package com.jaspersoft.jasperserver.jaxrs.common;
 import com.jaspersoft.jasperserver.api.CacheDatasetException;
 import com.jaspersoft.jasperserver.api.JSExceptionWrapper;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.jersey.internal.inject.InjectionManager;
 import org.glassfish.jersey.internal.ExceptionMapperFactory;
 import org.springframework.stereotype.Component;
+import org.glassfish.jersey.internal.inject.InjectionManager;
 
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
@@ -38,13 +39,12 @@ import javax.ws.rs.ext.Provider;
 public class JSExceptionWrapperMapper implements ExceptionMapper<JSExceptionWrapper> {
 
     @Context
-    private ServiceLocator serviceLocator;
-
+    private InjectionManager injectionManager;
     @Override
     public Response toResponse(JSExceptionWrapper exception) {
         Exception rootException = getRootException(exception);
 
-        ExceptionMapperFactory factory = new ExceptionMapperFactory(serviceLocator);
+        ExceptionMapperFactory factory = new ExceptionMapperFactory(injectionManager);
         ExceptionMapper em = factory.find(rootException.getClass());
         @SuppressWarnings("unchecked")
         final Response response = em.toResponse(rootException);

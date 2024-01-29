@@ -66,11 +66,21 @@ function processReport(eslintOutputFile) {
         let diffReport = createDiffReport(prevLibsLintReport, eslintOutputFile);
 
         if (diffReport) {
-            const lintDiffReportName = process.env.LINT_DIFF_REPORT_NAME;
-            const dir = path.dirname(lintDiffReportName);
-            mkdirp(dir);
-            fs.writeFileSync(lintDiffReportName, diffReport);
-            console.log("[Error]: New use of dangerous API has bean detected");
+            console.log("[Error]: We found a difference between existing list of linter errors, and the new ones.");
+            console.log("[Error]: List of existing errors can be found in a file: " + process.env.MASTER_LIBS_LINT_REPORT_NAME);
+            console.log("[Error]: List of new errors can be found in a file: " + process.env.LIBS_LINT_NEW_REPORT_NAME);
+            console.log("[Error]: The difference between new and existing can be found in a file: " + process.env.LINT_DIFF_REPORT_NAME);
+
+            let filePath = process.env.LIBS_LINT_NEW_REPORT_NAME;
+            let dirPath = path.dirname(filePath);
+            mkdirp(dirPath);
+            fs.writeFileSync(filePath, eslintOutputFile);
+
+            filePath = process.env.LINT_DIFF_REPORT_NAME;
+            dirPath = path.dirname(filePath);
+            mkdirp(dirPath);
+            fs.writeFileSync(filePath, diffReport);
+
             process.exit(1);
         }
     } else {

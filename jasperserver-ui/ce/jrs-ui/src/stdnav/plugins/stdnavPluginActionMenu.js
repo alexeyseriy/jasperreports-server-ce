@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -44,24 +44,14 @@ import stdnav from 'js-sdk/src/common/stdnav/stdnav';
 import actionModel from '../../actionModel/actionModel.modelGenerator';
 import buttonManager from '../../core/core.events.bis';
 import layoutModule from '../../core/core.layout';
-import primaryNavigation from '../../actionModel/actionModel.primaryNavigation';
 import log from 'js-sdk/src/common/logging/logger';
+import {AriaProps} from "js-sdk/src/common/util/accessibility/waiAriaConstants";
 
-var logger = log.register("stdnav"),
-    singleton = null,
-    gserial = 0;
+var logger = log.register("stdnav");
 
-// ===EXTERNAL SYMBOLS USED:=============================================
-// layoutModule
-
-// Local object definition.
+const MENU_TRAP_ELEMENT_TEMPLATE = '<div js-navtype="menuTrap" class="offLeft" tabindex="0"></div>';
 
 var stdnavPluginActionMenu = function () {
-    gserial++;
-    this.serial = gserial;
-    this.menu_item_callbacks = {
-        click: {}
-    };
 };
 
 _.extend(stdnavPluginActionMenu.prototype, {
@@ -76,8 +66,8 @@ _.extend(stdnavPluginActionMenu.prototype, {
         // everything through to the browser, and are normally overridden
         // with $.extend based on specific tagnames and stdnav attributes.
         this.behavior = {
-            'down': [this, this._onDown, null],
-            'enter': null,
+            'toggle': [this, this._onEnter, null],
+            'enter': [this, this._onEnter, null],
             'exit': [this, this._onExit, null],
             'fixfocus': [this, this._fixFocus, null],
             'fixsubfocus': [this, this._fixFocus, null],
@@ -86,12 +76,13 @@ _.extend(stdnavPluginActionMenu.prototype, {
             'focusout': [this, this._onFocusOut, null],
             'subfocusin': [this, this._onSubfocusIn, null],
             'left': [this, this._onLeft, null],
-            //'mouseout': [this, this._onMouseOut, null],
-            //'mouseover': [this, this._onMouseOver, null],
             'right': [this, this._onRight, null],
             'superfocusin': [this, this._onSuperfocusIn, null],
             'superfocusout': [this, this._onSuperfocusOut, null],
             'up': [this, this._onUp, null],
+            'down': [this, this._onDown, null],
+            'home': [this, this._onHome, null],
+            'end': [this, this._onEnd, null],
             'inherit': false,
             'inheritable': true
         };
@@ -112,55 +103,22 @@ _.extend(stdnavPluginActionMenu.prototype, {
     _fixFocus: function (element) {
         var newFocus;
         var $el = $(element);
-        if ($el.is('div,ul,ol')) {
-            // The usual case: the entire menu is gaining focus.  One of
-            // the reasons this can happen, of course, is in response to a
-            // mouse click, not a TAB press-- as a result, check to see if
-            // any of the menu options has the "pressed" CSS class, and
-            // focus that, if it does.  However, ignore the "over" class,
-            // as the mouse pointer can wind up anywhere for a blind user
-            // by total coincidence, so it must be ignored when setting
-            // focus in response to TAB.
-            //
-            // If nothing seems to be in use yet, select the first list
-            // item-- if there ARE any.
-            //
-            // Failing even that, select the list itself.
-            var items = $el.find('.pressed');
-            if (items.length > 0) {
-                newFocus = items[0];
+        if ($el.is('#' + actionModel.PARENT_MENU_CONTAINER)) {
+            $(MENU_TRAP_ELEMENT_TEMPLATE).insertBefore($el);
+            $(MENU_TRAP_ELEMENT_TEMPLATE).insertAfter($el);
+        }
+        const pressedItem = $el.find(`.${layoutModule.PRESSED_CLASS} > p`);
+        if (pressedItem.length > 0) {
+            newFocus = pressedItem[0];
+        }else {
+            if ($el.is('div,ul,ol')) {
+                newFocus = $el.find('li > p')[0] ?? element;
+            } else if ($el.is('li')) {
+                // Focus is already appropriate.
+                newFocus = $el.find('> p')[0] ?? element;
             } else {
-                items = $el.find('li');
-                if (items.length > 0) {
-                    newFocus = items[0];
-                } else {
-                    // The entire list is empty-- set focus to the root list element
-                    // after all.
-                    newFocus = element;
-                }
-            }
-        } else if ($el.is('li')) {
-            // Focus is already appropriate.
-            newFocus = element;
-        } else {
-            // Assume we're in a span or something within a list item.
-            var lis = $el.closest('li');
-            if (lis.length > 0) {
-                if ($(lis[0]).prop['js-navigable'] === false) {
-                    // Clicked on a header or something; focus the list instead.
-                    newFocus = $el.closest('ul,ol');
-                } else {
-                    newFocus = lis[0];
-                }
-            } else {
-                // Clicked on non-list-item content inside the list.
-                // This COULD happen, but probably indicates a bad template.
-                // Either way, don't crash.
-                newFocus = $el.closest('ul,ol');
-                newFocus = $el.find('li');
-                if (newFocus.length > 0) {
-                    newFocus = newFocus[0];
-                }
+                newFocus = $el.closest('li').find('> p')[0] ??
+                    ($el.closest('ul').find('li > p')[0] ?? element);
             }
         }
         return newFocus;
@@ -171,105 +129,58 @@ _.extend(stdnavPluginActionMenu.prototype, {
     // contains the list, so use the DIV for the superfocus region.
     // However, context menus are _not_
     _fixSuperfocus: function (element) {
-        var newSuperfocus;
-        var $root = $(element).closest('.menuRoot,.dropDown,.context');
-        if ($root.length > 0) {
-            newSuperfocus = $root[0];
-        } else {
-            // FAULT, let StdNav fall back to BODY
-            newSuperfocus = null;
-        }
-        return newSuperfocus;
+        return $(element).closest(`.context`)[0];
     },
 
     _onSuperfocusIn: function(element){
-        var $elem = $(element),
-            $parentList = $(this.lastMenuBarItem).closest(".menuRoot"),
-            $currentList = $elem.closest(".menu").length && $elem;
-
-        if( $currentList && ($parentList.attr("tabindex")>-1)){
-            this._parentTabindex = $parentList.attr("tabindex");
-
-            if (this._parentTabindex>-1) {
-                $currentList.attr('js-suspended-tabindex', this._parentTabindex);
-                $currentList.find("li:first").attr('tabindex', this._parentTabindex);
-            } else {
-                $elem.attr('js-suspended-tabindex', 'none');
-                $currentList.find("li:first").attr('tabindex', -1);
-            }
-
-            // Explicitly make the element unfocusable-- temporarily.
-            $currentList.attr('tabindex', '-1');
-            $parentList.attr("tabindex", "-1");
-        }
-
-        return element;
     },
 
     _onFocusIn: function (element) {
-        var
-            $thisItem,
-            $matched,
-            $next = $(element);
-        var $selected = $(element);
-        if ($selected.length>0) {
-            $thisItem = $selected.closest(layoutModule.NAVIGATION_PATTERN);
-            if ($thisItem.length>0) {
-                // An item in the main menu bar has been focused.
-                buttonManager.over($thisItem.find(layoutModule.BUTTON_PATTERN)[0]);
-                //buttonManager.over($thisItem.find(layoutModule.MENU_LIST_PATTERN)[0]);
-                $matched = $thisItem.closest(layoutModule.NAVIGATION_MUTTON_PATTERN);
-                if ($matched.length>0) {
-                    // The item has a submenu-- show it.
-                    //actionModel.hideMenu();
-                    primaryNavigation.showNavButtonMenu(null, $matched[0]);
-                } else {
-                    // An item with no drop-down menu has been focused;
-                    // ensure any drop-down menus for other items are closed.
-                    actionModel.hideMenu();
-                }
-            } else {
-                $thisItem = $selected.closest(layoutModule.MENU_LIST_PATTERN);
-                if ($thisItem.length>0) {
-                    // An item in a drop-down or context menu has been focused.
-                    buttonManager.over($thisItem.find(layoutModule.BUTTON_PATTERN)[0]);
-                    $matched = $thisItem.closest(layoutModule.NAVIGATION_MUTTON_PATTERN);
-                    /* FIXME: flyouts (none exist in main menu right now)
-                    if ($matched.length>0) {
-                        // NOTE: This function expects an event object that will
-                        // not exist for keyboard navigation and automation
-                        // purposes.  Fix that code flow-- DO NOT try to synthesize
-                        // an event or provide a surrogate object.  This flow
-                        // must work for a null object.
-                        primaryNavigation.showNavButtonMenu(null, $matched[0]);
-                    }
-                    */
-                }
-            }
+        var $el = $(element);
+
+        var $li = $el.closest(layoutModule.MENU_LIST_PATTERN);
+        if ($li.length>0) {
+            this._openChildMenu($li[0], true);
+            //this._setAriaAttributes($li[0]);
+            buttonManager.over($li.find(layoutModule.BUTTON_PATTERN)[0]);
         }
+
         return element;
     },
 
-    _onFocusOut: function (element) {
-        var
-            $thisItem = $(element).closest(layoutModule.NAVIGATION_PATTERN);
+    _setAriaAttributes: function (element) {
+        var $li = $(element);
+        var $p = $li.find('> p');
 
+        if ($li.hasClass(layoutModule.NODE_CLASS) && !$p.attr(AriaProps.HasPopup)) {
+            $p.attr(AriaProps.Expanded, 'false')
+                .attr(AriaProps.HasPopup, 'true')
+        }
+    },
+
+    _openChildMenu: function (element, open) {
+        var $li = $(element);
+        var $p = $li.find('> p');
+
+        if ($li.hasClass(layoutModule.NODE_CLASS)) {
+            this._setAriaAttributes(element);
+            const isMenuShowing = actionModel.isMenuShowing($li.find('.context')[0]);
+
+            if (open) {
+                $p.attr(AriaProps.Expanded, 'true')
+                !isMenuShowing && actionModel.showChildSubmenu(element);
+            } else {
+                isMenuShowing && actionModel.hideChildSubmenu(element);
+                $p.attr(AriaProps.Expanded, 'false');
+            }
+        }
+    },
+
+    _onFocusOut: function (element) {
+        var $thisItem = $(element).closest(layoutModule.MENU_LIST_PATTERN);
         if ($thisItem.length>0) {
-            // A top-level item in the main menu bar has lost focus.
-            //actionModel.hideMenu();
-            // Don't remove the style if we've moved into a drop-down menu.
-            if (this.lastMenuBarItem!==element){
-                buttonManager.out($thisItem.find(layoutModule.BUTTON_PATTERN)[0]);
-                $thisItem.removeAttr("tabindex");
-            }
-            //buttonManager.out($thisItem.find(layoutModule.MENU_LIST_PATTERN)[0]);
-        } else {
-            $thisItem = $(element).closest(layoutModule.MENU_LIST_PATTERN);
-            if ($thisItem.length>0) {
-                // An item in a drop-down or context menu has lost focus.
-                buttonManager.out($thisItem.find(layoutModule.BUTTON_PATTERN)[0]);
-                $thisItem.removeAttr("tabindex");
-            }
+            // An item in a drop-down or context menu has lost focus.
+            buttonManager.out($thisItem.find(layoutModule.BUTTON_PATTERN)[0]);
         }
         return null;
     },
@@ -278,91 +189,14 @@ _.extend(stdnavPluginActionMenu.prototype, {
     // hover events and classes for actionMenu fire as expected, and that
     // the context menu is hidden.
     _onSuperfocusOut: function(element){
-        var $nav = $("#"+layoutModule.MAIN_NAVIGATION_ID);
 
-        if ($nav.length<1){
-            // There is no main navigation in embedded mode.
-            return element;
-        }
-        // Hide the dropdown menu unless the new focus is _in_ the
-        // dropdown menu.  Because of the way actionModel works, the
-        // dropdown menu is NOT a DOM descendant of the main menu.
-        var newFocus=$(document.activeElement);
-        if (newFocus.closest('.dropDown,.context').length<1){
-            var $selected = $nav.find("." + layoutModule.HOVERED_CLASS);
-            if ($selected.length>0) {
-                buttonManager.out($selected[0]);
-            }
-            actionModel.hideMenu();
-
-            // Explicitly make the element unfocusable-- temporarily.
-            var $ul = $(this.lastMenuBarItem).closest(".menuRoot");
-
-            $ul.attr("tabindex", this._parentTabindex);
-
-            this.lastMenuBarItem = null;
-        }
-    },
-
-    /* ====== MENU BEHAVIOR ====== */
-    _focus_prev_menu_entry: function (entry) {
-        var newFocus;
-        var wasOpen = false;
-
-        if (entry.hasClass('node') && (!entry.children('.menu').hasClass('is-closed'))) {
-            wasOpen = true;
-        }
-        newFocus = entry.prev();
-        if (newFocus.length === 0) {
-            // Wrap around to the end
-            newFocus = entry;
-            while (newFocus.next().length > 0) {
-                newFocus = newFocus.next();
-            }
-        }
-        logger.debug('Granting focus to ' + newFocus.attr('id'));
-        stdnav.setSubfocus(newFocus);
-        if (wasOpen === true) {
-            //this._open_submenu(newFocus.children('.menu'));
-        }
-    },
-
-    _focus_next_menu_entry: function (entry) {
-        var newFocus;
-        var wasOpen = false;
-
-        if (entry.hasClass('node') && (!entry.children('.menu').hasClass('is-closed'))) {
-            wasOpen = true;
-        }
-        newFocus = entry.next();
-        if (newFocus.length === 0) {
-            // Wrap around to the beginning
-            newFocus = entry;
-            while (newFocus.prev().length > 0) {
-                newFocus = newFocus.prev();
-            }
-        }
-        logger.debug('Granting focus to ' + newFocus.attr('id'));
-        stdnav.setSubfocus(newFocus);
-        if (wasOpen === true) {
-            //this._open_submenu(newFocus.children('.menu'));
-        }
     },
 
     /* ========== NAVTYPE BEHAVIOR CALLBACKS =========== */
 
     _onSubfocusIn: function (element) {
-        var $ul = $(element).closest(".menuRoot");
-
-        if($ul.attr('js-suspended-tabindex')>-1){
-            $(element).attr("tabindex", $ul.attr('js-suspended-tabindex'));
-        } else if ($ul.attr('tabindex')>-1){
-            $(element).attr("tabindex", $ul.attr('tabindex'));
-            $ul.attr('js-suspended-tabindex', $ul.attr('tabindex'));
-        }
-
         // Handle menus hosted in non-focusable elements (such as a cell in a grid).
-        if (($(element).prop('nodeName') === 'li') === false) {
+        if (element.nodeName !== 'P') {
             // Find a usable child element.
             var subel = this._fixFocus(element);
             // Adjust subfocus without firing callbacks.
@@ -370,171 +204,98 @@ _.extend(stdnavPluginActionMenu.prototype, {
         }
     },
 
+    _onEnter: function (element) {
+        return this._onRight(element);
+    },
+
     _onExit: function (element) {
-        var $el = $(element);
-        if (!$el.closest("#"+layoutModule.MAIN_NAVIGATION_ID).length && $el.find("p").length > 0) {
-            // Closes everything and returns focus to the menu root itself.
-            element = this._onExitHandler(element);
+        var $context = $(element).closest('.context');
+        if ($context.attr('id') === layoutModule.MENU_ID) {
+            actionModel.hideMenu();
         } else {
-            // Closes everything and returns focus to the global entry-point (main search input).
-            element = $("#"+layoutModule.MAIN_SEARCH_INPUT_ID)[0];
+            return this._onLeft(element);
         }
-
-        return element;
     },
-
-    /* ========== MOUSE BEHAVIOR =========== */
-    /*
-    _onMouseOver: function(element){
-        // Keyboard navigation within the menu can
-        return null;
-    },
-
-    _onMouseOut: function(element){
-        return null;
-    },
-    */
 
     /* ========== KEYBOARD BEHAVIOR =========== */
     _onLeft: function (element){
-        var $thisItem = $(element).closest(layoutModule.NAVIGATION_PATTERN);
-        var $prev=$(element);
-
-        if(!$thisItem.length && $(element).closest(".menu").length){
-            $thisItem = $(this._onExitHandler(element));
-        }
-
-        if ($thisItem.length>0){
-            // We're in the menu bar.
-            $prev = $thisItem.prev(layoutModule.NAVIGATION_PATTERN);
+        const $thisItem = $(element).closest(layoutModule.MENU_LIST_PATTERN);
+        const $parentMenu = $thisItem.closest('ul');
+        if (!$parentMenu.is(`#${actionModel.PARENT_MENU_CONTAINER}`)) {
+            const parentMenuItem = $parentMenu.closest('li');
+            stdnav.forceFocus(parentMenuItem.find('> p')[0]);
+            this._openChildMenu(parentMenuItem[0], false);
         } else {
-            $thisItem = $(element).closest(layoutModule.MENU_LIST_PATTERN);
-            if ($thisItem.length>0){
-                // We're in the drop list.  Get the previous item for the
-                // last menu bar item and redirect focus to that.
-                $prev=$(this.lastMenuBarItem).prev(layoutModule.NAVIGATION_PATTERN);
-            }
-        }
-        if ($prev.length>0) {
-            return $prev[0];
-        } else {
-            // FIXME: Wrap menu
-            return element;
+            return element
         }
     },
 
     _onRight: function (element) {
-        var $thisItem = $(element).closest(layoutModule.NAVIGATION_PATTERN);
-        var $next=$(element);
+        const $thisItem = $(element).closest(layoutModule.MENU_LIST_PATTERN);
+        const $subMenuItem = $thisItem.find('ul[role=menu] li').first();
 
-        if(!$thisItem.length && $(element).closest(".menu").length){
-            $thisItem = $(this._onExitHandler(element));
-        }
-
-        if ($thisItem.length>0){
-            // We're in the menu bar.
-            $next = $thisItem.next(layoutModule.NAVIGATION_PATTERN);
+        if ($subMenuItem.length>0) {
+            this._openChildMenu($thisItem[0], true);
+            return $subMenuItem.find('> p')[0];
         } else {
-            $thisItem = $(element).closest(layoutModule.MENU_LIST_PATTERN);
-            if ($thisItem.length>0){
-                // We're in the drop list.  Get the previous item for the
-                // last menu bar item and redirect focus to that.
-                $next=$(this.lastMenuBarItem).next(layoutModule.NAVIGATION_PATTERN);
-            }
-        }
-        if ($next.length>0) {
-            return $next[0];
-        } else {
-            // FIXME: Wrap menu
             return element;
         }
     },
 
     _onUp: function (element) {
-        var $prev = $(element);
-        // Figure out whether we're in the main menu or the popup.
-        var $menu = $(document.activeElement).closest("."+actionModel.DROP_DOWN_MENU_CLASS);
-        if ($menu.length>0){
-            // We're in a drop-down or context menu.
-            var $thisItem=$(document.activeElement).closest(layoutModule.MENU_LIST_PATTERN);
-            $prev=$thisItem.prev(layoutModule.MENU_LIST_PATTERN);
-            // Oddly, trying to add ":not(.separator)" to the pattern
-            // above did not work; the separator was indeed skipped, but
-            // the menu item after it was not returned.  This code skips
-            // over any number of adjacent separators.
-            while ($prev.is(layoutModule.SEPARATOR_PATTERN)){
-                $prev=$prev.prev(layoutModule.MENU_LIST_PATTERN);
-            }
-            // If we were already at the top, we want to move back into the
-            // menu bar.
-            if ($prev.length<1){
-                $prev=$(this.lastMenuBarItem);
-            }
-        } else {
-            // If we're not in a popup/context menu, we should be in the main
-            // menu bar itself.  Up-arrow has no effect here.
-            return element;
+        var $el = $(element).closest(layoutModule.MENU_LIST_PATTERN);
+        var $lastItem = $el.closest('ul').find('> li').last();
+        var $prev = $el.prev('li');
+
+        while ($prev.is(layoutModule.SEPARATOR_PATTERN)){
+            $prev=$prev.prev('li');
         }
+
+        if (!$prev[0]) {
+            $prev = $lastItem;
+        }
+
         if ($prev.length>0){
-            return $prev[0];
+            this._openChildMenu($el[0], false);
+            stdnav.forceFocus($prev.find('> p')[0]);
         } else {
-            return this._onExitHandler(element);
+            return element;
         }
     },
 
     _onDown: function (element) {
-        var $next = $(element);
-        // Figure out whether we're in the main menu or the popup.
-        var $menu = $(document.activeElement).closest("."+actionModel.DROP_DOWN_MENU_CLASS);
-        if ($menu.length>0){
-            // We're in a drop-down or context menu.
-            var $thisItem=$(document.activeElement).closest(layoutModule.MENU_LIST_PATTERN);
-            $next=$thisItem.next(layoutModule.MENU_LIST_PATTERN);
-            // Oddly, trying to add ":not(.separator)" to the pattern
-            // above did not work; the separator was indeed skipped, but
-            // the menu item after it was not returned.  This code skips
-            // over any number of adjacent separators.
-            while ($next.is(layoutModule.SEPARATOR_PATTERN)){
-                $next=$next.next(layoutModule.MENU_LIST_PATTERN);
-            }
-        } else {
-            // If we're not in a popup/context menu, we should be in the main
-            // menu bar itself.  No other cases should occur, but they are
-            // ignored if they do.
-            $menu = $(document.activeElement).closest("."+layoutModule.MENU_ROOT_CLASS);
-            if ($menu.length<1){
-                return element;
-            }
-            // The drop-down menu should have been displayed when this
-            // node was focused.  Therefore, we need merely move focus to
-            // the first element in the drop-down menu-- unless this menu
-            // bar item has no drop-down, in which case we do nothing.
-            // We also need to store where we were in the menu bar, in case
-            // we come back to it via up-arrow or ESCAPE.
-            if (actionModel.isMenuShowing()) {
-                this.lastMenuBarItem=element;
-                $(element).addClass("isParent");
+        var $el = $(element).closest(layoutModule.MENU_LIST_PATTERN);
+        var $firstItem = $el.closest('ul').find('> li').first();
+        var $next = $el.next('li');
 
-                $next=$(layoutModule.MENU_LIST_PATTERN);
-
-                $menu = $next.closest(".menuRoot");
-                $menu.attr("tabindex", $(element).attr("tabindex"));
-            }
+        while ($next.is(layoutModule.SEPARATOR_PATTERN)){
+            $next=$next.next('li');
         }
+
+        if (!$next[0]) {
+            $next = $firstItem;
+        }
+
         if ($next.length>0){
-            return $next[0];
+            this._openChildMenu($el[0], false);
+            stdnav.forceFocus($next.find('> p')[0]);
         } else {
             return element;
         }
     },
 
-    _onExitHandler: function (element) {
-        element = this.lastMenuBarItem;
-        if (!element) {
-            element = $(".isParent")[0];
-        }
-        $(element).removeClass("isParent");
-        return element;
+    _onHome: function (element) {
+        var $el = $(element).closest(layoutModule.MENU_LIST_PATTERN);
+        var $firstItem = $el.closest('ul').find('> li').first();
+        this._openChildMenu($el[0], false);
+        stdnav.forceFocus($firstItem.find('> p')[0]);
+    },
+
+    _onEnd: function (element) {
+        var $el = $(element).closest(layoutModule.MENU_LIST_PATTERN);
+        var $lastItem = $el.closest('ul').find('> li').last();
+        this._openChildMenu($el[0], false);
+        stdnav.forceFocus($lastItem.find('> p')[0]);
     }
 });
 

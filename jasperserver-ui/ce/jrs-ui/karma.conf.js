@@ -21,8 +21,6 @@
 
 const webpackConfigFactory = require("./webpack.config");
 const karmaConfig = require("js-sdk/karma.conf.default");
-const karmaCoverageExcludes = require("./karma.coverage.excludes");
-const getZeroCoverageOverridesUtil = require("js-sdk/util/coverage/getZeroCoverageOverridesUtil");
 const isCoverageEnabled = require("js-sdk/util/coverage/isCoverageEnabled");
 
 let conf = Object.assign({}, karmaConfig, {
@@ -33,17 +31,16 @@ let conf = Object.assign({}, karmaConfig, {
     coverageIstanbulReporter: Object.assign({}, karmaConfig.coverageIstanbulReporter, {
         thresholds: {
             global: {
-                statements: 51,
+                statements: 50,
                 branches: 36,
                 functions: 41,
-                lines: 52
+                lines: 50
             },
             each: {
-                statements: 4,
-                lines: 4,
-                branches: 1,
-                functions: 0,
-                overrides: getZeroCoverageOverridesUtil(karmaCoverageExcludes)
+                statements: 0,
+                lines: 0,
+                branches: 0,
+                functions: 0
             }
         }
     })

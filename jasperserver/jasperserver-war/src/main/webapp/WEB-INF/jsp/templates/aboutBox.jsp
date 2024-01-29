@@ -1,6 +1,6 @@
 <%@ page contentType="text/html; charset=utf-8" %>
 <%--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -44,8 +44,10 @@ Usage:
 <t:insertTemplate template="/WEB-INF/jsp/templates/container.jsp">
     <t:putAttribute name="containerClass">panel dialog aboutBox overlay moveable centered_horz centered_vert ${containerClass}</t:putAttribute>
     <t:putAttribute name="containerID">${containerID != null ? containerID : "aboutBox"}</t:putAttribute>
-    <t:putAttribute name="containerTitle"><spring:message code='dialog.aboutBox.title'/></t:putAttribute>
+    <t:putAttribute name="containerAttributes" value="role='dialog' aria-labelledby='aboutDialogTitle' aria-describedby='aboutDialogBody' aria-modal='true'"/>
+    <t:putAttribute name="containerTitle"><div id="aboutDialogTitle"><spring:message code='dialog.aboutBox.title'/></div></t:putAttribute>
     <t:putAttribute name="headerClass" value="mover"/>
+    <t:putAttribute name="bodyID" value="aboutDialogBody" />
     <t:putAttribute name="bodyContent" cascade="true">
         <t:insertTemplate template="/WEB-INF/jsp/templates/container.jsp">
             <t:putAttribute name="containerClass" value="control groupBox fillParent"/>

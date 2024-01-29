@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -26,16 +26,18 @@ import com.jaspersoft.jasperserver.dto.reports.inputcontrols.InputControlState;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
 /**
  * @author Anton Fomin
- * @version $Id$
  */
 public class ReportParametersUtilsTest {
 
@@ -56,6 +58,17 @@ public class ReportParametersUtilsTest {
         }
     }
 
+    @Test
+    public void getValueMapFromInputControlStates_duplicatedValues_mapWithoutDuplicates() {
+        Map<String, String[]> actualValueMap = ReportParametersUtils.getValueMapFromInputControlStates(prepareStatesWithDuplicates());
+
+        String[] expected = {"Consulting", "Distribution", "Manufacturing"};
+        String[] actual = actualValueMap.get("statesWithDuplicates");
+
+        assertNotNull(actual);
+        assertArrayEquals(expected, actual);
+    }
+
     private List<InputControlState> prepareStates() {
         List<InputControlState> expectedStates = new ArrayList<InputControlState>();
 
@@ -63,7 +76,7 @@ public class ReportParametersUtilsTest {
         List<InputControlOption> accountTypeOptions = new ArrayList<InputControlOption>();
         accountTypeOptions.add(new InputControlOption("Consulting", "Consulting Label", true));
         accountTypeOptions.add(new InputControlOption("Distribution", "Distribution Label"));
-        accountTypeOptions.add(new InputControlOption("Manufactoring", "Manufactoring Label"));
+        accountTypeOptions.add(new InputControlOption("Manufacturing", "Manufacturing Label"));
         accountType.setOptions(accountTypeOptions);
         accountType.setId("accountType");
         expectedStates.add(accountType);
@@ -102,5 +115,20 @@ public class ReportParametersUtilsTest {
         expectedStates.add(address);
 
         return expectedStates;
+    }
+
+    private List<InputControlState> prepareStatesWithDuplicates() {
+        InputControlState statesWithDuplicates = new InputControlState();
+        List<InputControlOption> accountTypeOptions = new ArrayList<>();
+
+        accountTypeOptions.add(new InputControlOption("Consulting", "Consulting Label", true));
+        accountTypeOptions.add(new InputControlOption("Consulting", "Consulting Label Dup", true));
+        accountTypeOptions.add(new InputControlOption("Distribution", "Distribution Label", true));
+        accountTypeOptions.add(new InputControlOption("Manufacturing", "Manufacturing Label", true));
+        accountTypeOptions.add(new InputControlOption("Manufacturing", "Manufacturing Label Dup", true));
+        statesWithDuplicates.setOptions(accountTypeOptions);
+        statesWithDuplicates.setId("statesWithDuplicates");
+
+        return Collections.singletonList(statesWithDuplicates);
     }
 }

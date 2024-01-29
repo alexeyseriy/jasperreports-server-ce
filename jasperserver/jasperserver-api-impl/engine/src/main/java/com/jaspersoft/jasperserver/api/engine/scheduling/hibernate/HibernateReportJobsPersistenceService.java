@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -580,7 +580,13 @@ public class HibernateReportJobsPersistenceService extends HibernateDaoImpl
         	crit.createAlias("scheduledResource",  "scheduledResource");
         	addLikeRestriction(crit, new String[]{"label", "description", "scheduledResource.label"}, criteriaReportJob.getLabel());
         }
+        if(criteriaReportJob.isJobIDModified())addEqualRestriction(crit, "id", criteriaReportJob.getId());
         if (criteriaReportJob.isDescriptionModified()) addLikeRestriction(crit, "description", criteriaReportJob.getDescription());
+        if (criteriaReportJob.isJobLabelModified()) addLikeRestriction(crit, "label", criteriaReportJob.getJobLabel());
+        if (criteriaReportJob.isResourceLabelModified()) {
+            crit.createAlias("scheduledResource",  "scheduledResource");
+            addLikeRestriction(crit, "scheduledResource.label", criteriaReportJob.getResourceLabel());
+        }
         if (criteriaReportJob.isOutputLocaleModified()) addEqualRestriction(crit, "outputLocale", criteriaReportJob.getOutputLocale());
         // USER REPO
         final String username = criteriaReportJob.getUsername();
@@ -598,7 +604,7 @@ public class HibernateReportJobsPersistenceService extends HibernateDaoImpl
         if (criteriaReportJob.isSourceModified() && criteriaReportJob.getSourceModel() != null) {
            ReportJobSourceModel des = criteriaReportJob.getSourceModel();
            if (des.isParametersMapModified()) addEqualRestriction(crit, "source.parametersMap", des.getParametersMap());
-           if (des.isReportUnitURIModified()) addEqualRestriction(crit, "source.reportUnitURI", des.getReportUnitURI());
+           if (des.isReportUnitURIModified()) addLikeRestriction(crit, "source.reportUnitURI", des.getReportUnitURI());
         }
         // REPORTJOBREPOSITORYDESTINATION
         if (criteriaReportJob.isContentRepositoryDestinationModified() && criteriaReportJob.getContentRepositoryDestinationModel() != null) {
@@ -919,6 +925,8 @@ public class HibernateReportJobsPersistenceService extends HibernateDaoImpl
                         return compareObject(o1.getLabel(), o2.getLabel());
                     case SORTBY_REPORTURI:
                         return compareObject(o1.getReportUnitURI(), o2.getReportUnitURI());
+                    case SORTBY_RESOURCELABEL:
+                        return compareObject(o1.getReportLabel(), o2.getReportLabel());
                     case SORTBY_REPORTNAME:
                     case SORTBY_REPORTFOLDER:
                        return compareURI(
@@ -956,7 +964,7 @@ public class HibernateReportJobsPersistenceService extends HibernateDaoImpl
     public static int compareObject(Object str1, Object str2) {
         Integer isNull = checkForNull(str1,  str2);
         if (isNull != null) return isNull;
-        if (str1 instanceof String) return ((String)str1).compareTo((String)str2);
+        if (str1 instanceof String) return (((String)str1).toUpperCase()).compareTo(((String)str2).toUpperCase());
         if (str1 instanceof Date) return ((Date)str1).compareTo((Date)str2);
         return 0;
     }

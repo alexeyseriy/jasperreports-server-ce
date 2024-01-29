@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -39,8 +39,6 @@ function makeCustomTooltip(evt, tipText){
     //cleanup old one just in case
     hideCustomTooltip(evt);
 
-    //make a new one
-    var evt = evt ? evt : window.event;
     var myTooltip = jQuery(document.getElementById('customTooltipTemplate')).clone(true);
     if (!tipText) {
         myTooltip.style.display = "none";
@@ -130,8 +128,8 @@ function updateCustomTooltip(text){
     }
 }
 
-function hideCustomTooltip(evt){
-    var evt = evt ? evt : window.event;
+function hideCustomTooltip(event){
+    var evt = event ? event : window.event;
     var newTarget = evt.explicitOriginalTarget ? getParentDiv(evt.explicitOriginalTarget) : null;
 
     //not if we are hovering over tooltip itself (FF only)
@@ -144,7 +142,6 @@ function hideCustomTooltip(evt){
         if (myTooltip.parentNode) {
             myTooltip.parentNode.removeChild(myTooltip);
         }
-        myTooltip = null;
     }
 }
 

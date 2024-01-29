@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -38,11 +38,20 @@ public class JSException extends RuntimeException {
 	public JSException(String message, Throwable cause) {
 		super(message, cause);
 		this.wrapperObject = true;
+		if (cause != null && cause.getSuppressed() != null && cause.getSuppressed().length > 0)
+			this.addSuppressed(cause.getSuppressed()[0]);
+		else
+			this.addSuppressed(cause);
+
 	}
 
 	public JSException(Throwable cause) {
 		super(cause);
 		this.wrapperObject = true;
+		if (cause != null && cause.getSuppressed() != null && cause.getSuppressed().length > 0)
+			this.addSuppressed(cause.getSuppressed()[0]);
+		else
+			this.addSuppressed(cause);
 	}
 
 	public JSException(String message, Object[] args) {

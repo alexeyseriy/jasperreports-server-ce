@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -53,6 +53,9 @@ public class ReportExecutionOptions implements Serializable {
     private String requestId;
     private ReportContext reportContext;
     private JasperReportsContext jasperReportsContext;
+
+    private String scheduleExecutionID;
+    private String scheduleResourceType;
     
     public ReportExecutionOptions() {
         paginationParameters = new PaginationParameters();
@@ -230,4 +233,21 @@ public class ReportExecutionOptions implements Serializable {
         this.interactive = interactive;
         return this;
     }
+
+    public String getScheduleExecutionID() {
+        return scheduleExecutionID;
+    }
+
+    public void setScheduleExecutionID(String scheduleExecutionID) {
+        this.scheduleExecutionID = scheduleExecutionID;
+    }
+
+    public String getScheduleResourceType() {
+        return scheduleResourceType;
+    }
+
+    public void setScheduleResourceType(String scheduleResourceType) {
+        this.scheduleResourceType = scheduleResourceType;
+    }
+
 }

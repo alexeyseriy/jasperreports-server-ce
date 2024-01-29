@@ -1,6 +1,6 @@
 <%@ page contentType="text/html; charset=utf-8" %>
 <%--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -49,28 +49,72 @@
 </ul>
 
 <!-- Template used for sorters in search -->
-<!-- TODO FIXME: Keyboard support is temporarily disabled here due to a race condition in the sorter that CAN happen without the accessibility extensions,
+<!-- FIXED: Keyboard support is temporarily disabled here due to a race condition in the sorter that CAN happen without the accessibility extensions,
 using only the mouse, but happens really easily using the keyboard. -->
-<ul id="tabSet_control_horizontal_responsive" class="list tabSet text control horizontal" tabindex="-1" js-navtype="none" js-stdnav="false">
+<ul id="tabSet_control_horizontal_responsive" class="list tabSet text control horizontal" tabindex="0" role="tablist" js-navtype="tablist">
     <!--
-        Template of resource item in the list
-        States (possible class name changes) :
-            * first - if item is first in the list
-            * last - if item is last in the list
-            * selected - if item is selected in the list
+    Template of resource item in the list
+    States (possible class name changes) :
+    * first - if item is first in the list
+    * last - if item is last in the list
+    * selected - if item is selected in the list
     -->
-    <li js-navtype="dynamiclist" id="tabSet_control_horizontal_responsive:label" class="label"><p class="wrap"></p></li>
+    <li role="none" id="tabSet_control_horizontal_responsive:label" class="label"><p class="wrap"></p></li>
     <!-- Template for sort option
-        States (possible class name changes) :
-            * first - if item is first in the list
-            * last - if item is last in the list
-            * selected - if item is selected in the list
+    States (possible class name changes) :
+    * first - if item is first in the list
+    * last - if item is last in the list
+    * selected - if item is selected in the list
     -->
-    <li js-navtype="dynamiclist" id="tabSet_control_horizontal_responsive:tab" class="tab"><p class="wrap button "></p></li>
+    <li role="tab" id="tabSet_control_horizontal_responsive:tab" class="tab tablistleaf" aria-controls="resultsList"><p class="wrap button "></p></li>
 </ul>
 
-<!-- Template used for list of resources in search -->
-<ul id="tabular_fourColumn_resources" class="list collapsible tabular resources fourColumn" tabindex="0" js-navtype="dynamiclist">
+    <!-- Template used for list of resources in search -->
+    <ul id="tabular_fourColumn_resources" js-navtype="dynamiclist" class="list collapsible tabular resources fourColumn"
+        tabindex="0" role="treegrid" aria-multiselectable="true" aria-label="Resources list">
+        <!--
+            Template of resource item in the list
+            States (possible class name changes) :
+                * first - if item is first in the list
+                * last - if item is last in the list
+                * leaf - default item.
+                * node - if has children resources (e.g. Report Options).
+                * open - if resource has children and they showed
+                * closed - if resource has children and they hidden
+                * selected - if item is selected in the list
+                * scheduled - if resource is scheduled
+        -->
+        <li role="row" id="tabular_fourColumn_resources:leaf" class="resources" js-navtype="dynamiclist">
+            <div class="wrap button draggable">
+                <div class="column one" role="none">
+                    <div role="gridcell">
+                        <div role="checkbox" class="favorite icon button" data-cell="0"
+                        aria-label="<spring:message code="favorite.tooltip"/>" aria-checked="false"></div>
+                    </div>
+                    <div role="none" class="separator"></div>
+                    <div role="gridcell">
+                        <div role="button" class="scheduled icon button" data-cell="1"
+                        aria-label="<spring:message code="schedule.tooltip"/>">
+                        </div>
+                    </div>
+                    <div role="none" class="separator"></div>
+                    <div role="none" class="disclosure icon button"></div>
+                </div>
+                <div role="none" class="column two">
+                    <p role="gridcell" class="resourceName" data-cell="2" readonly><a></a></p>
+                    <p role="gridcell" class="resourceDescription" data-cell="3" readonly></p>
+                </div>
+                <div role="gridcell" data-cell="4" class="column three resourceType"></div>
+                <div role="none" class="column four">
+                    <p role="gridcell" data-cell="5" class="createdDate" readonly></p>
+                    <p role="gridcell" data-cell="6" class="modifiedDate" readonly></p>
+                </div>
+            </div>
+        </li>
+    </ul>
+
+    <!-- Template used for list of resources in search -->
+    <ul id="tabular_fourColumn_resources_sublist" class="list collapsible tabular resources fourColumn sublist" tabindex="0" js-navtype="dynamiclist">
     <!--
         Template of resource item in the list
         States (possible class name changes) :
@@ -83,58 +127,34 @@ using only the mouse, but happens really easily using the keyboard. -->
             * selected - if item is selected in the list
             * scheduled - if resource is scheduled
     -->
-    <li js-navtype="dynamiclist" id="tabular_fourColumn_resources:leaf" class="resources">
+    <li role="row" id="tabular_fourColumn_resources_sublist:leaf" class="resources" js-navtype="dynamiclist">
         <div class="wrap button draggable">
-            <div class="column one">
-                <div class="scheduled icon button"></div>
-                <div class="separator"></div>
-                <div class="disclosure icon button"></div>
+            <div class="column one" role="none">
+                <div role="gridcell">
+                    <div role="checkbox" class="favorite icon button" data-cell="0"
+                         aria-label="<spring:message code="favorite.tooltip"/>" aria-checked="false"></div>
+                </div>
+                <div role="none" class="separator"></div>
+                <div role="gridcell">
+                    <div role="button" class="scheduled icon button" data-cell="1"
+                         aria-label="<spring:message code="schedule.tooltip"/>">
+                    </div>
+                </div>
+                <div role="none" class="separator"></div>
+                <div role="none" class="disclosure icon button">&nbsp;</div>
             </div>
-            <div class="column two">
-                <p class="resourceName"><a></a></p>
-                <p class="resourceDescription"></p>
+            <div role="none" class="column two">
+                <p role="gridcell" class="resourceName" data-cell="2"><a></a></p>
+                <p role="gridcell" class="resourceDescription" data-cell="3"></p>
             </div>
-            <div class="column three resourceType"></div>
-            <div class="column four">
-                <p class="createdDate"></p>
-                <p class="modifiedDate"></p>
+            <div role="gridcell" class="column three resourceType" data-cell="4"></div>
+                <div role="none" class="column four">
+                <p role="gridcell" class="createdDate" data-cell="5"></p>
+                <p role="gridcell" class="modifiedDate" data-cell="6"></p>
             </div>
         </div>
     </li>
-</ul>
 
-<!-- Template used for list of resources in search -->
-<ul id="tabular_fourColumn_resources_sublist" class="list collapsible tabular resources fourColumn sublist" tabindex="0" js-navtype="dynamiclist">
-    <!--
-        Template of resource item in the list
-        States (possible class name changes) :
-            * first - if item is first in the list
-            * last - if item is last in the list
-            * leaf - default item.
-            * node - if has children resources (e.g. Report Options).
-            * open - if resource has children and they showed
-            * closed - if resource has children and they hidden
-            * selected - if item is selected in the list
-            * scheduled - if resource is scheduled
-    -->
-    <li js-navtype="dynamiclist" id="tabular_fourColumn_resources_sublist:leaf" class="resources">
-        <div class="wrap button draggable">
-            <div class="column one">
-                <div class="scheduled icon button">&nbsp;</div>
-                <div class="separator"></div>
-                <div class="disclosure icon button">&nbsp;</div>
-            </div>
-            <div class="column two">
-                <p class="resourceName"><a></a></p>
-                <p class="resourceDescription"></p>
-            </div>
-            <div class="column three resourceType"></div>
-            <div class="column four">
-                <p class="createdDate"></p>
-                <p class="modifiedDate"></p>
-            </div>
-        </div>
-    </li>
 </ul>
 
 <!-- Template used for list of users in user management -->
@@ -262,21 +282,23 @@ using only the mouse, but happens really easily using the keyboard. -->
 
 
 <!-- Template used for list of permissions for resource-->
-<ul id="tabular_twoColumn_setLeft" class="list setLeft tabular twoColumn" tabindex="0" js-navtype="dynamiclist">
+<ul id="tabular_twoColumn_setLeft" class="list setLeft tabular twoColumn" tabindex="0" role="treegrid" js-navtype="dynamiclist">
 <!--
     Template of permission item for user or role
     -->
-    <li js-navtype="dynamiclist" id="tabular_twoColumn_setLeft:leaf" class="leaf">
-        <div class="wrap"><b class="icon"></b>
-            <p class="column one"><a class="launcher"></a></p>
-            <p class="column two">
-                <select>
+    <li role="row" js-navtype="dynamiclist" id="tabular_twoColumn_setLeft:leaf" class="leaf">
+        <div role="none" class="wrap">
+            <b role="none" class="icon"></b>
+            <p role="gridcell" data-cell="0" class="column one"><a class="launcher"></a></p>
+            <p role="gridcell" data-cell="1" class="column two">
+                <select js-navtype="dynamiclist" aria-label="<spring:message code='permission.list.aria.label.select'/>" tabindex="-1">
                 </select>
             </p>
         </div>
     </li>
     <li js-navtype="dynamiclist" id="tabular_twoColumn_setLeft:loading" class="leaf loading">
-        <div class="wrap"><b class="icon"></b>
+        <div class="wrap">
+            <b class="icon"></b>
             <p class="column one"><a class="launcher"></a></p>
             <p class="column two">
             </p>
@@ -369,7 +391,7 @@ using only the mouse, but happens really easily using the keyboard. -->
     <li js-navtype="dynamiclist" id="list_responsive_fields:leaf" class="leaf"><a href="list.jsp#" class="wrap button "><b class="icon"></b></a></li>
 </ul>
 
-<ul id="list_type_attributes" class="list type_attributes" js-stdnav="false" tabindex="-1">
+<ul id="list_type_attributes" class="list type_attributes" js-stdnav="false" js-navtype="none" tabindex="-1">
     <li js-navtype="dynamiclist" id="list_type_attributes:role" class="leaf"><a href="list.jsp#" class="wrap button launcher"></a><span class="separator">,</span></li>
     <li js-navtype="dynamiclist" id="list_type_attributes:role:last" class="leaf"><a href="list.jsp#" class="wrap button launcher"></a></li>
     <li js-navtype="dynamiclist" id="list_type_attributes:user" class="leaf"><a href="list.jsp#" class="wrap button launcher"></a>,&nbsp;</li>
@@ -434,7 +456,7 @@ using only the mouse, but happens really easily using the keyboard. -->
 <div id="treeTemplateHolder" style="display:none">
 
     <!-- FIXME: StdNav: implement dynamictree plugin and switch navtypes to that -->
-    <ul id="list_responsive_collapsible" class="list collapsible" tabindex="0" js-navtype="dynamiclist">
+    <ul id="list_responsive_collapsible" class="list collapsible" role="group" js-stdnav="false" js-navtype="none">
         <%-- node icon and title--%>
         <li js-navtype="dynamiclist" id="list_responsive_collapsible:leaf" class="leaf">
             <p class="wrap button draggable"><b class="icon"></b></p>
@@ -446,8 +468,8 @@ using only the mouse, but happens really easily using the keyboard. -->
         </li>
     </ul>
 
-    <ul id="list_responsive_collapsible_folders" class="list collapsible folders" tabindex="0" js-navtype="dynamiclist">
-        <li js-navtype="dynamiclist" id="list_responsive_collapsible_folders:folders" class="folders">
+    <ul id="list_responsive_collapsible_folders" class="list collapsible folders" tabindex="0" role="tree" aria-label="<spring:message code="Repository.ItemSelectDialog.foldersTab"/>" js-stdnav="false" js-navtype="none">
+        <li id="list_responsive_collapsible_folders:folders" class="folders" role="treeitem" js-stdnav="false" js-navtype="none">
             <p class="wrap button draggable"><b class="icon"></b></p>
         </li>
 

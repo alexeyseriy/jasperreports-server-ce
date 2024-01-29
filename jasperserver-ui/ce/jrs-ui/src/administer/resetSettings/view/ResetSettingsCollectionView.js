@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -102,13 +102,10 @@ var ResetSettingsCollectionView = BaseTable.extend({
     },
     _errorAjaxCallback: function (response) {
         var msg;
-        switch (response.status) {
-        case 401:
+        if (response.status === 401) {
             msg = i18n['editSettings.error.message.not.authenticated'];
-            break;
-        default:
+        } else {
             msg = i18n['editSettings.error.message.unknown.error'];
-            break;
         }
         this.alertDialog.setMessage(msg);
         this.alertDialog.open();

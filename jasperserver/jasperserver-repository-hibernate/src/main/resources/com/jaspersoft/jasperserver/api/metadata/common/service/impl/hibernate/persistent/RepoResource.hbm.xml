@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <!--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -49,6 +49,10 @@
             <key column="resource_id" on-delete="cascade"/>
             <one-to-many class="com.jaspersoft.jasperserver.api.metadata.common.service.impl.hibernate.persistent.RepoReportThumbnail"/>
         </set>
+		<set inverse="true" cascade="all-delete-orphan" name="favorites" batch-size="1000" outer-join="auto" lazy="extra">
+			<key column="resource_id" on-delete="cascade"/>
+			<one-to-many class="com.jaspersoft.jasperserver.api.metadata.common.service.impl.hibernate.persistent.RepoFavoriteResource"/>
+		</set>
 	</class>
 
 <!-- create index JIResource_childrenFolder_index on JIResource (childrenFolder); -->

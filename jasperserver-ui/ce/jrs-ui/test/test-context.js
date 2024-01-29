@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -34,6 +34,7 @@ import "js-sdk/src/common/extension/numeralExtension";
 import "js-sdk/src/common/extension/epoxyExtension";
 import "js-sdk/src/common/extension/tv4Extension";
 import "js-sdk/src/common/extension/jQueryTimepickerExtension";
+import "js-sdk/test/tools/enzymeConfig";
 
 let context = require.context('./src', true, /(\.t|T)ests\.(js|jsx|ts|tsx)$/);
 context.keys().forEach(context);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -40,19 +40,16 @@ public class ReportExecutionAuditListenerFactory implements ReportExecutionListe
 	private AuditContext auditContext;
 	
 	public ReportExecutionListener createListener(ReportUnitRequestBase request) {
-		if (!request.isCreateAuditEvent()) {
-			return null;
-		}
-		
-		return new ReportExecutionAuditListener(request.getStartTime());
+		return new ReportExecutionAuditListener(request.isCreateAuditEvent());
 	}
 	
 	protected class ReportExecutionAuditListener implements ReportExecutionListener {
-		private final long startTime;
+		private long startTime;
 		private Thread originalThread;
+		private boolean createAuditEvent;
 
-		public ReportExecutionAuditListener(long startTime) {
-			this.startTime = startTime;
+		public ReportExecutionAuditListener(boolean createAuditEvent) {
+			this.createAuditEvent = createAuditEvent;
 		}
 		
 		public void init() {
@@ -60,32 +57,35 @@ public class ReportExecutionAuditListenerFactory implements ReportExecutionListe
 		}
 
 		public void start() {
-			getAuditContext().doInAuditContext(
-					new AuditContext.AuditContextCallback() {
-						public void execute() {
-							getAuditContext().createAuditEvent(AuditEventType.RUN_REPORT.toString());
-						}
-					});
+			this.startTime = System.currentTimeMillis();
+			if (createAuditEvent)
+				getAuditContext().doInAuditContext(
+						new AuditContext.AuditContextCallback() {
+							public void execute() {
+								getAuditContext().createAuditEvent(AuditEventType.RUN_REPORT.toString());
+							}
+						});
 		}
 
 		public void end(boolean success) {
 			end(success,-1);
 		}		
 		public void end(boolean success, final long size) {
-			if (success) {
-				getAuditContext().doInAuditContext(AuditEventType.RUN_REPORT.toString(),
-						new AuditContext.AuditContextCallbackWithEvent() {
-							public void execute(AuditEvent auditEvent) {
-								getAuditContext().addPropertyToAuditEvent("reportExecutionStartTime", new Date(startTime), auditEvent);
-								getAuditContext().addPropertyToAuditEvent("reportExecutionTime", System.currentTimeMillis() - startTime, auditEvent);
-								if (size>=0) {
-									getAuditContext().addPropertyToAuditEvent("reportMemorySize", size, auditEvent);
-								}
-								getAuditContext().closeAuditEvent(auditEvent);
+			getAuditContext().doInAuditContext(AuditEventType.RUN_REPORT.toString(),
+					new AuditContext.AuditContextCallbackWithEvent() {
+						public void execute(AuditEvent auditEvent) {
+							getAuditContext().addPropertyToAuditEvent("reportExecutionStartTime", new Date(startTime), auditEvent);
+							getAuditContext().addPropertyToAuditEvent("reportExecutionEpochStartTime", startTime, auditEvent);
+							long endTime = System.currentTimeMillis();
+							getAuditContext().addPropertyToAuditEvent("reportExecutionEpochEndTime", endTime, auditEvent);
+							getAuditContext().addPropertyToAuditEvent("reportExecutionTime", endTime - startTime, auditEvent);
+							if (size>=0) {
+								getAuditContext().addPropertyToAuditEvent("reportMemorySize", size, auditEvent);
 							}
-						});
-			}
-			
+							if (createAuditEvent)
+								getAuditContext().closeAuditEvent(auditEvent);
+						}
+					});
 			if (!Thread.currentThread().equals(originalThread)) {// TODO lucianc put in finally
 				// the execution ran on a different thread, flush the events
 				loggingContextProvider.flushContext();

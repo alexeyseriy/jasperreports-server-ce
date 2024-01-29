@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -29,7 +29,7 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans
        http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
        http://www.springframework.org/schema/security
-       http://www.springframework.org/schema/security/spring-security-4.2.xsd
+       http://www.springframework.org/schema/security/spring-security-5.7.xsd
        http://www.springframework.org/schema/util
        http://www.springframework.org/schema/util/spring-util-4.3.xsd">
 
@@ -77,6 +77,7 @@
     <bean id="reportExecutionJobFileSaving" class="com.jaspersoft.jasperserver.api.engine.scheduling.quartz.ReportExecutionJobFileSavingImpl" lazy-init="true">
         <property name="ftpService" ref="ftpService"/>
         <property name="enableSaveToHostFS" value="#{configurationBean.enableSaveToHostFS}"/>
+        <property name="auditContext" ref="${bean.auditContext}"/>
     </bean>
 
     <bean id="quartzScheduler" class="com.jaspersoft.jasperserver.api.engine.scheduling.quartz.JSSchedulerFactoryBean" lazy-init="false" destroy-method="destroy">
@@ -99,11 +100,12 @@
                 <entry key="reportSchedulingService" value-ref="reportSchedulingService"/>
                 <entry key="engineService" value-ref="engineService"/>
                 <entry key="repositoryService" value-ref="${bean.repositoryService}"/>
-                <entry key="exportDashboardService" value="singletonExportDashboardService"/>
+                <entry key="exportDashboardService" value="exportDashboardService"/>
                 <entry key="configurationBeanName" value="configurationBean"/>
                 <entry key="mailSender" value-ref="reportSchedulerMailSender"/>
                 <entry key="mailFromAddress" value="${report.scheduler.mail.sender.from}"/>
                 <entry key="loggingService" value-ref="loggingService"/>
+                <entry key="tenantService" value-ref="${bean.hibernateTenantService}"/>
                 <entry key="securityContextProvider" value-ref="${bean.securityContextProvider}"/>
                 <entry key="hyperlinkProducerFactory">
                     <bean class="net.sf.jasperreports.engine.export.JRHyperlinkProducerMapFactory">
@@ -441,6 +443,7 @@
         <entry key="15" value="json"/>
         <entry key="16" value="png"/>
         <entry key="17" value="data_csv"/>
+        <entry key="18" value="data_xlsx"/>
     </util:map>
 
 
@@ -454,14 +457,21 @@
         <value>DOCX</value>
         <value>ODS</value>
         <value>XLSX_NOPAG</value>
+        <!--
         <value>XLS</value>
+        -->
         <value>ODT</value>
         <value>XLSX</value>
+        <!--
         <value>XLS_NOPAG</value>
+        -->
         <value>PDF</value>
         <value>PPTX</value>
         <value>DATA_CSV</value>
-        <!--<value>TXT</value>-->
+        <value>DATA_XLSX</value>
+        <!--
+        <value>TXT</value>
+        -->
         <value>DATA_SNAPSHOT</value> <!-- This one will not appear if data snapshot persistence is turned off  -->
     </util:list>
 
@@ -480,7 +490,9 @@
         <value>PPTX</value>
         <value>PDF</value>
         <value>XLSX_NOPAG</value>
+        <!--
         <value>XLS_NOPAG</value>
+        -->
         <value>RTF</value>
         <value>CSV</value>
         <value>ODS</value>
@@ -513,6 +525,10 @@
         <property name="exportParams" ref="jobXlsExportParameters"/>
         <property name="ignorePagination" value="true"/>
     	<property name="compress" value="true"/>
+    </bean>
+    <bean id="xlsxMetadataOutput" class="com.jaspersoft.jasperserver.api.engine.scheduling.quartz.XlsxMetadataReportOutput" parent="baseReportJobExportOutput">
+        <property name="exportParams" ref="jobXlsExportParameters"/>
+        <property name="compress" value="true"/>
     </bean>
     <bean id="csvOutput" class="com.jaspersoft.jasperserver.api.engine.scheduling.quartz.CsvReportOutput" parent="baseReportJobExportOutput">
         <property name="exportParams" ref="jobCsvExportParameters"/>
@@ -547,8 +563,8 @@
     <util:map id="outputFormatMap">
         <entry key="pdf" value-ref="pdfOutput"/>
         <entry key="html" value-ref="htmlOutput"/>
-        <entry key="xls" value-ref="xlsOutput"/>
-        <entry key="xlsNoPag" value-ref="xlsNoPagOutput"/>
+        <entry key="xls" value-ref="xlsxOutput"/>
+        <entry key="xlsNoPag" value-ref="xlsxNoPagOutput"/>
         <entry key="rtf" value-ref="rtfOutput"/>
         <entry key="csv" value-ref="csvOutput"/>
         <entry key="odt" value-ref="odtOutput"/>
@@ -560,6 +576,7 @@
         <entry key="pptx" value-ref="pptxOutput"/>
         <entry key="json" value-ref="jsonOutput"/>
         <entry key="data_csv" value-ref="csvMetadataOutput"/>
+        <entry key="data_xlsx" value-ref="xlsxMetadataOutput"/>
     </util:map>
 
     <bean id="contentResourceURIResolver" class="com.jaspersoft.jasperserver.api.engine.common.service.impl.DefaultContentResourceURIResolver">

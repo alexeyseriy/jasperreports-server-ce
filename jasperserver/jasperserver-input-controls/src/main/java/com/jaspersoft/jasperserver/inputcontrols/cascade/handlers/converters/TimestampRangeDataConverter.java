@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -38,10 +38,7 @@ import java.text.DateFormat;
  * @version $Id$
  */
 @Service
-public class TimestampRangeDataConverter implements DataConverter<TimestampRange> {
-
-    @Resource(name = "isoCalendarFormatProvider")
-    protected CalendarFormatProvider calendarFormatProvider;
+public class TimestampRangeDataConverter extends BaseChronoDataConverter implements DataConverter<TimestampRange> {
 
     @Resource
     private ClientTimezoneFormattingRulesResolver clientTimezoneFormattingRulesResolver;
@@ -52,8 +49,9 @@ public class TimestampRangeDataConverter implements DataConverter<TimestampRange
             return null;
         }
 
+        DateFormat datetimeFormat = getDatetimeFormat(rawData);
         return (TimestampRange) DateRangeFactory.getInstance(rawData, Timestamp.class,
-                DateRangeDataConverter.getStringDatePattern(calendarFormatProvider.getDatetimeFormat()));
+                DateRangeDataConverter.getStringDatePattern(datetimeFormat));
     }
 
     @Override
@@ -63,13 +61,13 @@ public class TimestampRangeDataConverter implements DataConverter<TimestampRange
         } else if (value instanceof DateRangeExpression) {
             return ((DateRangeExpression) value).getExpression();
         } else {
+            DateFormat datetimeFormat = getDatetimeFormat();
             if (clientTimezoneFormattingRulesResolver.isApplyClientTimezone(value.getStart())) {
-                DateFormat datetimeFormat = calendarFormatProvider.getDatetimeFormat();
                 datetimeFormat.setTimeZone(TimeZoneContextHolder.getTimeZone());
 
                 return datetimeFormat.format(value.getStart());
             }
-            return calendarFormatProvider.getDatetimeFormat().format(value.getStart());
+            return datetimeFormat.format(value.getStart());
         }
     }
 }

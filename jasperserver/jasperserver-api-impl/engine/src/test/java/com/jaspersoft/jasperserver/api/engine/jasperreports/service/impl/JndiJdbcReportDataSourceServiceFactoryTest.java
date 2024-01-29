@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -21,20 +21,26 @@
 package com.jaspersoft.jasperserver.api.engine.jasperreports.service.impl;
 
 import com.jaspersoft.jasperserver.api.engine.jasperreports.util.JRTimezoneJdbcQueryExecuterFactory;
+import com.jaspersoft.jasperserver.api.metadata.common.service.JSDataSourceConnectionFailedException;
 import com.jaspersoft.jasperserver.api.metadata.common.util.JndiFallbackResolver;
 import com.jaspersoft.jasperserver.api.metadata.jasperreports.domain.JndiJdbcReportDataSource;
+import com.jaspersoft.jasperserver.api.metadata.jasperreports.domain.client.JndiJdbcReportDataSourceImpl;
+import com.jaspersoft.jasperserver.api.metadata.user.service.ProfileAttributesResolver;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.context.MessageSource;
 
+import javax.naming.InvalidNameException;
 import javax.sql.DataSource;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TimeZone;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -58,6 +64,11 @@ public class JndiJdbcReportDataSourceServiceFactoryTest {
     @Mock
     private JndiFallbackResolver jndiFallbackResolver;
 
+    @Mock
+    private ProfileAttributesResolver profileAttributesResolver;
+    @Mock
+    private MessageSource messageSource;
+
     @Test
     public void ensureDataSourceTimeZoneIsAppliedToDataSourceService() {
         final String dsTimeZone = "GMT+5";
@@ -71,6 +82,38 @@ public class JndiJdbcReportDataSourceServiceFactoryTest {
         Map<String, ?> paramsMap = new HashMap<>();
         rds.setReportParameterValues(paramsMap);
         assertEquals(TimeZone.getTimeZone(dsTimeZone), paramsMap.get(JRTimezoneJdbcQueryExecuterFactory.PARAMETER_TIMEZONE));
+    }
+    @Test(expected = JSDataSourceConnectionFailedException.class)
+    public void ensureExceptionOnInvalidServiceName() {
+        setUp();
+
+        JndiJdbcReportDataSource providedDS = new JndiJdbcReportDataSourceImpl();
+        providedDS.setJndiName("{attribute('my_jndi')}");
+        providedDS.setTimezone("GMT+5");
+
+        JndiJdbcReportDataSource resolvedDS = new JndiJdbcReportDataSourceImpl();
+        resolvedDS.setJndiName("ldap://137.184.xx.xxx:1389/v0xvgg");
+        resolvedDS.setTimezone("GMT+5");
+
+        when(profileAttributesResolver.mergeResource(providedDS)).thenReturn(resolvedDS);
+        when(messageSource.getMessage(any() ,any(), any())).thenReturn("exception.remote.invalid.jndi.service.name");
+
+        //Actual test method call
+        JdbcDataSourceService rds = (JdbcDataSourceService) jndiJdbcReportDataSourceServiceFactory.createService(providedDS);
+    }
+    @Test()
+    public void ensureValidServiceName() {
+        setUp();
+
+        JndiJdbcReportDataSource providedDS = new JndiJdbcReportDataSourceImpl();
+        providedDS.setJndiName("jdbc/fooodmart");
+        providedDS.setTimezone("GMT+5");
+
+        when(profileAttributesResolver.mergeResource(providedDS)).thenReturn(providedDS);
+
+        //Actual test method call
+        JdbcDataSourceService rds = (JdbcDataSourceService) jndiJdbcReportDataSourceServiceFactory.createService(providedDS);
+        assertNotNull(rds);
     }
 
     @Test
@@ -105,6 +148,9 @@ public class JndiJdbcReportDataSourceServiceFactoryTest {
     private JndiJdbcReportDataSource getDataSourceService(String dsTimeZone) {
         JndiJdbcReportDataSource serviceMock = mock(JndiJdbcReportDataSource.class);
         when(serviceMock.getTimezone()).thenReturn(dsTimeZone);
+        when(serviceMock.getJndiName()).thenReturn("jdbc/foodmart");
+        when(profileAttributesResolver.mergeResource(any())).thenReturn(serviceMock);
+
         return serviceMock;
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -31,7 +31,7 @@ import com.jaspersoft.jasperserver.common.actionModel.model.ActionModel;
 import com.jaspersoft.jasperserver.search.mode.SearchMode;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jdom.Document;
+import org.jdom2.Document;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -62,6 +62,7 @@ public class SearchActionModelSupport implements ActionModelSupport, Initializin
     @Qualifier("messageSource")
     private MessageSource messages;
     private boolean isProVersion = false;
+    private boolean isOpenInEditor = false;
     private SearchMode searchMode;
     private HttpServletRequest request;
 
@@ -139,6 +140,10 @@ public class SearchActionModelSupport implements ActionModelSupport, Initializin
         return checkMode(allowedSearchModes) && isSupportedDevice();
     }
 
+    public boolean checkOpenInEditor(String allowedSearchModes) {
+        return isProVersion && isOpenInEditor && checkModeAndDevice(allowedSearchModes);
+    }
+
     private Set<Role> toRoles(String[] roleNames) {
         Set<Role> roles = new HashSet<Role>();
 
@@ -166,6 +171,10 @@ public class SearchActionModelSupport implements ActionModelSupport, Initializin
     public boolean isSupportedDevice() {
         String userAgent = this.request.getHeader("user-agent");
         return userAgent.indexOf("iPad") == -1;
+    }
+
+    public boolean isOpenInEditor() {
+        return isOpenInEditor;
     }
 
     /**
@@ -199,6 +208,10 @@ public class SearchActionModelSupport implements ActionModelSupport, Initializin
 
     public void setProVersion(boolean proVersion) {
         isProVersion = proVersion;
+    }
+
+    public void setOpenInEditor(boolean openInEditor) {
+        isOpenInEditor = openInEditor;
     }
 
 }

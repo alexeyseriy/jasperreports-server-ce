@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -48,6 +48,7 @@ import i18n from '../i18n/jasperserver_messages.properties';
 import xssUtil from 'js-sdk/src/common/util/xssUtil';
 import ConfirmationDialog from 'js-sdk/src/common/component/dialog/ConfirmationDialog';
 import domUtil from 'js-sdk/src/common/util/domUtil';
+import navigateBackUtils from '../navigateBack/utils/navigateBackUtils';
 
 //var localContext = window;
 //////////////////////////
@@ -57,9 +58,9 @@ function invokeAction(actionName) {
     var action = repositorySearch.Action['create' + actionName].call();
     action.invokeAction();
 }
-function invokeFolderAction(actionName, folder) {
+function invokeFolderAction(actionName, folder, options) {
     var theFolder = folder ? folder : repositorySearch.model.getContextFolder();
-    var action = repositorySearch.folderActionFactory[actionName](theFolder);
+    var action = repositorySearch.folderActionFactory[actionName](theFolder, options);
     action.invokeAction();
 }
 function invokeResourceAction(actionName, resource, options) {
@@ -67,9 +68,9 @@ function invokeResourceAction(actionName, resource, options) {
     var action = repositorySearch.resourceActionFactory[actionName](theResource, options);
     action.invokeAction();
 }
-function invokeBulkAction(actionName) {
+function invokeBulkAction(actionName, resourceName, event) {
     var resources = repositorySearch.model.getSelectedResources();
-    var action = repositorySearch.bulkActionFactory[actionName](resources);
+    var action = repositorySearch.bulkActionFactory[actionName](resources, event);
     action.invokeAction();
 }
 
@@ -247,9 +248,6 @@ function canAllBeCopiedOrMovedToFolder(folder) {
         return false;
     }
     var resources = repositorySearch.CopyMoveController.isBulkAction() ? repositorySearch.CopyMoveController.object : [repositorySearch.CopyMoveController.object];
-    var folderUris = resources.collect(function (resource) {
-        return resource.parentFolder;
-    });
     var allow = true;
     if (folder.isThemeRootFolder() || folder.isThemeFolder()) {
         var allFiles = resources.detect(function (resource) {
@@ -264,8 +262,8 @@ function canAllBePasted() {
 }
 function canAllPropertiesBeShowed() {
     var resources = repositorySearch.model.getSelectedResources();
-    var detected = resources.detect(function (resource) {
-        return !canResourcePropertiesBeShowed(resource);
+    var detected = resources.detect(function () {
+        return !canResourcePropertiesBeShowed();
     });
     return resources.length > 0 && detected === undefined;
 }
@@ -276,6 +274,19 @@ function canAllPropertiesBeEdited() {
     });
     return resources.length > 0 && detected === undefined;
 }
+function canBeAddedToFavorites() {
+    let resources = repositorySearch.model.getSelectedResources();
+    return resources.every((resource)=>{
+        return !resource.isFavorite;
+    });
+}
+function canBeRemovedFromFavorites() {
+    let resources = repositorySearch.model.getSelectedResources();
+    return resources.every((resource)=>{
+        return resource.isFavorite;
+    });
+}
+
 function canAllBeDeleted() {
     var resources = repositorySearch.model.getSelectedResources();
     var detected = resources.detect(function (resource) {
@@ -300,14 +311,14 @@ function canThemeBeReuploaded() {
     return folder && folder.isThemeFolder() && canFolderBeEdited(folder);
 }
 function isPermissionsChanged() {
-    var dialogs = repositorySearch.dialogsPool.getAllPermissionsDialogs();
-    return dialogs.detect(function (dialog) {
+    var permissionDialogs = repositorySearch.dialogsPool.getAllPermissionsDialogs();
+    return permissionDialogs.detect(function (dialog) {
         return dialog.isChanged();
     });
 }
 function isPropertiesChanged() {
-    var dialogs = repositorySearch.dialogsPool.getAllPropertiesDialogs();
-    return dialogs.detect(function (dialog) {
+    var propertyDialogs = repositorySearch.dialogsPool.getAllPropertiesDialogs();
+    return propertyDialogs.detect(function (dialog) {
         return dialog.isChanged();
     });
 }    ////////////////////////////
@@ -450,6 +461,11 @@ var repositorySearch = {
         REUPLOADED: 'theme:reuploaded',
         THEME_ERROR: 'theme:error'
     },
+    ResourcesFavoriteAction: {
+        FILTER_ID: 'favoriteFilter',
+        ALL_RESOURCES: 'favoriteFilter-all',
+        FAVORITE_RESOURCES: 'favoriteFilter-favorites'
+    },
     initialize: function (localContext) {
         var options = localContext.rsInitOptions;
         repositorySearch.mode = options.mode;
@@ -467,6 +483,8 @@ var repositorySearch = {
         repositorySearch.model.setServerState(options.state);
         repositorySearch.CursorManager.initialize();
         repositorySearch.actionModel.initialize();
+        this.navigateToResourcePage();
+
         if (repositorySearch.mode == repositorySearch.Mode.BROWSE) {
             repositorySearch.toolbar.initialize(repositorySearch.actionModel.bulkActions);
             repositorySearch.foldersPanel.initialize(options);
@@ -476,6 +494,9 @@ var repositorySearch = {
             repositorySearch.filterPath.initialize();
         }
         repositorySearch.resultsPanel.initialize(options);
+        if(repositorySearch.mode === repositorySearch.Mode.LIBRARY){
+            repositorySearch.favoriteSwitchControl.initialize(options);
+        }
         repositorySearch.sortersPanel.initialize(repositorySearch.model.getSortersConfiguration(), repositorySearch.model.getSortState());
         repositorySearch.initFolderEvents();
         repositorySearch.initResourceEvents();
@@ -608,6 +629,10 @@ var repositorySearch = {
                 if (resource.isLoaded() && item.isLoading) {
                     item.setLoading(false);
                 }
+                if (jQuery(item._getElement()).hasClass('cursor')){
+                    jQuery('.subfocus').removeClass('subfocus');
+                    jQuery(item._getElement()).addClass('subfocus').addClass('focus-visible');
+                }
             }
         }.bindAsEventListener(repositorySearch));
         repositorySearch.observe('state:changed', function (event) {
@@ -655,11 +680,23 @@ var repositorySearch = {
         }
         this._disableBfCacheIfSafari();
     },
+    navigateToResourcePage: function(){
+        let mode= repositorySearch.mode;
+        if(mode && history.length > 1) {
+            let locObj = window.primaryNavModule.navigationPaths[mode],
+                queryParams = window.primaryNavModule.navigationPaths[mode].params;
+            queryParams = queryParams ? '?' + queryParams : '';
+
+            const destination = __jrsConfigs__.urlContext + '/' + locObj.url + queryParams;
+            navigateBackUtils.setLocation(destination);
+        }
+    },
     showContextMenu: function (e) {
         var event = e.memo.targetEvent;
-        if (repositorySearch.mode == repositorySearch.Mode.BROWSE) {
+        if (repositorySearch.mode === repositorySearch.Mode.BROWSE) {
             if (repositorySearch.foldersPanel.isFolderContextMenu(event)) {
-                repositorySearch.actionModel.showFolderMenu(event);
+                const label = jQuery(e.memo.targetEvent?.target).closest('li').find('p').text().trim();
+                repositorySearch.actionModel.showFolderMenu(event, undefined, label);
             }
         }
         if (repositorySearch.resultsPanel.isResourceContextMenu(event)) {
@@ -693,8 +730,7 @@ var repositorySearch = {
                 jQuery(repositorySearch.filtersPanel).find(filterId, state.customFilters[filterId], true)[0];
             }
         }
-        if (state.folderUri != repositorySearch.model.getFolderUriState()) {
-        }    // TODO: select folder
+        // TODO: select folder
         repositorySearch.model.setServerState(state);
     },
     initFolderEvents: function () {
@@ -710,8 +746,9 @@ var repositorySearch = {
         });
         this.observe('folder:deleteError', this.defaultErrorHandler);
         this.observe('folder:created', function (event) {
-            var folder = event.memo.inputData.toFolder;
-            repositorySearch.foldersPanel.refreshFolder(folder);
+            var toFolder = event.memo.inputData.toFolder;
+            var targetFolder = event.memo.responseData;
+            repositorySearch.foldersPanel.createAndSelectFolder(targetFolder, toFolder);
         });
         this.observe('folder:createError', this.defaultErrorHandler);
         this.observe('folder:copied', function (event) {
@@ -748,7 +785,6 @@ var repositorySearch = {
                     bottomMessage: repositorySearch.messages['dialog.dependencies.resources.deleteMessage']
                 });
             } else {
-                var folder = repositorySearch.model.getSelectedFolder();
                 repositorySearch.resultsPanel.removeResources(resources);
             }
         });
@@ -788,7 +824,6 @@ var repositorySearch = {
             dialogs.systemConfirm.show(repositorySearch.messages['RM_REPORT_CREATED'], 5000);
         });
         this.observe('resource:generateError', function (event) {
-            var inputData = event.memo.inputData;
             var error = event.memo.responseData;
             var msg = error.msg;
             var data = error.data;
@@ -824,9 +859,10 @@ var repositorySearch = {
         this.observe('resource:convertError', this.defaultErrorHandler);
     },
     defaultErrorHandler: function (event) {
-        var errorDialog = new AlertDialog({ title: i18n['dialog.dependencies.title'] });
-        errorDialog.setMessage(event.memo.responseData || event.memo);
-        errorDialog.open();
+        this.errorDialog && this.errorDialog.remove();
+        this.errorDialog = new AlertDialog({ title: i18n['dialog.dependencies.title'], id: 'dependenciesDialogId', titleContainerId: 'dependenciesDialogTitle', bodyContainerId: 'dependenciesDialogBody' });
+        this.errorDialog.setMessage(event.memo.responseData || event.memo);
+        this.errorDialog.open();
 
         repositorySearch.sortersPanel.enableItems();
     },
@@ -1101,8 +1137,8 @@ repositorySearch.actionModel = {
         });    //var treeContainer = ($(repositorySearch.foldersPanel.getTreeId()).parent());
         //treeContainer.observe('scroll', function(event) {!isRightClick(event) && actionModel.hideMenu()});
     },
-    showFolderMenu: function (event, coordinates) {
-        actionModel.showDynamicMenu(this._folderMenu, event, null, coordinates, this._holderId);
+    showFolderMenu: function (event, coordinates, label) {
+        actionModel.showDynamicMenu(this._folderMenu, event, null, coordinates, this._holderId, undefined, label);
     },
     showResourceBulkMenu: function (event, coordinates) {
         actionModel.showDynamicMenu(this._resourceBulkMenu, event, null, coordinates, this._holderId);
@@ -1240,7 +1276,11 @@ var Resource = function (json) {
     this.parentFolder = json.parentFolder;
     this.resourceType = json.resourceType;
     this.type = json.type;
+    if (json.fileType) {
+        this.fileType = json.fileType;
+    }
     this.isScheduled = json.scheduled;
+    this.isFavorite = json.favorite;
     this._permissions = json.permissions;
     this.hasChildren = json.hasChildren;
     this.isChild = false;
@@ -1405,6 +1445,13 @@ var ResourcesUtils = {
         });
         return list;
     },
+    getSelectedResourceUris: function (resources) {
+        return resources.map((resource)=>{
+            return {
+                uri: resource.URIString ? resource.URIString : resource.URI
+            };
+        });
+    },
     checkNameLength: function (value) {
         return !value.blank() && value.length <= repositorySearch.model.getConfiguration().resourceNameMaxLength;
     },
@@ -1414,10 +1461,7 @@ var ResourcesUtils = {
     labelValidator: function (value) {
         var isValid = true;
         var errorMessage = '';
-        if (value.blank()) {
-            errorMessage = repositorySearch.messages['RE_INVALID_NAME_SIZE'].replace('{0}', repositorySearch.model.getConfiguration().resourceLabelMaxLength);
-            isValid = false;
-        } else if (value.length > repositorySearch.model.getConfiguration().resourceLabelMaxLength) {
+        if (value.blank() || (value.length > repositorySearch.model.getConfiguration().resourceLabelMaxLength)) {
             errorMessage = repositorySearch.messages['RE_INVALID_NAME_SIZE'].replace('{0}', repositorySearch.model.getConfiguration().resourceLabelMaxLength);
             isValid = false;
         }
@@ -1478,10 +1522,10 @@ var Utils = {
 // Repository Search Initialization
 ////////////////////////////////////
 document.observe('element:contextmenu', repositorySearch.showContextMenu.bindAsEventListener(repositorySearch));
-document.observe('key:escape', function (event) {
+/*document.observe('key:escape', function (event) {
     actionModel.hideMenu();
     Event.stop(event);
-});
+});*/
 document.observe('key:delete', function (event) {
     // for bug 25864 - to prevent warning message appearing when trying to delete text in any text input
     if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
@@ -1542,6 +1586,9 @@ window.canAllBePasted = canAllBePasted;
 window.canAllPropertiesBeShowed = canAllPropertiesBeShowed;
 window.canAllPropertiesBeEdited = canAllPropertiesBeEdited;
 window.canAllBeDeleted = canAllBeDeleted;
+window.canBeAddedToFavorites = canBeAddedToFavorites;
+window.canBeRemovedFromFavorites = canBeRemovedFromFavorites;
+
 
 export {
     repositorySearch,
@@ -1559,5 +1606,7 @@ export {
     canBeOpened,
     invokeBulkAction,
     invokeRedirectAction,
-    canBeScheduled
+    canBeScheduled,
+    canBeAddedToFavorites,
+    canBeRemovedFromFavorites
 };

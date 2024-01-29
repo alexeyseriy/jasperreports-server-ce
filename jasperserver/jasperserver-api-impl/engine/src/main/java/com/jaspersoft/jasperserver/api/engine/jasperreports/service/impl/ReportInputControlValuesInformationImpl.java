@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -37,7 +37,8 @@ public class ReportInputControlValuesInformationImpl implements
     
     private static final long serialVersionUID = 1L;
 
-    private Map<String, ReportInputControlValueInformation> infos = new LinkedHashMap<String, ReportInputControlValueInformation>();
+    private final Map<String, ReportInputControlValueInformation> infos = new LinkedHashMap<String, ReportInputControlValueInformation>();
+    private boolean isAnyValue = false;
 
     public ReportInputControlValuesInformationImpl() {
     }
@@ -52,5 +53,15 @@ public class ReportInputControlValuesInformationImpl implements
     
     public void setInputControlValueInformation(String name, ReportInputControlValueInformation info){
         infos.put(name, info);
+    }
+
+    @Override
+    public boolean isAnyValue() {
+        return isAnyValue;
+    }
+
+    @Override
+    public void setAnyValue(boolean anyValue) {
+        this.isAnyValue = anyValue;
     }
 }

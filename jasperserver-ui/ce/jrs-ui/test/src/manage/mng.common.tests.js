@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -478,20 +478,9 @@ describe('orgModule', function () {
         });
     });
     describe('properties', function () {
-        it('can initialize', function () {
-            var options = {};
-            var properties = orgModule.properties;
-            spyOn(properties, 'processTemplate');
-            spyOn(properties, 'initEvents');
-            spyOn(properties, 'initButtonsFunctions');
-            spyOn(properties, '_toggleButton');
-            properties.initialize(options);
-            expect(properties.processTemplate).toHaveBeenCalledWith(options);
-            expect(properties.initEvents).toHaveBeenCalled();
-            expect(properties.initButtonsFunctions).toHaveBeenCalled();
-        });
-        it('can show', function () {
-            var user = new orgModule.User({
+        let user;
+        beforeEach(function () {
+            user = new orgModule.User({
                 attributes: [],
                 email: '',
                 enabled: true,
@@ -510,6 +499,20 @@ describe('orgModule', function () {
                 ],
                 userName: 'jasperadmin'
             });
+        });
+        it('can initialize', function () {
+            var options = {};
+            var properties = orgModule.properties;
+            spyOn(properties, 'processTemplate');
+            spyOn(properties, 'initEvents');
+            spyOn(properties, 'initButtonsFunctions');
+            spyOn(properties, '_toggleButton');
+            properties.initialize(options);
+            expect(properties.processTemplate).toHaveBeenCalledWith(options);
+            expect(properties.initEvents).toHaveBeenCalled();
+            expect(properties.initButtonsFunctions).toHaveBeenCalled();
+        });
+        it('can show', function () {
             spyOn(orgModule.properties, '_showEntity');
             orgModule.properties.show(user);
             expect(jQuery('#' + orgModule.properties._id).hasClass(orgModule.properties._EDIT_MODE_CLASS)).toBeFalsy();
@@ -588,6 +591,7 @@ describe('orgModule', function () {
             expect(orgModule.properties.canEdit()).toBeTruthy();
         });
         it('can not delete if uri is "/"', function () {
+            orgModule.properties.options.currentUser = 'jasperadmin';
             let orgOptions = {
                 alias: "organizations",
                 desc: "organizations",
@@ -595,7 +599,10 @@ describe('orgModule', function () {
                 name: "root",
                 parentId: undefined,
                 subTenantCount: 0,
-                uri: "/"
+                uri: "/",
+                getNameWithTenant: function(){
+                    return user.getNameWithTenant()
+                }
             };
             sinon.stub(orgModule.properties, 'getValue').callsFake(function(){
                 return orgOptions;
@@ -604,6 +611,7 @@ describe('orgModule', function () {
             orgModule.properties.getValue.restore();
         });
         it('can delete if uri is not "/"', function () {
+            orgModule.properties.options.currentUser = 'superuser';
             let orgOptions = {
                 alias: "organizations",
                 desc: "organizations",
@@ -611,7 +619,10 @@ describe('orgModule', function () {
                 name: "org",
                 parentId: undefined,
                 subTenantCount: 0,
-                uri: "/organization_1"
+                uri: "/organization_1",
+                getNameWithTenant: function(){
+                    return user.getNameWithTenant()
+                }
             };
             sinon.stub(orgModule.properties, 'getValue').callsFake(function(){
                 return orgOptions;

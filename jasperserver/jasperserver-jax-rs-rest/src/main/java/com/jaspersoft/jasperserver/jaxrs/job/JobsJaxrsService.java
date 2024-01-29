@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -23,12 +23,12 @@ package com.jaspersoft.jasperserver.jaxrs.job;
 import com.jaspersoft.jasperserver.api.common.util.PaginationConstants;
 import com.jaspersoft.jasperserver.api.engine.scheduling.domain.ReportJobRuntimeInformation;
 import com.jaspersoft.jasperserver.api.engine.scheduling.domain.ReportJobSummary;
+import com.jaspersoft.jasperserver.api.engine.scheduling.domain.jaxb.ReportJobStateXmlAdapter;
 import com.jaspersoft.jasperserver.api.engine.scheduling.domain.reportjobmodel.ReportJobModel;
+import com.jaspersoft.jasperserver.api.engine.scheduling.domain.reportjobmodel.ReportJobRuntimeInformationModel;
 import com.jaspersoft.jasperserver.api.engine.scheduling.domain.reportjobmodel.ReportJobSourceModel;
-import com.jaspersoft.jasperserver.dto.job.ClientJobCalendar;
-import com.jaspersoft.jasperserver.dto.job.ClientJobSummary;
-import com.jaspersoft.jasperserver.dto.job.ClientReportJob;
-import com.jaspersoft.jasperserver.dto.job.JobClientConstants;
+import com.jaspersoft.jasperserver.dto.common.ErrorDescriptor;
+import com.jaspersoft.jasperserver.dto.job.*;
 import com.jaspersoft.jasperserver.dto.job.model.ClientReportJobModel;
 import com.jaspersoft.jasperserver.dto.job.wrappers.ClientCalendarNameListWrapper;
 import com.jaspersoft.jasperserver.dto.job.wrappers.ClientJobIdListWrapper;
@@ -36,10 +36,15 @@ import com.jaspersoft.jasperserver.dto.job.wrappers.ClientJobSummariesListWrappe
 import com.jaspersoft.jasperserver.remote.common.CallTemplate;
 import com.jaspersoft.jasperserver.remote.common.RemoteServiceWrapper;
 import com.jaspersoft.jasperserver.api.ErrorDescriptorException;
+import com.jaspersoft.jasperserver.remote.exception.IllegalParameterValueException;
 import com.jaspersoft.jasperserver.remote.services.JobsService;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.annotation.Resource;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -239,7 +244,7 @@ public class JobsJaxrsService extends RemoteServiceWrapper<JobsService> {
      * @param reportURI        - URI of the target report
      * @param owner            - report job creator user's name
      * @param jobName          - name of the report job
-     * @param state            - runtime state of the report (defined but not implemented in current release)
+     * @param states            - runtime states of the reports (defined but not implemented in current release)
      * @param previousFireTime - previous fire time of the report job (defined but not implemented in current release)
      * @param nextFireTime     - next fire time of the report job (defined but not implemented in current release)
      * @param exampleConverter - ReportJobModel in JSON format wrapped by JSON unmarshaller
@@ -247,7 +252,7 @@ public class JobsJaxrsService extends RemoteServiceWrapper<JobsService> {
      * @param numberOfRows     - number of rows in a block (pagination)
      * @param offset           - see {startIndex}
      * @param limit            - see {numberOfRows}
-     * @param sortType         - sorting column, possible values: NONE, SORTBY_JOBID, SORTBY_JOBNAME, SORTBY_REPORTURI, SORTBY_REPORTNAME,
+     * @param sortType         - sorting column, possible values: NONE, SORTBY_JOBID, SORTBY_JOBNAME, SORTBY_REPORTURI, SORTBY_REPORTNAME, SORTBY_RESOURCELABEL,
      *                         SORTBY_REPORTFOLDER, SORTBY_OWNER, SORTBY_STATUS, SORTBY_LASTRUN, SORTBY_NEXTRUN
      * @param isAscending      - sorting direction, ascending if true
      * @return list of report job summaries
@@ -258,9 +263,17 @@ public class JobsJaxrsService extends RemoteServiceWrapper<JobsService> {
             @QueryParam("reportUnitURI") final String reportURI,
             @QueryParam("owner") final String owner,
             @QueryParam("label") final String jobName,
-            @QueryParam("state") final String state,
+            @QueryParam("jobID") final String jobID,
+            @QueryParam("jobLabel") final String jobLabel,
+            @QueryParam("resourceLabel") final String resourceLabel,
+            @QueryParam("description") final String description,
+            @QueryParam("state") final List<String> states,
             @QueryParam("previousFireTime") final Date previousFireTime,
+            @QueryParam("previousFireTimeFrom") final String previousFireTimeFrom,
+            @QueryParam("previousFireTimeTo") final String previousFireTimeTo,
             @QueryParam("nextFireTime") final Date nextFireTime,
+            @QueryParam("nextFireTimeFrom") final String nextFireTimeFrom,
+            @QueryParam("nextFireTimeTo") final String nextFireTimeTo,
             @QueryParam("example") final ReportJobModelJsonParam exampleConverter,
             @QueryParam(PaginationConstants.PARAM_LIMIT) final Integer limit,
             @QueryParam(PaginationConstants.PARAM_OFFSET) final Integer offset,
@@ -276,9 +289,12 @@ public class JobsJaxrsService extends RemoteServiceWrapper<JobsService> {
                 if (reportURI != null
                         || owner != null
                         || jobName != null
-                        || state != null
+                        || jobLabel != null
+                        || description != null
+                        || resourceLabel != null
                         || previousFireTime != null
-                        || nextFireTime != null) {
+                        || nextFireTime != null
+                        || jobID != null) {
                     if (criteriaObject == null) {
                         criteriaObject = new ReportJobModel();
                     }
@@ -295,10 +311,83 @@ public class JobsJaxrsService extends RemoteServiceWrapper<JobsService> {
                     if (jobName != null && criteriaObject.getLabel() == null) {
                         criteriaObject.setLabel(jobName);
                     }
+                    if (jobLabel != null && criteriaObject.getJobLabel() == null) {
+                        criteriaObject.setJobLabel(jobLabel);
+                    }
+                    if (description != null && criteriaObject.getDescription() == null) {
+                        criteriaObject.setDescription(description);
+                    }
+                    if (resourceLabel != null && criteriaObject.getResourceLabel() == null) {
+                        criteriaObject.setResourceLabel(resourceLabel);
+                    }
+                    if(jobID != null && !jobID.isEmpty()){
+                        try {
+                            criteriaObject.setId(Long.parseLong(jobID));
+                        } catch(NumberFormatException exception){
+                            return Response.status(Response.Status.BAD_REQUEST).entity(
+                                    new ErrorDescriptor().setMessage("The value '" + jobID + "' for parameter 'jobID' is invalid.")
+                                            .setErrorCode("illegal.parameter.value.error")).build();
+                        }
+                    }
 
-                    if (state != null)              { /* TODO state criteria            */ }
                     if (previousFireTime != null)   { /* TODO previousFireTime criteria */ }
                     if (nextFireTime != null)       { /* TODO nextFireTime criteria     */ }
+                }
+
+                final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+
+                if(previousFireTimeFrom != null
+                        || previousFireTimeTo != null
+                        || nextFireTimeFrom != null
+                        || nextFireTimeTo != null
+                        || states != null) {
+                    if (criteriaObject == null) {
+                        criteriaObject = new ReportJobModel();
+                    }
+                    ReportJobRuntimeInformationModel reportJobRuntimeInformationModel = new ReportJobRuntimeInformationModel();
+                    criteriaObject.setRuntimeInformationModel(reportJobRuntimeInformationModel);
+
+                    if (previousFireTimeFrom != null && !previousFireTimeFrom.isEmpty()) {
+                        try {
+                            criteriaObject.getRuntimeInformationModel().setPreviousFireTimeFrom(simpleDateFormat.parse(previousFireTimeFrom));
+                        } catch (ParseException e) {
+                            throw new IllegalParameterValueException("previousFireTimeFrom", previousFireTimeFrom);
+                        }
+                    }
+                    if (previousFireTimeTo != null && !previousFireTimeTo.isEmpty()) {
+                        try {
+                            criteriaObject.getRuntimeInformationModel().setPreviousFireTimeTo(simpleDateFormat.parse(previousFireTimeTo));
+                        } catch (ParseException e) {
+                            throw new IllegalParameterValueException("previousFireTimeTo", previousFireTimeTo);
+                        }
+                    }
+                    if (nextFireTimeFrom != null && !nextFireTimeFrom.isEmpty()) {
+                        try {
+                            criteriaObject.getRuntimeInformationModel().setNextFireTimeFrom(simpleDateFormat.parse(nextFireTimeFrom));
+                        } catch (ParseException e) {
+                            throw new IllegalParameterValueException("nextFireTimeFrom", nextFireTimeFrom);
+                        }
+                    }
+                    if (nextFireTimeTo != null && !nextFireTimeTo.isEmpty()) {
+                        try {
+                            criteriaObject.getRuntimeInformationModel().setNextFireTimeTo(simpleDateFormat.parse(nextFireTimeTo));
+                        } catch (ParseException e) {
+                            throw new IllegalParameterValueException("nextFireTimeTo", nextFireTimeTo);
+                        }
+                    }
+                    if (states != null && !states.isEmpty()) {
+                        criteriaObject.getRuntimeInformationModel().setStateCodes(states.stream().map(state-> {
+                            try {
+                                Byte stateCode = new ReportJobStateXmlAdapter().unmarshal(state);
+                                if (stateCode != 0) {
+                                    return stateCode;
+                                } else
+                                    throw new IllegalParameterValueException("state", state);
+                            } catch (Exception e) {
+                                throw new IllegalParameterValueException("state", state);
+                            }
+                        }).collect(Collectors.toList()));
+                    }
                 }
 
                 List<ReportJobSummary> result = service.getJobSummariesByExample(

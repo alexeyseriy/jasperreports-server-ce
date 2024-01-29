@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -21,11 +21,14 @@
 package com.jaspersoft.jasperserver.war.util;
 
 import org.apache.commons.lang.StringUtils;
+import org.springframework.security.web.firewall.RequestRejectedException;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.io.PrintWriter;
 
 /**
  * <p>Puts sessionDecorator parameter into the session if it was found in the request parameters list.</p>
@@ -59,7 +62,12 @@ public class SessionDecoratorFilter implements Filter {
                 session.setAttribute(SESSION_DECORATOR, sessionDecorator);
             }
         }
-
-        chain.doFilter(request, response);
+        try {
+            chain.doFilter(request, response);
+        } catch (RequestRejectedException exception) {
+            ((HttpServletResponse)response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            PrintWriter pw = ((HttpServletResponse)response).getWriter();
+            pw.print(exception.getMessage());
+        }
     }
 }

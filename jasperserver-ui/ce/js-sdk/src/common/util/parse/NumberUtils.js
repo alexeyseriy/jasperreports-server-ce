@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -124,9 +124,9 @@ NumberUtils.prototype.number_format = function (number, decimals, dec_point, tho
         prec = !isFinite(+decimals) ? 0 : Math.abs(decimals),
         sep = typeof thousands_sep === 'undefined' ? ',' : thousands_sep,
         dec = typeof dec_point === 'undefined' ? '.' : dec_point,
-        toFixedFix = function (n, prec) {
-            const k = Math.pow(10, prec);
-            return '' + (Math.round(n * k) / k).toFixed(prec);
+        toFixedFix = function (num, absValue) {
+            const k = Math.pow(10, absValue);
+            return '' + (Math.round(num * k) / k).toFixed(absValue);
         };
 
     let result = (prec ? toFixedFix(n, prec) : '' + Math.round(n)).split('.');

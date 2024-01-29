@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2021 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -24,7 +24,7 @@
 
     01. BASE RULES
 
-    02. TOOLBAR BUTTONS
+    02. META LINKS
 
     03. TOOLBAR BUTTONS
 
@@ -80,7 +80,7 @@
 
     24. NO RESULTS MESSAGE
   -----------------------------------
-    File last modified Jan 21, 2021
+    File last modified Dec 22, 2022
   -----------------------------------  */
 
 
@@ -121,19 +121,22 @@
 }
 
 ul.decorated li {
-    background-image: url("images/disclosure_indicators_icons_sprite@1x.png");
-    background-position: -32px -120px;
-    background-repeat: no-repeat;
-    background-size: 80px;
     margin: 1em;
     padding-left: 15px;
+    position: relative;
 }
 
-/* 2x icons */
-@media (-webkit-min-device-pixel-ratio: 2),(min-resolution: 192dpi){
-    ul.decorated li {
-        background-image: url(images/disclosure_indicators_icons_sprite@2x.png);
-    }
+ul.decorated li:before {
+    background-image: url("images/disclosure_indicators_icons_sprite.svg");
+    background-position: -32px -120px;
+    background-repeat: no-repeat;
+    background-size: 170px;
+    content: "";
+    height: 15px;
+    left: 0;
+    position: absolute;
+    top: 0;
+    width: 12px;
 }
 
 .hideRoot > .node > .collapsible {
@@ -149,19 +152,19 @@ ul.decorated li {
     display: none;
 }
 
-/* states */
+/* States */
 .list > li > .wrap.over {
     background-color: #efefef;
 }
 
 .list.doesNotHaveFocus .selected > .wrap {
-    background-color: #999;
+    background-color: #999999;
 }
 
-.list > li > .wrap.pressed,
-.list > li.selected > .wrap,
-.list > li.selected > .wrap.over {
-    background-color: #0081cb;
+.list li > .wrap.pressed,
+.list li.selected > .wrap,
+.list li.selected > .wrap.over {
+    background-color: var(--theme-medium-light);
 }
 
 .list > li.selected > a.wrap,
@@ -170,7 +173,7 @@ ul.decorated li {
 }
 
 .list.responsive > li > .wrap.pressed {
-    background-color: #0061a2;
+    background-color: var(--theme-medium-light);
 }
 
 /* we're not supposed to use j- classnames for styling */
@@ -188,26 +191,18 @@ ul.decorated li {
 /*  02. META LINKS   */
 /* ----------------- */
 /* moved meta links from theme.css */
+/* semantic list, doesn't use .list classname */
 #metaLinks {
+    color: #ffffff;
     height: 39px;
     margin-right: 270px;
 }
 
-/* Responsive Behavior for banner */
-@media only screen and (max-width: 1100px) {
-    #metaLinks {
-        margin-right: 200px;
-    }
-}
-@media only screen and (max-width: 820px) {
-    #metaLinks {
-        margin-right: 140px;
-    }
-}
-    @media only screen and (max-width: 750px) {
-    #metaLinks {
-        margin-right: 6px;
-    }
+#metaLinks li,
+#metaLinks a,
+#metaLinks a:hover,
+#metaLinks a:active {
+    color: inherit;
 }
 
 #metaLinks li {
@@ -250,9 +245,41 @@ and (orientation:portrait) {
     }
 }
 
-/* ---------------------- */
-/*  03. TOOLBAR BUTTONS   */
-/* ---------------------- */
+/*#metaLinks li.subfocus:not(select)*/
+#metaLinks li.focus-visible:not(select) {
+    background-color: var(--theme-medium-light);
+}
+
+/* Responsive behavior for banner */
+@media only screen and (max-width: 1100px) {
+    #metaLinks {
+        margin-right: 200px;
+    }
+}
+@media only screen and (max-width: 820px) {
+    #metaLinks {
+        margin-right: 140px;
+    }
+}
+@media only screen and (max-width: 750px) {
+    #metaLinks {
+        margin-right: 132px;
+    }
+    #metaLinks li {
+        font-size: 13px;
+    }
+    #metaLinks #help {
+        margin-right: 0;
+    }
+    #metaLinks #userID {
+        display: none;
+    }
+}
+
+
+/* ------------------------- */
+/*  03. TOOLBAR BUTTON SET   */
+/* ------------------------- */
 .list.buttonSet,
 .list.buttonSet .node,
 .list.buttonSet .leaf,
@@ -319,6 +346,11 @@ and (max-device-width : 1024px) {
     margin-left: 0;
 }
 
+/* States */
+.toolbar > .list.buttonSet .leaf .focus-visible {
+    outline: 2px solid var(--theme-dark);
+    outline-offset: -2px;
+}
 
 
 /* ------------------ */
@@ -328,8 +360,8 @@ and (max-device-width : 1024px) {
     margin: 0;
 }
 
-.list.collapsible.tabular > li> .wrap > .column > h3,
-.list.collapsible.tabular > li> .wrap > .column > p {
+.list.tabular.collapsible > li > .wrap > .column > h3,
+.list.tabular.collapsible > li > .wrap > .column > p {
     font-weight: normal;
     margin-right: 4px;
     overflow: hidden;
@@ -346,7 +378,6 @@ and (max-device-width : 1024px) {
 .fields > li {
     background-repeat: no-repeat;
     line-height: 2.5em;
-    /* margin: 0; this is applied in reset.css */
     position: relative;
     white-space: nowrap;
 }
@@ -383,10 +414,6 @@ and (max-device-width : 1024px) {
     width: 20px;
 }
 
-.collapsible.plusminus > li > .wrap > .icon {
-    background-image: url(images/disclosure_indicators_sprite.png);
-}
-
 .list.collapsible > li > .header.wrap {
     border: none;
     background: #e0e0e0;
@@ -396,22 +423,29 @@ and (max-device-width : 1024px) {
     margin: 0;
 }
 
-.collapsible .selected {
-    font-weight: inherit;
-}
-
 .collapsible input {
     margin: 1px auto;
 }
 
+.collapsible .selected {
+    font-weight: inherit;
+}
 
-/* --------------- */
-/*  05. FILTERS    */
-/* --------------- */
+/* States */
+.list.collapsible > li > .wrap.pressed,
+.list.collapsible > li > .selected > .wrap,
+.list.collapsible .selected > .wrap {
+    color: #ffffff;
+}
+
+
+/* ----------------------- */
+/*  05. FILTERS            */
+/* ----------------------- */
+/* Repo Search, Manage Server Settings, Data Chooser Pre-filters */
 .list.filters > .leaf {}
 
 .list.filters > .leaf.editMode {
-    /* border-bottom: 1px solid #E0E0E0; changed to #e4e4e4 below */
     border-bottom: 1px solid var(--border-grey-10);
 }
 
@@ -427,40 +461,46 @@ and (max-device-width : 1024px) {
     min-height: 0;
 }
 
-.list.filters > li > .wrap,
-.list.filters > li.selected > .wrap,
-.list.filters > li.selected > .wrap.over,
+.list.filters:not(.tabular) > .leaf.selected > .wrap, /* needed "not tabular" for Data Chooser Pre-filters */
 .list.filters > li.selected > .wrap.pressed,
-.list.filters > li.selected:focus > .wrap,
-.list.filters > li.selected:focus > .wrap.over,
-.list.filters > li.selected:focus > .wrap.pressed,
-.list.filters > li > .wrap.header,
-.list.filters > li > .wrap.over.header,
-.list.filters > li > .wrap.pressed.header,
-.list.filters > li > .wrap.separator,
-.list.filters > li > .wrap.over.separator,
-.list.filters > li > .wrap.pressed.separator {
-    /* background-color: #f0f0f0; changed to #f4f4f4 below */
+.list.filters > li.selected > .wrap .launcher {
+    color: var(--theme-medium-dark);
+}
+
+.list.filters.tabular > li > .wrap,
+.list.filters > .leaf > .wrap,
+.list.filters > .leaf.selected > .wrap,
+.list.filters > .leaf.selected > .wrap.over,
+.list.filters > .leaf.selected > .wrap.pressed,
+.list.filters > .leaf.selected:focus > .wrap,
+.list.filters > .leaf.selected:focus > .wrap.over,
+.list.filters > .leaf.selected:focus > .wrap.pressed,
+.list.filters > .leaf > .wrap.header,
+.list.filters > .leaf > .wrap.over.header,
+.list.filters > .leaf > .wrap.pressed.header,
+.list.filters > .leaf > .wrap.separator,
+.list.filters > .leaf > .wrap.over.separator,
+.list.filters > .leaf > .wrap.pressed.separator {
     background-color: var(--background-grey-04);
-    border-bottom: var(--border-grey-10);
+    border-bottom: 1px solid var(--border-grey-10);
     border-top: 1px solid var(--border-white);
 }
 
-.list.filters > li:not(.selected) > .wrap.over,
-.list.filters > li:not(.selected) > .wrap.pressed {
+.list.filters > .leaf:not(.selected) > .wrap.over,
+.list.filters > .leaf:not(.selected) > .wrap.pressed {
     background-color: var(--theme-medium-light);
     color: #fff;
 }
 
-.list.filters > li.selected.cursor > .wrap.over {
+.list.filters > .leaf.selected.cursor > .wrap.over {
     color: #666;
 }
 
-.filters > li > .wrap > .icon {
-    background-image: url(images/disclosure_indicators_icons_sprite@1x.png);
+.list.filters > .leaf > .wrap > .icon {
+    background-image: url(images/disclosure_indicators_icons_sprite.svg);
     background-position: -26px -119px;
     background-repeat: no-repeat;
-    background-size: 80px;
+    background-size: 170px;
     float: left;
     height: 20px;
     margin: 5px 3px 0 0;
@@ -469,83 +509,13 @@ and (max-device-width : 1024px) {
     width: 20px;
 }
 
-/* 2x icons */
-@media (-webkit-min-device-pixel-ratio: 2),(min-resolution: 192dpi){
-    .filters > li > .wrap > .icon {
-        background-image: url(images/disclosure_indicators_icons_sprite@2x.png);
-    }
-}
-
-.list.filters .selected .icon {
+.list.filters > .leaf.selected > .wrap > .icon {
     visibility: visible;
 }
 
-.list.filters .wrap.separator {
+.list.filters .leaf .wrap.separator {
     cursor: default;
 }
-
-.list.filters .node.open > .wrap .more,
-.list.filters .node.closed > .wrap .fewer {
-    display: none;
-}
-
-/* redesigned repo search filter panel */
-#filtersPanel > .panel > .header {
-    background-color: var(--background-grey-08);
-    border-bottom: none;
-    border-top: 1px solid var(--border-grey-16);
-    font-family: source_sans_proregular, Franklin Gothic, Verdana, Arial, sans-serif;
-    height: 32px;
-}
-
-#filtersPanel > .panel:first-of-type > .header {
-    border-top: none;
-}
-
-#filtersPanel > .panel > .header > .buttonIconToggle {
-    background-color: transparent;
-    background-image: url(images/disclosure_indicators_icons_sprite@1x.png);
-    background-size: 80px;
-    border: none;
-    float: left;
-    height: 32px;
-    margin: 0;
-    padding: 0;
-    transform: none;
-    width: 22px;
-}
-
-/* 2x icons */
-@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
-    #filtersPanel > .panel > .header > .buttonIconToggle {
-        background-image: url(images/disclosure_indicators_icons_sprite@2x.png);
-    }
-}
-
-#filtersPanel > .panel.open > .header > .buttonIconToggle {
-    background-position: 3px -230px;
-}
-
-#filtersPanel > .panel.closed > .header > .buttonIconToggle {
-    background-position: 3px -290px;
-}
-
-#filtersPanel > .panel > .header >  .title {
-    color: #333333;
-    font-size: 13px;
-    font-weight: normal;
-    height: 32px;
-    line-height: 33px;
-}
-
-#filtersPanel > .panel .subcontainer {
-    margin-top: 4px;
-}
-
-#filtersPanel > .panel.closed .subcontainer {
-    display: none;
-}
-
 
 
 /* ------------------------- */
@@ -574,7 +544,7 @@ and (max-device-width : 1024px) {
 @media only screen
 and (min-device-width : 768px)
 and (max-device-width : 1024px) {
-    #selFieldsPanel>#fieldsTreeRoot,
+    #selFieldsPanel > #fieldsTreeRoot,
     #sourceFieldsTree,
     #destinationFieldsTree {
         width: 100%;
@@ -589,29 +559,14 @@ and (max-device-width : 1024px) {
 .fields > .node > .wrap > .icon,
 .fields .node > .wrap > .icon,
 .fields.node > .wrap > .icon {
-    background-image: url(images/disclosure_indicators_icons_sprite@1x.png);
+    background-image: url(images/disclosure_indicators_icons_sprite.svg);
     background-repeat: no-repeat;
-    background-size: 80px;
+    background-size: 170px;
     height: 26px;
     margin-right: 5px;
     top: 0;
     width: 15px;
-}
-
-/* 2x icons */
-@media (-webkit-min-device-pixel-ratio: 2),(min-resolution: 192dpi){
-    .fields > .node > .wrap > .icon,
-    .fields .node > .wrap > .icon,
-    .fields.node > .wrap > .icon {
-        background-image: url(images/disclosure_indicators_icons_sprite@2x.png);
-    }
-}
-
-.fields.tabular > .node > .wrap > .icon,
-.fields.tabular.node > .wrap > .icon,
-.fields.tabular .node > .wrap > .icon {
-    left: 5px;
-}
+} /* used in Data Chooser */
 
 .fields > .leaf > .wrap > .icon,
 .fields.leaf > .wrap > .icon,
@@ -636,6 +591,12 @@ and (max-device-width : 1024px) {
 .list.fields .node[disabled] > .wrap > .icon {
     opacity: .6;
 }
+
+.fields.tabular > .node > .wrap > .icon,
+.fields.tabular.node > .wrap > .icon,
+.fields.tabular .node > .wrap > .icon {
+    left: 5px;
+} /* used in Data Chooser, Display step */
 
 #dimensionsTree .collapsible > li > .wrap > .icon:not(.error),
 #measuresTree .collapsible > li > .wrap > .icon:not(.error) {
@@ -898,7 +859,7 @@ and (max-device-width : 1024px) {
     background-position: left -989px;
 }
 
-.list.measures .icon.numeric.descending{
+.list.measures .icon.numeric.descending {
     background-position: left -965px;
 }
 
@@ -914,23 +875,16 @@ and (max-device-width : 1024px) {
 }
 
 .stepIndicator .icon {
-    background-image: url(images/disclosure_indicators_icons_sprite@1x.png);
+    background-image: url(images/disclosure_indicators_icons_sprite.svg);
     background-position: -26px -119px;
     background-repeat: no-repeat;
-    background-size: 80px;
+    background-size: 170px;
     float: left;
     height: 20px;
     margin: 5px 3px 0 0;
     position: relative;
     visibility: hidden;
     width: 20px;
-} /* ??? */
-
-/* 2x icons */
-@media (-webkit-min-device-pixel-ratio: 2),(min-resolution: 192dpi){
-    .stepIndicator .icon {
-        background-image: url(images/disclosure_indicators_icons_sprite@2x.png);
-    }
 }
 
 .list.stepIndicator .selected .icon {
@@ -946,6 +900,7 @@ and (max-device-width : 1024px) {
 }
 
 .list.stepIndicator .selected > .wrap {
+    color: var(--theme-medium-dark);
     font-weight: bold;
 } /* moved from theme.css */
 
@@ -967,10 +922,13 @@ and (max-device-width : 1024px) {
 }
 
 
-
 /* ------------------ */
 /*  09. PLUS-MINUS    */
 /* ------------------ */
+.plusminus.collapsible > li > .wrap > .icon {
+    background-image: url(images/disclosure_indicators_sprite.png);
+}
+
 .plusminus .node > .wrap {
     height: 20px;
 }
@@ -986,7 +944,6 @@ and (max-device-width : 1024px) {
 .plusminus .node > .wrap > .jrbookmark {
     color: var(--theme-medium-light);
 }
-
 
 
 /* -------------- */
@@ -1112,6 +1069,13 @@ and (max-device-width : 1024px) {
     margin-top:2px;
     -webkit-user-select: none; /* disable cut copy paste */
     -webkit-touch-callout: none; /* disable callout, image save panel */
+}
+
+/* Keyboard Focus */
+.folders .list > li.selected.focus-visible > .wrap,
+.folders.selected.focus-visible > .wrap {
+    outline: 2px solid var(--theme-dark);
+    outline-offset: -2px;
 }
 
 
@@ -1337,6 +1301,7 @@ and (max-device-width : 1024px) {
 }
 
 .list.locations > .leaf {
+    overflow: visible; /* prevents focus style from getting cut off */
     padding-bottom: 10px;
 }
 
@@ -1413,8 +1378,9 @@ and (max-device-width : 1024px) {
 /*  16a. base rules       */
 /* ---------------------- */
 .tabular {
-    margin: 0;
+    color: #666666;
     list-style: none;
+    margin: 0;
 }
 
 .list.tabular .column {
@@ -1429,6 +1395,10 @@ and (max-device-width : 1024px) {
 
 .list.tabular > li > .wrap > .column > input {
     width: 100%;
+}
+
+.list.tabular .resourceName {
+    cursor: default;
 }
 
 .list.tabular .icon {
@@ -1719,26 +1689,28 @@ and (max-device-width : 1024px) {
     height: auto;
     max-width: none;
     border-right: none;
-    margin-top: 32px;
 }
 
-.list.tabular.resources.header,
+/* .list.tabular.resources.header, this has been hidden on repository pages, July 2022 */
+.list.tabular.resources #resultsListHeader_item1, /* add classname .header to this element in markup */
 .list.tabular.jobs.header {
     background-color: var(--background-grey-03);
+    border-bottom: 1px solid var(--border-grey-10);
     cursor: default;
     height: 32px;
-    left: 0;
-    overflow:hidden;
-    position: absolute;
-    right: 0;
+    inset: unset;
+    margin-top: 2px;
+    margin-right: 0 !important;
+    overflow: hidden;
+    position: relative;
     white-space:nowrap;
     z-index: 8; /* must be lower than #systemMessageConsole */
 } /* create page-specific styles if there are issues */
 
-
-.list.tabular.resources .first,
-.list.tabular.jobs .first {
-    border-top: none;
+/* .list.tabular.header.resources .resources, this has been hidden on repository pages, July 2022 */
+.list.tabular.header.jobs .leaf,
+.list.tabular.header.entities .leaf {
+    font-family: source_sans_prosemibold, Franklin Gothic Medium, Verdana, Arial, sans-serif;
 }
 
 .list.tabular.resources .resources,
@@ -1750,23 +1722,15 @@ and (max-device-width : 1024px) {
     font-weight: normal;
 }  /* create page-specific styles if there are issues */
 
-.list.tabular.header.resources .resources,
-.list.tabular.header.jobs .leaf,
-.list.tabular.header.entities .leaf {
-    font-family: source_sans_prosemibold, Franklin Gothic Medium, Verdana, Arial, sans-serif;
-}
-
-.list.resources .wrap,
-.list.jobs .wrap {
-    /* border-bottom: 1px solid #E3E9EF; changed to #e4e4e4 below */
+.list.tabular.resources .wrap,
+.list.tabular.jobs .wrap {
+    border-top: none;
+    border-right: none;
     border-bottom: 1px solid var(--border-grey-10);
-    border-right: none !important;
-    border-top: none !important;
     height: 32px;
-    overflow: auto;
-    padding: 0 !important;
+    padding: 0;
     white-space: nowrap;
-}  /* create page-specific styles if there are issues */
+}
 
 .responsive .stripe.wrap {
     background-color: #F2F8FE;
@@ -1782,11 +1746,11 @@ and (max-device-width : 1024px) {
 .list.resources .column.one {
     border: none;
     margin: 0 !important;
-    width: 44px;
+    width: 66px;
 }
 
-.list.resources .separator,
-.list.jobs .separator {
+.list.tabular.resources .separator,
+.list.tabular.jobs .separator {
     height: inherit;
     left: 23px;
     position: absolute;
@@ -1797,56 +1761,67 @@ and (max-device-width : 1024px) {
 /* --------------------- */
 /*  17b. resources       */
 /* --------------------- */
-#resultsContainer {
-    background-color: transparent;
-    top: 40px;
+.list.tabular.resources #resultsListHeader_item1 {
+    margin-top: 0;
+    position: sticky;
+    top: 0;
+    z-index: 999;
 }
 
-#resultsContainer .resources.selected p {
-    color: #ffffff;
+.list.tabular.resources  #resultsListHeader_item1  .wrap:hover .favorite.icon {
+    opacity: 0;
 }
 
-/* If the theme in use indicates focus with a background color change, then
- * when a user clicks on a scroll tab and drags it (NOT when they use the
- * scroll wheel), then in some browsers (Firefox, likely a few others), the
- * container will be focused for this purpose even if it has tabindex="-1".
- * The result is distracting (half the screen turns orange), misleading (it
- * looks like state indication for the list contents, which it isn't), and
- * in any case pointless (since the scrolling action will result in an
- * obvious indication of focus for sighted users, and focus returns to a
- * list element as soon as the scroll bar is released)
- */
-#resultsContainer:focus{
-    background-color: transparent;
-}
-
-.list.resources .list {
+.list.tabular.resources .list {
     margin-left: 4em;
 } /* must be before .list.resources.sublist style below */
 
-.list.resources.sublist {
+.list.tabular.resources.sublist {
     margin-left: 0;
     margin-top: 0;
 }
 
-.list.resources .icon.disclosure {
-    left: 26px;
+.list.tabular.resources .icon.disclosure {
+    left: 48px;
 }
 
-.resourceName {
-    cursor: default;
+.list.tabular.resources .resourceName a,
+.list.tabular.resources .selected.open .sublist .resourceName > a {
+    color: var(--theme-medium-dark)
 }
 
-.list.resources.twoColumn .column.one {
+.list.tabular.resources p,
+.list.tabular.resources .selected .sublist .resourceDescription,
+.list.tabular.resources .resourceType {
+    color: #666666;
+}
+
+.list.tabular.resources .selected p,
+.list.tabular.resources .selected .resourceType {
+    color: #ffffff;
+}
+
+.list.tabular.resources .selected .sublist p,
+.list.tabular.resources .selected .sublist .resourceType {
+    color: #666666;
+}
+
+.list.tabular.resources .column.one {
+    border: none;
+    margin: 0 !important;
+    width: 66px;
+}
+
+.list.tabular.resources.twoColumn .column.one {
     width: 20px;
 }
 
-.list.resources .column.two {
+.list.tabular.resources .column.two {
     white-space: normal;
     width: 64%;
 }
 
-.list.resources .column.three {
+.list.tabular.resources .column.three {
     left: auto;
     padding-left: 4px;
     position: absolute !important;
@@ -1854,18 +1829,18 @@ and (max-device-width : 1024px) {
     width: 11%;
 }
 
-.list.resources .column.four {
+.list.tabular.resources .column.four {
     right: 0 !important;
     top:0 !important;
     width: 19%;
     white-space: normal;
 }
 
-.list.resources .column.four * {
+.list.tabular.resources .column.four * {
     text-align: right;
 }
 
-.list.resources.twoColumn .column.two {
+.list.tabular.resources.twoColumn .column.two {
     width: 80%;
 }
 
@@ -1882,10 +1857,10 @@ and (max-device-width : 1024px) {
     display: none;
 }
 
-.list.resources .createdDate,
-.list.resources .modifiedDate {
+.list.tabular.resources .createdDate,
+.list.tabular.resources .modifiedDate {
     display: inline-block;
-    height: inherit;
+    height: 31px;
     overflow: hidden;
     padding: 0 0 0 4px;
     text-align: left !important;
@@ -1902,8 +1877,10 @@ and (max-device-width : 1024px) {
     }
 }
 
-.list.resources .resourceName {
+.list.tabular.resources .resourceName {
+    color: var(--theme-medium-dark);
     display: inline-block;
+    font-family: source_sans_prosemibold, Franklin Gothic, Verdana, Arial, sans-serif;
     font-size: 13px;
     font-weight: normal;
     line-height: 32px;
@@ -1912,95 +1889,207 @@ and (max-device-width : 1024px) {
     width: 40%;
 }
 
-.list.resources .selected.leaf .resourceName > a,
-.list.resources.sublist .selected .resourceName > a {
-    color: #fff;
-}
-
-.list.resources.sublist .resourceName > a {
+.list.tabular.resources.sublist .resourceName > a {
     color: var(--theme-medium-dark);
     padding-left: 24px;
 }
 
-.list.resources .resourceDescription {
+.list.tabular.resources .resourceDescription {
     display: inline-block;
     margin: 0;
-    min-height: 1em;
+    /* min-height: 1em; Dec 2022, delete if there are no issues */
+    min-height: 31px;
     padding-left: 4px;
     position: absolute;
     width: 57%;
 }
 
 @-moz-document url-prefix() {
-    .list.resources .resourceDescription {
+    .list.tabular.resources .resourceDescription {
         position: relative;
     }
 }
 
-/* disclosure button */
-.list.resources .icon {
+.list.tabular.resources .icon {
     position: absolute;
     top: 5px;
 }
 
-.list.resources > .node > .wrap > .column > .disclosure.icon {
-    visibility: visible;
+/* favorite button */
+.list.resources .wrap .favorite.icon {
+    background-position: -27px -471px;
+    background-size: 170px;
+    height: 27px;
+    left: 2px;
+    opacity: 0;
+    top: 2px;
+    width: 20px;
 }
 
-.list.resources > .leaf > .wrap > .column > .disclosure.icon {
-    background-image: none;
-    cursor: default;
-}
-
-/* disclosure arrow */
-.list.resources .disclosure.icon {
-    background-image: url(images/disclosure_indicators_icons_sprite@1x.png);
-    background-repeat: no-repeat;
-    background-size: 80px;
-}
-
-/* 2x icons */
-@media (-webkit-min-device-pixel-ratio: 2),(min-resolution: 192dpi){
-    .list.resources .disclosure.icon {
-        background-image: url(images/disclosure_indicators_icons_sprite@2x.png);
-    }
-}
-
-.list.resources .node.closed > .wrap .disclosure.icon {
-    background-position: -30px -385px;
-}
-
-.list.resources .node.closed.selected > .wrap .disclosure.icon {
-    background-position: -60px -385px;
-}
-
-.list.resources .node.open > .wrap .disclosure.icon {
-    background-position: -30px -325px;
-}
-
-.list.resources .node.open.selected > .wrap .disclosure.icon {
-    background-position: -60px -325px;
+.list.resources > li.favorite > .wrap .favorite.icon {
+    opacity: 1;
 }
 
 /* scheduled button */
 .list.resources .wrap .scheduled.icon {
-    left: 4px;
+    left: 26px;
+    width: 20px;
+    height: 27px;
+    top: 2px;
     visibility: hidden;
 }
 
 .list.resources > .scheduled > .wrap .scheduled.icon {
-    background-position: -30px -415px;
+    background-position: -28px -413px; /* blue */
     visibility: visible;
 }
 
-.list.resources .scheduled.selected > .wrap .scheduled.icon {
-    background-position: -60px -415px;
+.list.resources > .scheduled > .wrap .scheduled.icon[role=columnheader] {
+    cursor: auto;
 }
 
-#resultsListHeader.list.resources .scheduled > .wrap .scheduled.icon {
-    background-position: 0 -416px;
-    cursor: auto;
-    top: 6px;
+/* disclosure expand-collapse button */
+.list.resources > .leaf > .wrap > .column > .disclosure.icon {
+    /* Hides icon for reports without options. Report without
+    option is 'leaf', report with options is 'node' */
+    background-image: none;
+    cursor: default;
+}
+.list.resources .disclosure.icon {
+    background-image: url(images/disclosure_indicators_icons_sprite.svg);
+    background-repeat: no-repeat;
+    background-size: 170px;
+}
+
+/* States */
+/* rows and cells */
+.list.tabular.resources .selected .wrap p,
+.list.tabular.resources .selected .wrap .resourceName a,
+.list.tabular.resources .selected .wrap .resourceType {
+    color: #ffffff;
+}
+
+/* favorites button */
+.list.resources .wrap:hover .favorite.icon {
+    background-position: 3px -500px; /* outline grey */
+    opacity: 1;
+}
+
+.list.resources > .selected > .wrap:hover .favorite.icon {
+    background-position: -57px -500px; /* outline white */
+    opacity: 1;
+}
+
+.list.resources > .favorite > .wrap:hover .favorite.icon,
+.list.resources > .favorite.selected > .wrap:focus-within .favorite.icon {
+    background-position: -27px -471px; /* solid blue */
+}
+
+.list.resources > .favorite.selected > .wrap .favorite.icon,
+.list.resources > .favorite.selected > .wrap:hover .favorite.icon {
+    background-position: -57px -471px; /* solid white */
+}
+
+/* scheduled button */
+.list.resources > .scheduled.subfocus > .wrap .scheduled.icon {
+    background-position: -28px -413px; /* blue */
+}
+
+.list.resources .scheduled.selected > .wrap .scheduled.icon {
+    background-position: -58px -413px; /* white */
+}
+
+/* disclosure expand-collapse button */
+.list.resources .node.closed > .wrap .disclosure.icon,
+.list.resources .node.closed.subfocus > .wrap .disclosure.icon {
+    background-position: -30px -385px;
+}
+
+.list.resources .node.closed.selected > .wrap .disclosure.icon,
+.list.resources .node.closed.selected.subfocus > .wrap .disclosure.icon {
+    background-position: -60px -385px;
+}
+
+.list.resources .node.open > .wrap .disclosure.icon,
+.list.resources .node.open.subfocus > .wrap .disclosure.icon {
+    background-position: -30px -325px;
+}
+
+.list.resources .node.open.selected > .wrap .disclosure.icon,
+.list.resources .node.open.selected.subfocus > .wrap .disclosure.icon {
+    background-position: -60px -325px;
+}
+
+/* Keyboard Focus */
+.list.tabular.resources .leaf.focus-visible > .wrap,
+.list.tabular.resources .node.focus-visible > .wrap {
+    /* row focus outline */
+    outline: 2px solid var(--theme-dark);
+    outline-offset: -2px;
+}
+
+.list.tabular.resources .focus-visible.subfocus:not(li) {
+    /* cell focus outline */
+    outline: 2px solid var(--theme-dark);
+    outline-offset: -2px;
+    line-height: 30px;
+    padding-top: 1px;
+}
+
+.list.tabular.resources .wrap:focus-within {
+    /* hides selected row background color when cells are focused */
+    background-color: transparent;
+}
+
+.list.tabular.resources > .node.open .leaf.selected .wrap:focus-within a,
+.list.tabular.resources > .node.selected .wrap:focus-within a,
+.list.tabular.resources > .leaf.selected .wrap:focus-within a {
+    /* cell focus text color */
+    color: var(--theme-medium-dark);
+}
+
+.list.tabular.resources .selected .wrap:focus-within p,
+.list.tabular.resources .selected .wrap:focus-within .resourceType,
+.resources.node.open .resources.leaf.selected .wrap:focus-within p,
+.resources.node.open .resources.leaf.selected .wrap:focus-within .resourceType,
+.resources.node.open .resources.leaf.selected .wrap:focus-within .resourceName {
+    /* cell focus text color */
+    color: #666666;
+}
+
+.list.tabular.resources .resourceType.focus-visible.subfocus {
+    /* reduce height so focus outline for "Type" isn't obscured */
+    height: 31px;
+}
+
+.list.tabular.resources .favorite.focus-visible.subfocus {
+    /* favorites button focus outline position */
+    outline-offset: 0;
+}
+
+.list.tabular.resources .favorite.focus-visible.subfocus[aria-checked="false"] {
+    /* favorites button focus for item that isn't a favorite */
+    opacity: 1;
+    background-position: 3px -500px;
+}
+
+.list.tabular.resources .scheduled.selected .wrap:focus-within .scheduled.icon {
+    /* scheduled icon position */
+    background-position: -28px -413px; /* blue */
+}
+
+.list.tabular.resources .scheduled.selected > .wrap .scheduled.icon.focus-visible {
+    /* scheduled button cell focus */
+    border-radius: 0;
+    outline-offset: 0;
+    line-height: 30px;
+    padding-top: 1px;
+    outline: 2px solid var(--theme-dark);
+}
+
+.list.tabular.resources .selected.open .wrap:focus-within .disclosure.icon {
+    /* disclosure icon position when other cells have focus */
+    background-position: -30px -325px;
 }
 
 /* ---------------- */
@@ -2038,12 +2127,15 @@ and (max-device-width : 1024px) {
 }
 
 .list.jobs .jobEnabled {
+    display: inline-block;
+    float: none;
     height: 24px;
     overflow: hidden;
     padding-left: 2px;
     padding-right: 2px;
     text-align: center;
     white-space: nowrap;
+    width: 120px;
 }
 
 #listOfJobs p {
@@ -2058,13 +2150,18 @@ and (max-device-width : 1024px) {
 .list.jobs .jobEdit,
 .list.jobs .jobDelete {
     display: inline-block;
-    height: 24px;
+    float: right;
+    height: auto;
     line-height: 16px;
+    margin: 0 4px;
     overflow: hidden;
+    padding: 5px 0;
     text-align: center;
     vertical-align: top;
     white-space: nowrap;
-    width: 48%;
+    width: 28px;
+    /*height: 24px; delete */
+    /*width: 48%; delete */
 }
 
 .singleReportView .body .list.tabular.jobs .jobName,
@@ -2164,10 +2261,13 @@ and (max-device-width : 1024px) {
     height: auto;
 }
 
+.list.settings .panel.pane.settings .header > .title {
+    color: var(--theme-medium-dark)
+}
+
 .list.settings .node > .wrap {
     border-top: 1px solid var(--border-white);
     border-bottom: 1px solid var(--border-grey-10);
-    /* background-color: #f0f0f0; changed to #f4f4f4 below */
     background-color: var(--background-grey-04);
     height: 28px;
     padding-left: 12px;
@@ -2180,7 +2280,8 @@ and (max-device-width : 1024px) {
 .list.settings .node > .description {
     background-color: var(--background-white);
     border: none;
-    color: #999999;
+    color: #444444;
+    line-height: 1.5;
     margin: 0;
     padding: 5px 0 10px 12px;
 }
@@ -2190,11 +2291,11 @@ and (max-device-width : 1024px) {
 }
 
 
-
 /* ------------------ */
 /*  20. TYPE TABLES   */
 /* ------------------ */
-/* I don't think type_tables is used any more */
+/* I don't think type_tables is used any more
+
 .type_tables .node > .wrap > .icon {
     width: 21px;
 }
@@ -2269,26 +2370,37 @@ and (max-device-width : 1024px) {
     background-position: 0 -745px;
     width:17px;
 }
+*/
 
 
 /* ------------ */
 /*  21. BASIC   */
 /* ------------ */
-/* I can only find this in report viewer */
-.type_basic .node.open > .wrap > .icon,
-.type_basic .node.open > .wrap.pressed > .icon,
-.type_basic .node.open.selected > .wrap > .icon {
-    background-position: 8px -87px;
+/* I can only find this in report viewer, bookmarks */
+.type_basic .node > .wrap > .icon {
+    background-image: url(images/disclosure_indicators_icons_sprite.svg);
+    background-size: 170px;
 }
 
-.type_basic .node.closed > .wrap > .icon,
-.type_basic .node.closed > .wrap.pressed > .icon,
-.type_basic .node.closed.selected > .wrap > .icon {
-    background-position: 8px -52px;
+.type_basic .node.open > .wrap > .icon {
+    background-position: -26px -237px;
+}
+
+.type_basic .node.closed > .wrap > .icon {
+    background-position: -26px -296px;
+}
+
+.list.type_basic li > .wrap.pressed,
+.list.type_basic li > .wrap:hover {
+    background-color: #efefef;
 }
 
 .collapsible.type_basic li {
     line-height: 2.2em;
+}
+
+.list.type_basic .wrap a {
+    color: var(--theme-medium-dark);
 }
 
 .collapsible.type_basic .collapsible {
@@ -2349,7 +2461,6 @@ and (max-device-width : 1024px) {
 .list.type_attributes .leaf {
     display: inline;
 }
-
 
 /* -------------------------- */
 /*  24. NO RESULTS MESSAGE    */

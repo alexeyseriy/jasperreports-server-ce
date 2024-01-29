@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -23,13 +23,18 @@ package com.jaspersoft.jasperserver.api.security.externalAuth;
 import com.jaspersoft.jasperserver.api.security.JrsAuthenticationSuccessHandler;
 import com.jaspersoft.jasperserver.api.security.internalAuth.InternalAuthenticationToken;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.Assert;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
 /**
@@ -38,6 +43,9 @@ import java.io.IOException;
  */
 public class JrsExternalAuthenticationSuccessHandler extends JrsAuthenticationSuccessHandler implements InitializingBean {
 	private ExternalDataSynchronizer externalDataSynchronizer;
+
+	@Value("${default.failure.url:/login.html?error=1}")
+	private String defaultFailureUrl;
 
 	@Override
 	public void afterPropertiesSet() {
@@ -52,7 +60,16 @@ public class JrsExternalAuthenticationSuccessHandler extends JrsAuthenticationSu
 			}
 
 			super.onAuthenticationSuccess(request, response, authentication);
-		} catch (RuntimeException e) {
+		}
+		catch(DisabledException disabledException){
+			ServletRequestAttributes servletRequestAttributes = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
+			HttpSession httpSession = servletRequestAttributes.getRequest().getSession();
+			httpSession.setAttribute("userPrincipal",authentication);
+			httpSession.setAttribute("isUserLocked",true);
+			SecurityContextHolder.getContext().setAuthentication(null);
+			super.getRedirectStrategy().sendRedirect(request,response,defaultFailureUrl);
+		}
+		catch (RuntimeException e) {
 			SecurityContextHolder.getContext().setAuthentication(null);
 			throw e;
 		}
@@ -69,4 +86,6 @@ public class JrsExternalAuthenticationSuccessHandler extends JrsAuthenticationSu
 	protected ExternalDataSynchronizer getExternalDataSynchronizer() {
 		return externalDataSynchronizer;
 	}
+
+
 }

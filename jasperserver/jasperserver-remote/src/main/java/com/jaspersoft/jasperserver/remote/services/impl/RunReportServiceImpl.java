@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -41,6 +41,7 @@ import com.jaspersoft.jasperserver.api.engine.jasperreports.service.DataCachePro
 import com.jaspersoft.jasperserver.api.engine.jasperreports.service.impl.CopyDestinationExistsException;
 import com.jaspersoft.jasperserver.api.metadata.common.service.JSResourceNotFoundException;
 import com.jaspersoft.jasperserver.api.metadata.common.service.RepositoryService;
+import com.jaspersoft.jasperserver.api.metadata.user.service.impl.ExecutionsPublishingEventService;
 import com.jaspersoft.jasperserver.api.metadata.xml.domain.impl.Argument;
 import com.jaspersoft.jasperserver.dto.common.ErrorDescriptor;
 import com.jaspersoft.jasperserver.dto.executions.ExecutionPageStatusObject;
@@ -48,6 +49,7 @@ import com.jaspersoft.jasperserver.dto.executions.ExecutionStatus;
 import com.jaspersoft.jasperserver.dto.reports.inputcontrols.ReportInputControl;
 import com.jaspersoft.jasperserver.dto.resources.ClientDataType;
 import com.jaspersoft.jasperserver.inputcontrols.cascade.CascadeResourceNotFoundException;
+import com.jaspersoft.jasperserver.inputcontrols.cascade.InputControlUITypeMapper;
 import com.jaspersoft.jasperserver.inputcontrols.cascade.InputControlsLogicService;
 import com.jaspersoft.jasperserver.inputcontrols.cascade.InputControlsValidationException;
 import com.jaspersoft.jasperserver.inputcontrols.util.ReportParametersUtils;
@@ -58,12 +60,13 @@ import com.jaspersoft.jasperserver.remote.services.*;
 import com.jaspersoft.jasperserver.remote.services.impl.reportinfo.ReportInfo;
 import com.jaspersoft.jasperserver.remote.utils.AuditHelper;
 import com.jaspersoft.jasperserver.war.action.JSController;
-import net.sf.ehcache.Cache;
+import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
 import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.export.GenericElementReportTransformer;
 import net.sf.jasperreports.engine.export.type.ZoomTypeEnum;
 import net.sf.jasperreports.engine.util.JRSaver;
+import net.sf.jasperreports.engine.util.PartsUtil;
 import net.sf.jasperreports.export.SimpleExporterInputItem;
 import net.sf.jasperreports.web.JRInteractiveException;
 import net.sf.jasperreports.web.WebReportContext;
@@ -77,15 +80,15 @@ import net.sf.jasperreports.web.servlets.ReportExecutionStatus;
 import net.sf.jasperreports.web.servlets.ReportPageStatus;
 import net.sf.jasperreports.web.util.JacksonUtil;
 import net.sf.jasperreports.web.util.WebUtil;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.MessageSource;
-import org.springframework.context.annotation.Scope;
-import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -101,7 +104,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
@@ -109,6 +111,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.jaspersoft.jasperserver.api.logging.audit.domain.AuditEventType.EXPORT;
+import static com.jaspersoft.jasperserver.api.metadata.common.domain.InputControl.TYPE_MULTI_SELECT_LIST_OF_VALUES;
+import static com.jaspersoft.jasperserver.api.metadata.user.service.impl.UserManagerServiceImpl.getCurrentUserQualifiedName;
 import static com.jaspersoft.jasperserver.inputcontrols.cascade.handlers.InputControlHandler.NOTHING_SUBSTITUTION_VALUE;
 import static com.jaspersoft.jasperserver.inputcontrols.cascade.handlers.InputControlHandler.NULL_SUBSTITUTION_VALUE;
 import static net.sf.jasperreports.web.servlets.ReportExecutionStatus.Status.CANCELED;
@@ -123,14 +127,14 @@ import static net.sf.jasperreports.web.servlets.ReportExecutionStatus.Status.ERR
  */
 @SuppressWarnings("deprecation")
 @Service("runReportService")
-@Scope(value = "session", proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class RunReportServiceImpl implements RunReportService, Serializable, DisposableBean {
     /**
     * Thanks, Eclipse!
     */
     private static final long serialVersionUID = 8292143346647445860L;
-    private final static Log log = LogFactory.getLog(RunReportServiceImpl.class);
+    private static final Logger log = LogManager.getLogger(RunReportServiceImpl.class);
     private final static Pattern FILE_NAME_PATTERN = Pattern.compile(".*/([^/]+)$");
+
     @Resource
     private AuditHelper auditHelper;
     @Resource(name = "concreteEngineService")
@@ -167,42 +171,47 @@ public class RunReportServiceImpl implements RunReportService, Serializable, Dis
     @Resource(name = "messageSource")
     protected MessageSource messageSource;
 
+    @Resource
+    private ExecutionsPublishingEventService publishingEventService;
 
     @Autowired
     private ApplicationContext applicationContext;
 
-    private final ConcurrentHashMap<String,Integer> CACHE_KEYS = new ConcurrentHashMap<String, Integer>();
-     
-
-    private Cache getExecutionsCache() {
+    private Ehcache getExecutionsCache() {
         return cacheFactoryBean.getObject();
     }
 
-    private ReportExecution getREfromCache(final String requestId) {
-        // can't get executions originated from other beans. fix bug JRS-20322
-        if(CACHE_KEYS.get(requestId)==null){
-            return null;
-        }
-        Element element = getExecutionsCache().get(requestId);
-        if (element != null) {
-            return (ReportExecution) (element.getObjectValue());
-        } else {
-            return null;
-        }
+    private ReportExecution getReportExecutionFromCache(final String requestId) {
+        final Element element = getExecutionsCache().get(requestId);
+        if (missesExecution(element)) return null;
+
+        Pair<String, ReportExecution> value = (Pair<String, ReportExecution>) element.getObjectValue();
+        if (!isSameUser(value.getKey())) return null;
+
+        return value.getValue();
     }
 
-    private void putREtoCache(final String requestId, final ReportExecution re) {
-        CACHE_KEYS.put(requestId,1);
-        getExecutionsCache().put(new Element(requestId, re));
+    /**
+     * Returns report execution without checking if it's related to same user or not.
+     * Can only be used in cases when prior method is configured to use Spring Security.
+     *
+     * @param requestId a generated {@link ReportExecution#getRequestId()} parameter
+     * @return a report execution that might belong to another user
+     */
+    private ReportExecution getReportExecutionFromCacheNoUserCheck(final String requestId) {
+        final Element element = getExecutionsCache().get(requestId);
+        return (!missesExecution(element)) ? ((Pair<String, ReportExecution>) element.getObjectValue()).getValue() : null;
     }
 
-    private void removeREfromCache(String requestId) {
-        getExecutionsCache().remove(requestId);
-        CACHE_KEYS.remove(requestId);
+    private void putReportExecutionToCache(final String requestId, final ReportExecution reportExecution) {
+        final Element element = new Element(requestId, Pair.of(
+                getCurrentUserQualifiedName(), reportExecution
+        ));
+        getExecutionsCache().put(element);
     }
 
     public ReportExecution getReportExecution(String requestId) throws ResourceNotFoundException {
-        final ReportExecution execution = getREfromCache(requestId);
+        final ReportExecution execution = getReportExecutionFromCache(requestId);
         if (execution == null) {
             throw new ResourceNotFoundException(requestId);
         }
@@ -214,8 +223,8 @@ public class RunReportServiceImpl implements RunReportService, Serializable, Dis
         final ReportExecutionStatus reportStatus = execution != null && execution.getReportUnitResult() != null
                 && execution.getReportUnitResult().getJasperPrintAccessor() != null
                         ? execution.getReportUnitResult().getJasperPrintAccessor().getReportStatus() : null;
+        ExecutionStatus executionStatus = ExecutionStatus.queued;
         if (reportStatus != null) {
-            ExecutionStatus executionStatus = ExecutionStatus.queued;
             final ReportExecutionStatus.Status status = reportStatus.getStatus();
             switch (status) {
                 case CANCELED:
@@ -237,7 +246,39 @@ public class RunReportServiceImpl implements RunReportService, Serializable, Dis
                 }
                 break;
             }
-            execution.setStatus(executionStatus);
+        }
+        ExecutionStatus currentStatus = execution.getStatus();
+        // first if loop is just trying to minimize the thread lock
+        // Execution Status: CANCELED, ERROR, FINISHED are final.  Can't be overwritten.
+        if (currentStatus != executionStatus &&
+                (currentStatus == ExecutionStatus.execution || currentStatus == ExecutionStatus.queued)) {
+            // trying to change status, but first, try to lock the thread to avoid race condition
+            synchronized (this) {
+                currentStatus = execution.getStatus();
+                if (currentStatus != executionStatus &&
+                        (currentStatus == ExecutionStatus.execution || currentStatus == ExecutionStatus.queued)) {
+                    if (reportStatus != null) {
+                        // set new status from report status
+                        log.debug("Changing report execution status for " + execution.getRequestId() + " from " + currentStatus + " to " + executionStatus);
+                        execution.setStatus(executionStatus);
+                    } else {
+                        // if it is not in engineExecutions map, the report execution might not be fully initialized yet
+                        if (engine.getReportExecutionStatusList().stream().noneMatch(info -> info.getRequestId().equals(execution.getRequestId()))) {
+                            log.debug("Set report execution status for " + execution.getRequestId() + " to QUEUE since report status is not available and the execution is not in engine executions map.");
+                            execution.setStatus(ExecutionStatus.queued);
+                        } else {
+                            // don't do anything
+                            // report status is in engineExecutions map, it is ok to maintain its execution or queue status.
+                            log.debug("Set report execution status for " + execution.getRequestId() + " remains unchanged since report status is not available, but the execution is in engine executions map.");
+                        }
+                    }
+                } else {
+                    log.debug("Report execution status for " + execution.getRequestId() + " is final: " + currentStatus);
+
+                }
+            }
+        } else {
+            log.debug("Report execution status for " + execution.getRequestId() + " is final: " + currentStatus);
         }
     }
 
@@ -249,7 +290,7 @@ public class RunReportServiceImpl implements RunReportService, Serializable, Dis
             ReportExecutionOptions reportExecutionOptions) {
         final ReportExecutionOptions options = reportExecutionOptions != null ? reportExecutionOptions
                 : reportExecution.getOptions();
-        ReportUnitResult reportUnitResult = (ReportUnitResult)reportExecution.getReportUnitResult();
+        ReportUnitResult reportUnitResult = reportExecution.getReportUnitResult();
         try {
             if (reportUnitResult!=null) {
                 virtualizerFactory.disposeReport(reportUnitResult);
@@ -433,7 +474,7 @@ public class RunReportServiceImpl implements RunReportService, Serializable, Dis
         return getReportExecution(requestId);
     }
 
-    private ReportExecution createReportExecution(String reportUnitURI, Map<String, String[]> rawParameters, ReportExecutionOptions options) {
+    ReportExecution createReportExecution(String reportUnitURI, Map<String, String[]> rawParameters, ReportExecutionOptions options) {
         final ReportExecution execution = new ReportExecution();
         final String requestId;
         if (options.getRequestId() == null) {
@@ -447,7 +488,8 @@ public class RunReportServiceImpl implements RunReportService, Serializable, Dis
         execution.setReportURI(reportUnitURI);
         execution.setRawParameters(rawParameters);
 
-        putREtoCache(requestId, execution);
+        publishingEventService.publishReportExecutions(requestId);
+        putReportExecutionToCache(requestId, execution);
 
         return execution;
     }
@@ -463,7 +505,7 @@ public class RunReportServiceImpl implements RunReportService, Serializable, Dis
 
     public ExportExecution executeExport(final String executionId, final ExportExecutionOptions exportOptions)
             throws ErrorDescriptorException {
-        final ReportExecution execution = getREfromCache(executionId);
+        final ReportExecution execution = getReportExecutionFromCache(executionId);
         if (execution == null)
             throw new ResourceNotFoundException(executionId);
         return executeExport(exportOptions, execution);
@@ -531,7 +573,7 @@ public class RunReportServiceImpl implements RunReportService, Serializable, Dis
         relatedReportExecution.setRawParameters(originalReportExecution.getRawParameters());
         relatedReportExecution.setConvertedParameters(originalReportExecution.getConvertedParameters());
         relatedReportExecution.setOptions(new ReportExecutionOptions(originalReportExecution.getOptions()).setPaginationParameters(pagination));
-        putREtoCache(requestId, relatedReportExecution);
+        putReportExecutionToCache(requestId, relatedReportExecution);
         startReportExecution(relatedReportExecution);
         originalReportExecution.setRelatedExecution(relatedReportExecution);
         return relatedReportExecution;
@@ -714,7 +756,7 @@ public class RunReportServiceImpl implements RunReportService, Serializable, Dis
 	}
 
     public ReportOutputResource getOutputResource(String executionId, ExportExecutionOptions exportExecutionOptions) throws ErrorDescriptorException {
-        final ReportExecution execution = getREfromCache(executionId);
+        final ReportExecution execution = getReportExecutionFromCache(executionId);
         if (execution == null) throw new ResourceNotFoundException(executionId);
         return executeExport(exportExecutionOptions, execution).getFinalOutputResource();
     }
@@ -732,7 +774,7 @@ public class RunReportServiceImpl implements RunReportService, Serializable, Dis
     }
 
     public ExportExecution getExportExecution(String executionId, String exportId) throws ResourceNotFoundException {
-        final ReportExecution execution = getREfromCache(executionId);
+        final ReportExecution execution = getReportExecutionFromCache(executionId);
         if (execution == null) throw new ResourceNotFoundException(executionId);
         final ExportExecution exportExecution = execution.getExports().get(exportId);
         if (exportExecution == null) throw new ResourceNotFoundException(exportId);
@@ -747,7 +789,7 @@ public class RunReportServiceImpl implements RunReportService, Serializable, Dis
 
     @Override
     public Response getReportInfo(String reportExecutionId) {
-        ReportExecution reportExecution = getREfromCache(reportExecutionId);
+        ReportExecution reportExecution = getReportExecutionFromCache(reportExecutionId);
         if (reportExecution == null) {
             throw new ResourceNotFoundException(reportExecutionId);
         }
@@ -766,7 +808,8 @@ public class RunReportServiceImpl implements RunReportService, Serializable, Dis
                 reportInfo.setBookmarks(bookmarks);
             }
 
-            PrintParts parts = jasperPrint.getParts();
+            PrintParts parts = PartsUtil.instance(reportExecutor.getJasperReportsContext(
+            		reportExecution.getOptions().isInteractive())).getVisibleParts(jasperPrint);
             if (parts != null && parts.hasParts()) {
                 reportInfo.setParts(parts, jasperPrint.getName());
             }
@@ -790,7 +833,7 @@ public class RunReportServiceImpl implements RunReportService, Serializable, Dis
 
             Map<String, String> result = new HashMap<>();
 
-            ReportExecution reportExecution = getREfromCache(reportExecutionId);
+            ReportExecution reportExecution = getReportExecutionFromCache(reportExecutionId);
             if (reportExecution == null) {
                 throw new ResourceNotFoundException(reportExecutionId);
             }
@@ -840,7 +883,7 @@ public class RunReportServiceImpl implements RunReportService, Serializable, Dis
     }
 
     public Response getStatusForAsyncCancelledExecution(String reportExecutionId) {
-        ReportExecution reportExecution = getREfromCache(reportExecutionId);
+        ReportExecution reportExecution = getReportExecutionFromCache(reportExecutionId);
         if (reportExecution == null) {
             return Response.status(Response.Status.NO_CONTENT).build();
         }
@@ -923,7 +966,7 @@ public class RunReportServiceImpl implements RunReportService, Serializable, Dis
         Response.Status resultStatus = Response.Status.OK;
 
         if (reportExecutionId != null && actionData != null) {
-            ReportExecution reportExecution = getREfromCache(reportExecutionId);
+            ReportExecution reportExecution = getReportExecutionFromCache(reportExecutionId);
             if (reportExecution == null) {
                 throw new ResourceNotFoundException(reportExecutionId);
             }
@@ -1035,26 +1078,31 @@ public class RunReportServiceImpl implements RunReportService, Serializable, Dis
             if (inputControlFormattedValues.get(key) != null){
                 String[] oldValues, newValues;
 
-                newValues = inputControlFormattedValues.get(key);
-                oldValues = rawInputParameters.get(key);
-
-                Arrays.sort(newValues);
-                Arrays.sort(oldValues);
+                newValues = Arrays.stream(inputControlFormattedValues.get(key)).sorted().distinct()
+                        .toArray(String[]::new);
+                oldValues = Arrays.stream(rawInputParameters.get(key)).sorted().distinct()
+                        .toArray(String[]::new);
 
                 ClientDataType type = null;
+                String selectionType = null;
                 for (ReportInputControl it : inputControlsForReport){
-                    if (it.getId().equals(key)){
-                        type = it.getDataType() ;
+                    if (it.getId().equals(key)) {
+                        type = it.getDataType();
+                        selectionType = it.getType();
                     }
                 }
 
                 if (newValues.length == 0 && oldValues.length == 1 && NOTHING_SUBSTITUTION_VALUE.equals(oldValues[0])) {
                     // correct case, do nothing
-                } else if (newValues.length == 1 && oldValues.length == 1 && NOTHING_SUBSTITUTION_VALUE.equals(newValues[0]) && NULL_SUBSTITUTION_VALUE.equals(oldValues[0])) {
+                } else if (newValues.length == 1 && oldValues.length == 1 && (NOTHING_SUBSTITUTION_VALUE.equals(newValues[0]) && NULL_SUBSTITUTION_VALUE.equals(oldValues[0]))) {
                     // correct case, do nothing
-                } else if (newValues.length == oldValues.length){
-                    for (int i = 0; i<oldValues.length; i++){
-                        if (!isSameValue(newValues[i], oldValues[i], type)){
+                } else if (newValues.length > 0 && InputControlUITypeMapper.getUiType(TYPE_MULTI_SELECT_LIST_OF_VALUES).equals(selectionType) && oldValues.length == 1 && (NOTHING_SUBSTITUTION_VALUE.equals(oldValues[0]))) {
+                    // correct case, do nothing
+                    // see bug 64856.  Importing adhoc report from 7.5.1
+                    // and in this case oldValues is ~NOTHING~, and new value is ALL (everything)
+                } else if (newValues.length == oldValues.length) {
+                    for (int i = 0; i < oldValues.length; i++) {
+                        if (!isSameValue(newValues[i], oldValues[i], type)) {
                             verifyCascade(inputControlsForReport, rawInputParameters.keySet(), key, oldValues[i]);
                         }
                     }
@@ -1152,6 +1200,11 @@ public class RunReportServiceImpl implements RunReportService, Serializable, Dis
                 JRSaver.saveObject(jasperPrint, bos);
                 exportExecution.setOutputResource(new ReportOutputResource().setContentType("application/octet-stream").setData(bos.toByteArray()));
             } else {
+                if (outputFormat.equals(Argument.RUN_OUTPUT_FORMAT_XLS)) {
+                    outputFormat = Argument.RUN_OUTPUT_FORMAT_XLSX;
+                } else if (outputFormat.equals(Argument.RUN_OUTPUT_FORMAT_XLS_NOPAG)) {
+                    outputFormat = Argument.RUN_OUTPUT_FORMAT_XLSX_NOPAG;
+                }
                 HashMap<String, Object> exportParameters = new HashMap<String, Object>(reportExecution.getRawParameters());
                 if (pages != null) exportParameters.put(Argument.RUN_OUTPUT_PAGES, pages);
                 Map<JRExporterParameter, Object> exporterParams;
@@ -1180,10 +1233,13 @@ public class RunReportServiceImpl implements RunReportService, Serializable, Dis
                     }
                 }
                 final Matcher matcher = FILE_NAME_PATTERN.matcher(reportURI);
+                final String fileExtension = outputFormat.equals(Argument.RUN_OUTPUT_FORMAT_DATA_CSV) || outputFormat.equals(Argument.RUN_OUTPUT_FORMAT_DATA_XLSX)
+                        ? outputFormat.toLowerCase().replace("_",".")
+                        : outputFormat.toLowerCase();
                 exportExecution.setOutputResource(new ReportOutputResource()
                         .setContentType(reportExecutor.getContentType(outputFormat))
                         .setData(bos.toByteArray())
-                        .setFileName((matcher.find() ? matcher.group(1) : "report") + "." + outputFormat.toLowerCase())
+                        .setFileName((matcher.find() ? matcher.group(1) : "report") + "." + fileExtension)
                         .setPages(pages != null ? pages.toString() : null));
             }
         } catch (ErrorDescriptorException e) {
@@ -1209,35 +1265,35 @@ public class RunReportServiceImpl implements RunReportService, Serializable, Dis
         }
         return result;
     }
-    
+
     public Boolean cancelReportExecution(String requestId) throws ErrorDescriptorException {
         return cancelReportExecution(requestId, engine);
     }
 
     protected Boolean cancelReportExecution(String requestId, EngineService effectiveEngine) throws ErrorDescriptorException {
         final boolean cancelled = effectiveEngine.cancelExecution(requestId);
-        final ReportExecution reportExecution = getREfromCache(requestId);
-        if(cancelled && reportExecution != null){
-            // update report execution status
-            reportExecution.setStatus(ExecutionStatus.cancelled);
+        if (cancelled) {
+            // Prior method call "effectiveEngine.cancelExecution()" uses Spring Security to check
+            // if the user has access to this report execution. So this call is safe.
+            final ReportExecution reportExecution = getReportExecutionFromCacheNoUserCheck(requestId);
+            if (reportExecution != null) reportExecution.setStatus(ExecutionStatus.cancelled);
         }
         return cancelled;
     }
 
     public Boolean deleteReportExecution(String requestId) throws ErrorDescriptorException {
         try {
-            ReportExecution execution = getREfromCache(requestId);
+            ReportExecution execution = getReportExecutionFromCache(requestId);
             if (execution != null) {
                 cancelReportExecution(requestId);
                 if (execution.getStatus() == ExecutionStatus.ready) {
                     virtualizerFactory.disposeReport(execution.getFinalReportUnitResult());
                 } else if(execution.getStatus() == ExecutionStatus.cancelled) {
-                    if(execution.getReportUnitResult() != null) {
+                    if (execution.getReportUnitResult() != null) {
                         virtualizerFactory.disposeReport(execution.getReportUnitResult());
                     }
                 }
-                removeREfromCache(requestId);
-                return true;
+                return getExecutionsCache().remove(requestId);
             }
             return false;
         } catch (RuntimeException e) {
@@ -1249,26 +1305,38 @@ public class RunReportServiceImpl implements RunReportService, Serializable, Dis
         }
     }
 
-
     @Override
-    public void destroy() throws Exception {
-        for (Object requestId : getExecutionsCache().getKeys()) {
-            if (!CACHE_KEYS.containsKey(requestId)) {
-                continue;
-            }
-
-            ReportExecution execution = getREfromCache((String) requestId);
-            try {
-                cancelReportExecution((String) requestId, unsecuredEngine);
-                if (execution.getStatus() == ExecutionStatus.ready) {
-                    virtualizerFactory.disposeReport(execution.getFinalReportUnitResult());
-                }
-            } catch (RuntimeException ex) {
-                log.warn("Report execution cleanup failed: ", ex);
-            }
-        }
-        getExecutionsCache().removeAll(CACHE_KEYS.keySet());
-        CACHE_KEYS.clear();
+    public void destroy() {
+        List<?> keys = getExecutionsCache().getKeys();
+        keys.stream()
+                .map(Object::toString)
+                .forEach(requestId -> {
+                    ReportExecution execution = getReportExecutionFromCache(requestId);
+                    try {
+                        cancelReportExecution(requestId, unsecuredEngine);
+                        if (execution != null && execution.getStatus() == ExecutionStatus.ready) {
+                            virtualizerFactory.disposeReport(execution.getFinalReportUnitResult());
+                        }
+                    } catch (RuntimeException ex) {
+                        log.warn("Report execution cleanup failed: ", ex);
+                    }
+                });
+        getExecutionsCache().removeAll(keys);
         getExecutionsCache().evictExpiredElements();
     }
+
+    private boolean isSameUser(String userName) {
+        String currentUserName = getCurrentUserQualifiedName();
+        if (currentUserName == null) return false;
+
+        return new EqualsBuilder()
+                .append(userName, currentUserName)
+                .isEquals();
+    }
+
+    private boolean missesExecution(Element element) {
+        return element == null || element.getObjectValue() == null;
+    }
+
+
 }

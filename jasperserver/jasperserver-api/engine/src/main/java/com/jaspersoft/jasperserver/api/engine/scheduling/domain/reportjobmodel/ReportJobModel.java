@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -59,6 +59,7 @@ public class ReportJobModel extends ReportJob {
         SORTBY_JOBNAME,
         SORTBY_REPORTURI,
         SORTBY_REPORTNAME,
+		SORTBY_RESOURCELABEL,
         SORTBY_REPORTFOLDER,
         SORTBY_OWNER,
         SORTBY_STATUS,
@@ -74,11 +75,14 @@ public class ReportJobModel extends ReportJob {
     private boolean isContentRepositoryDestinationModified = false;
     private boolean isDescriptionModified = false;
     private boolean isLabelModified = false;
+    private boolean isJobIDModified = false;
     private boolean isBaseOutputFileNameModified = false;
     private boolean isOutputFormatsModified = false;
     private boolean isUsernameModified = false;
     private boolean isOutputLocaleModified = false;
     private boolean isRuntimeInformationModified = false;
+	private boolean isJobLabelModified = false;
+	private boolean isResourceLabelModified = false;
 
     private ReportJobRuntimeInformationModel runtimeInformation = null;
 
@@ -444,6 +448,7 @@ public class ReportJobModel extends ReportJob {
      * @deprecated ID is not supported in ReportJobModel
      */
     public void setId(long id) {
+    	isJobIDModified = true;
         super.setId(id);
     }
 
@@ -493,7 +498,19 @@ public class ReportJobModel extends ReportJob {
         super.setLabel(label);
     }
 
-    /**
+	@Override
+	public void setJobLabel(String jobLabel) {
+    	isJobLabelModified = true;
+		super.setJobLabel(jobLabel);
+	}
+
+	@Override
+	public void setResourceLabel(String resourceLabel) {
+    	isResourceLabelModified = true;
+		super.setResourceLabel(resourceLabel);
+	}
+
+	/**
      * Sets the base filename to be used for the report job output files.
      *
      * @param baseOutputFilename the job output base filename
@@ -653,7 +670,20 @@ public class ReportJobModel extends ReportJob {
 		this.isLabelModified = isLabelModified;
 	}
 
-    /**
+	/**
+	 * returns whether job id has been modified
+	 *
+	 * @return true if the attribute has been modified
+	 */
+	public boolean isJobIDModified() {
+		return isJobIDModified;
+	}
+
+	public void setJobIDModified(boolean jobIDModified) {
+		isJobIDModified = jobIDModified;
+	}
+
+	/**
      * returns whether base output file name has been modified
      *
      * @return true if the attribute has been modified
@@ -708,4 +738,19 @@ public class ReportJobModel extends ReportJob {
 		this.isRuntimeInformationModified = isRuntimeInformationModified;
 	}
 
+	public boolean isJobLabelModified() {
+		return isJobLabelModified;
+	}
+
+	public void setJobLabelModified(boolean jobLabelModified) {
+		isJobLabelModified = jobLabelModified;
+	}
+
+	public boolean isResourceLabelModified() {
+		return isResourceLabelModified;
+	}
+
+	public void setResourceLabelModified(boolean resourceLabelModified) {
+		isResourceLabelModified = resourceLabelModified;
+	}
 }

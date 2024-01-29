@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -58,8 +58,8 @@ var toolbarButtonModule = {
         actionModel.showDropDownMenu(event, object, context, this.TOOLBAR_MENU_CLASS, model);
     },
 
-    setActionModel: function(actionModel){
-        this.actionModel = actionModel;
+    setActionModel: function(newActionModel){
+        this.actionModel = newActionModel;
     },
 
     /**

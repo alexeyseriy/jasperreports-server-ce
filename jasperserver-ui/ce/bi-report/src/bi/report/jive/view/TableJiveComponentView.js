@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved. Confidentiality & Proprietary.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved. Confidentiality & Proprietary.
  * Licensed pursuant to commercial TIBCO End User License Agreement.
  */
 
@@ -96,12 +96,12 @@ function computeDropBoundariesForColumnMove() {
 
     this.visibleColumnsMoveData = [];
 
-    var firstColumnHeader = this.reportContainer.find("table.jrPage td.jrcolHeader[data-tableuuid='" + tableUuid + "']").first();
+    var firstColumnHeader = this.reportContainer.find("table.jrPage .jrcolHeader[data-tableuuid='" + tableUuid + "']").first();
     var parentContainer;
 
     firstColumnHeader.parents("table").each(function(i, v) {
         parentContainer = $(v);
-        tableColumns = parentContainer.find("td.jrcolHeader[data-tableuuid='" + tableUuid + "']");
+        tableColumns = parentContainer.find(".jrcolHeader[data-tableuuid='" + tableUuid + "']");
         if (tableColumns.length > 0) {
             return false; //break each
         }
@@ -118,7 +118,7 @@ function computeDropBoundariesForColumnMove() {
             cols, firstColHeader, lastCol, realWidth, firstLeft;
         if (colsData[colUuid]) continue;
 
-        cols = parentContainer.find("td.jrcolHeader[data-coluuid='" + colUuid + "']");
+        cols = parentContainer.find(".jrcolHeader[data-coluuid='" + colUuid + "']");
         firstColHeader = cols.eq(0);
         if (cols.length > 0) {
             lastCol = cols.eq(cols.length - 1);
@@ -345,10 +345,10 @@ export default BaseJiveComponentView.extend({
 
         this.tableElement = this.getReportContainer(this.getReportId());
 
-        this.tableElement.on("click touchend", ".jrPage td.jrcolHeader.interactiveElement[data-tableuuid=" + tableID + "]",
+        this.tableElement.on("click touchend", ".jrPage .jrcolHeader.interactiveElement[data-tableuuid=" + tableID + "]",
             _.bind(onTableClick, this));
 
-        this.tableElement.on("click touchend", ".jrPage td.jrcel[data-tableuuid=" + tableID + "]",
+        this.tableElement.on("click touchend", ".jrPage .jrcel[data-tableuuid=" + tableID + "]",
             _.bind(onTableClick, this));
 
         if (this.resizeMarker) {
@@ -514,7 +514,7 @@ export default BaseJiveComponentView.extend({
 
     getColumnData: function($target){
         var headerID = $target.hasClass("jrcolHeader") ? $target.data("cellid") : $target.attr("class").split(" ")[1].substring(4),
-            headerCols = this.reportContainer.find("table.jrPage td.jrcolHeader[data-cellid='" + headerID + "']"),
+            headerCols = this.reportContainer.find("table.jrPage .jrcolHeader[data-cellid='" + headerID + "']"),
             firstColHeader = headerCols.eq(0),
             widthSoFar, realWidth, realHeight = null,
             firstLeft = firstColHeader.offset().left,
@@ -538,7 +538,7 @@ export default BaseJiveComponentView.extend({
         headerID = ("" + headerID).replace(/\./g,'\\.');
 
         firstColHeader.parents().each(function(i, parent) {
-            var lastCell = $("td.cel_" + headerID + ":last", parent),
+            var lastCell = $(".cel_" + headerID + ":last", parent),
                 cssHeight;
             if(lastCell && lastCell.length > 0) {
                 cssHeight = lastCell.css("height");
@@ -708,7 +708,7 @@ export default BaseJiveComponentView.extend({
             return;
         }
 
-        var firstHeader = scrollContainer.find("td.jrcolHeader").first();
+        var firstHeader = scrollContainer.find(".jrcolHeader").first();
         if (!firstHeader.length) {
             return;
         }
@@ -717,7 +717,7 @@ export default BaseJiveComponentView.extend({
             tbl = firstHeader.closest("table"),
             containerTop = scrollContainer.offset().top,
             headerTop = firstHeader.closest("tr").offset().top,
-            lastTableCel = firstHeader.closest("table").find("td.jrcel").last(),
+            lastTableCel = firstHeader.closest("table").find(".jrcel").last(),
             diff = lastTableCel.length ? lastTableCel.offset().top - floatingTable.outerHeight() - containerTop: -1, // if last cell is not visible, hide the floating header
             scaleFactor = this.model.get("scaleFactor");
 
@@ -784,14 +784,14 @@ export default BaseJiveComponentView.extend({
                 if(!$(evt.target).parent().is('._jrHyperLink')) {
                     var jo = $(this);
                     var coluuid = jo.data('coluuid');
-                    var reportTableCell = tbl.parent().find('table.jrPage td.jrcolHeader[data-coluuid=' + coluuid + ']:first');
+                    var reportTableCell = tbl.parent().find('table.jrPage .jrcolHeader[data-coluuid=' + coluuid + ']:first');
                     reportTableCell.length && reportTableCell.trigger("click");
                     return false;
                 }
             });
 
             var parentTable = firstHeader.closest("table"),
-                lastColHeader = parentTable.find("td.jrcolHeader").last(),
+                lastColHeader = parentTable.find(".jrcolHeader").last(),
                 rows = [], clone, cloneWidth = [], row, $row, lastRow,
                 cloneTD, rowTD, rowTDs, i, j, k, ln, tblJrPage, parentTableRows;
 
@@ -814,7 +814,7 @@ export default BaseJiveComponentView.extend({
 
                 $.each(rows, function(idx, row) {
                     $row = $(row);
-                    rowTDs = $row.find("td");
+                    rowTDs = $row.find("td,th");
                     clone = $("<tr></tr>");
 
                     $row.attr("valign") && clone.attr("valign", $row.attr("valign"));
@@ -857,7 +857,7 @@ export default BaseJiveComponentView.extend({
 
         if (headerToolbar.$el.is(":visible")) {
 
-            floatingHeader = floatingTable.find("td.jrcolHeader[data-cellid='" + this.currentColumnData.$header.data("cellid") + "']").first();
+            floatingHeader = floatingTable.find(".jrcolHeader[data-cellid='" + this.currentColumnData.$header.data("cellid") + "']").first();
 
             if (floatingHeader.offset().top > floatingTable.offset().top) {
                 diff = floatingHeader.offset().top - floatingTable.offset().top - headerToolbar.$el.outerHeight();

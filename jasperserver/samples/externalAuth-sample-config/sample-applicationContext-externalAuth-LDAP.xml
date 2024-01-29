@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -112,6 +112,12 @@
                 <!-- Can setup additional external default roles here  <property name="defaultRole" value="LDAP"/> -->
             </bean>
         </constructor-arg>
+        <!--Added for Login-Lockout-->
+        <property name="externalUserLoginEventService"><ref bean="${bean.externalUserLoginEventService}" /></property>
+        <property name="userDetailsService"><ref bean="${bean.internalUserAuthorityService}"/></property>
+        <property name="userAuthorityService" ref="${bean.userAuthorityService}" />
+        <property name="qualifiedNameSeparator" value="|" />
+        <property name="tenantPersistenceResolver"><ref bean="${bean.hibernateTenantService}"/></property>
     </bean>
 
     <bean id="userSearch"
@@ -156,6 +162,7 @@
         <property name="tenantService" ref="${bean.tenantService}"/>
         <property name="profileAttributeService" ref="profileAttributeService"/>
         <property name="objectPermissionService" ref="objectPermissionService"/>
+        <property name="externalUserLoginEventService"><ref bean="${bean.externalUserLoginEventService}" /></property>
     </bean>
 
     <bean id="externalUserSetupProcessor" class="com.jaspersoft.jasperserver.api.security.externalAuth.processors.ExternalUserSetupProcessor" parent="abstractExternalProcessor">

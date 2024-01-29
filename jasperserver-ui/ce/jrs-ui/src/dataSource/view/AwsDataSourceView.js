@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -75,8 +75,8 @@ export default JdbcDataSourceView.extend({
             driverAvailable: !(!driver || !driver.get('available')),
             driverClass: this.model.get('driverClass')
         });
-        this.driverUploadDialog.on('driverUpload', function (driver) {
-            self.model.drivers.markDriverAsAvailable(driver.jdbcDriverClass);
+        this.driverUploadDialog.on('driverUpload', function (availableDriver) {
+            self.model.drivers.markDriverAsAvailable(availableDriver.jdbcDriverClass);
             _.defer(_.bind(self.model.validate, self.model));
         });
     },

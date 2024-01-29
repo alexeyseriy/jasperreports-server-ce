@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2021 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -34,9 +34,8 @@
     5. CHART MENU, AD HOC DESIGNER
 
    -----------------------------------
-    File last modified Jan 12, 2021
+    File last modified Oct 14, 2022
    -----------------------------------  */
-
 
 
 /* ---------------- */
@@ -80,13 +79,6 @@
     margin: 0;
 }
 
-/* states */
-.menu.primaryNav .wrap.over,
-.menu.primaryNav .wrap.pressed {
-    background-color: var(--theme-medium-dark);
-}
-
-
 
 /* -------------------- */
 /*  2. VERTICAL MENU    */
@@ -94,7 +86,6 @@
 .menu.vertical {
     min-width: 150px;
     background-color: var(--background-white);
-    /* border: 1px solid #d3d5d6; */
     border: 1px solid var(--border-grey-16);
     font-family: source_sans_proregular, Franklin Gothic, Verdana, Arial, sans-serif;
     font-size: 14px;
@@ -112,7 +103,6 @@
 
 .menu.vertical .leaf.separator,
 .menu.vertical .leaf.buttonItem {
-    /* border-top: 1px solid #bdbdbd; changed color to #ccc below */
     border-top: 1px solid var(--border-grey-20);
 }
 
@@ -122,20 +112,23 @@
     margin: 6px 0;
 }
 
-.menu.vertical .leaf > .wrap.toggle.down .icon,
-.menu.vertical .leaf.active .wrap.button .icon {
-    background-image: url(images/disclosure_indicators_icons_sprite@1x.png);
-    background-position: -20px -115px;
-    background-size: 80px;
-    top: 3px;
+.menu.vertical .node > .wrap > .icon {
+    background-image: url(images/disclosure_indicators_icons_sprite.svg);
+    background-position: -28px -297px;
+    background-size: 170px;
+    height: 18px;
+    right: 5px;
+    top: 6px;
+    width: 18px;
 }
 
-/* 2x icons */
-@media (-webkit-min-device-pixel-ratio: 2),(min-resolution: 192dpi){
-    .menu.vertical .leaf > .wrap.toggle.down .icon,
-    .menu.vertical .leaf.active .wrap.button .icon {
-        background-image: url(images/disclosure_indicators_icons_sprite@2x.png);
-    }
+/* States */
+.menu.vertical .leaf > .wrap.toggle.down .icon,
+.menu.vertical .leaf.active .wrap.button .icon {
+    background-image: url(images/disclosure_indicators_icons_sprite.svg);
+    background-position: -20px -115px;
+    background-size: 170px;
+    top: 3px;
 }
 
 .menu.vertical li > .wrap.over,
@@ -148,23 +141,6 @@
 .menu.vertical .leaf.active .wrap.button.over .icon,
 .menu.vertical .leaf.active .wrap.button.pressed .icon {
     background-position: -50px -115px;
-}
-
-.menu.vertical .node > .wrap > .icon {
-    background-image: url(images/disclosure_indicators_icons_sprite@1x.png);
-    background-position: -28px -297px;
-    background-size: 80px;
-    height: 18px;
-    right: 5px;
-    top: 6px;
-    width: 18px;
-}
-
-/* 2x icons */
-@media (-webkit-min-device-pixel-ratio: 2),(min-resolution: 192dpi){
-    .menu.vertical .node > .wrap > .icon {
-        background-image: url(images/disclosure_indicators_icons_sprite@2x.png);
-    }
 }
 
 .menu.vertical .node > .wrap.over > .icon,
@@ -180,6 +156,11 @@
     display: block;
 }
 
+/* Keyboard Focus */
+.menu.vertical li > .wrap.over.focus-visible {
+    outline: 2px solid var(--theme-dark);
+    outline-offset: -2px;
+}
 
 
 /* ------------------------------ */
@@ -204,7 +185,6 @@
     bottom: 0;
     left: 0;
 }
-
 
 
 /* ------------------------------ */
@@ -279,6 +259,56 @@
     }
 }
 
+@media only screen and (max-width: 750px) {
+    .menu.primaryNav .wrap {
+        font-size: 13px;
+    }
+    .menu.primaryNav .node > .wrap > .icon {
+        background-position: 0 -87px;
+        background-size: 12px;
+    }
+    .menu.primaryNav #main_view .wrap,
+    .menu.primaryNav #main_manage .wrap,
+    .menu.primaryNav #main_create .wrap {
+        padding-left: .6em;
+    }
+    .menu.primaryNav #main_home .wrap {
+        padding: 0;
+        width: 28px;
+    }
+    .menu.primaryNav {
+        margin-left: 4px;
+    }
+    .menu.primaryNav #main_home .wrap > .icon {
+        background-position: 0 3px;
+        background-size: 18px;
+        margin-left: 6px;
+    }
+}
+
+/* States */
+.menu.primaryNav .wrap.over,
+.menu.primaryNav .wrap.pressed {
+    background-color: var(--theme-medium-light);
+}
+
+.menu .wrap.over,
+.menu .wrap.pressed,
+.menu.primaryNav .up,
+.menu.primaryNav .wrap,
+.menu.primaryNav .up.over,
+.menu.primaryNav .up.pressed,
+.menu.primaryNav .wrap.over,
+.menu.primaryNav .wrap.pressed {
+    color: #ffffff;
+}
+
+/* Keyboard Focus
+Same as State
+.menu.primaryNav .leaf.focus-visible .wrap,
+.menu.primaryNav .node.focus-visible .wrap {
+    background-color: var(--theme-medium-light);
+} */
 
 
 /* ---------------------------------- */

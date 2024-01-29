@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -22,6 +22,7 @@
 package com.jaspersoft.jasperserver.api.engine.scheduling.quartz;
 
 import java.io.Serializable;
+import java.util.function.Consumer;
 
 import org.quartz.JobExecutionException;
 
@@ -45,6 +46,15 @@ public interface Output extends Serializable
 	public ReportOutput getOutput(
 			ReportJobContext jobContext,
 			JasperPrint jasperPrint) throws JobExecutionException;
+
+	default public void createOutputs(
+			ReportJobContext jobContext,
+			JasperPrint jasperPrint,
+			Consumer<ReportOutput> outputConsumer) throws JobExecutionException
+	{
+		ReportOutput output = getOutput(jobContext, jasperPrint);
+		outputConsumer.accept(output);
+	}
 
 	public Boolean isPaginationPreferred(JRPropertiesHolder propertiesHolder);
 	

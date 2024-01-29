@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -58,6 +58,16 @@ public class RepositorySearchCriteriaImpl implements RepositorySearchCriteria {
     private User user;
     private List<ClientResourceLookup> resources;
     private String lookupClass=null;
+
+    public boolean isFavorites() {
+        return favorites;
+    }
+
+    public void setFavorites(boolean favorites) {
+        this.favorites = favorites;
+    }
+
+    private boolean favorites;
 
     public List<ClientResourceLookup> getResources() {
 		return resources;
@@ -325,6 +335,14 @@ public class RepositorySearchCriteriaImpl implements RepositorySearchCriteria {
             criteria.setAccessType(type);
             return this;
         }
+
+        public Builder setFavorites(Boolean favorites){
+           if(favorites!=null)
+            criteria.setFavorites(favorites);
+            return this;
+        }
+
+
         public Builder setExcludeRelativePaths(List<String> excludeRelativePaths){
             criteria.setExcludeRelativePaths(excludeRelativePaths);
             return this;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -329,6 +329,9 @@ public class ReportExecution implements Serializable {
     }
 
     public void setStatus(ExecutionStatus status) {
+        if (status != this.status) {
+            log.debug("Setting report execution status to: " + status);
+        }
         lock.lock();
         try {
             if (this.status != status) {

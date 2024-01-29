@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -86,10 +86,12 @@
     </bean>
 
     <util:map id="libraryCustomFiltersMap">
+        <entry key="favoriteFilter" value="favoriteFilter-all"/>
         <entry key="resourceTypeFilter" value="resourceTypeFilter-reports"/>
     </util:map>
 
     <util:map id="defaultCustomFiltersMap">
+        <entry key="favoriteFilter" value="favoriteFilter-all"/>
         <entry key="accessTypeFilter" value="accessTypeFilter-all"/>
         <entry key="timeFilter" value="timeFilter-anyTime"/>
         <entry key="scheduleFilter" value="scheduleFilter-anySchedule"/>
@@ -258,6 +260,30 @@
     <util:list id="customFilters">
         <bean class="com.jaspersoft.jasperserver.search.common.CustomFilter">
             <property name="searchSecurityResolver" ref="${bean.searchSecurityResolver}"/>
+            <property name="id" value="favoriteFilter"/>
+            <property name="filter">
+                <bean class="com.jaspersoft.jasperserver.search.filter.FavoriteFilter" parent="baseSearchFilter" />
+            </property>
+            <property name="defaultOption" value="favoriteFilter-all"/>
+            <property name="roleAccessList" ref="${bean.favoriteFilter.RoleAccessList}"/>
+            <property name="options">
+                <list>
+                    <bean class="com.jaspersoft.jasperserver.search.common.Option">
+                        <property name="id" value="favoriteFilter-all"/>
+                        <property name="labelId" value="SEARCH_ALL_FILES"/>
+                        <property name="roleAccessList" ref="${bean.favoriteFilter.All.RoleAccessList}"/>
+                    </bean>
+                    <bean class="com.jaspersoft.jasperserver.search.common.Option">
+                        <property name="id" value="favoriteFilter-favorites"/>
+                        <property name="labelId" value="SEARCH_FAVORITE_FILES"/>
+                        <property name="roleAccessList" ref="${bean.favoriteFilter.Favorites.RoleAccessList}"/>
+                    </bean>
+                </list>
+            </property>
+            <property name="showCount" value="-1"/>
+        </bean>
+        <bean class="com.jaspersoft.jasperserver.search.common.CustomFilter">
+            <property name="searchSecurityResolver" ref="${bean.searchSecurityResolver}"/>
             <property name="id" value="accessTypeFilter"/>
             <property name="filter">
                 <bean class="com.jaspersoft.jasperserver.search.filter.AccessTypeFilter" parent="baseSearchFilter" />
@@ -370,6 +396,30 @@
     <util:list id="libraryFilters">
         <bean class="com.jaspersoft.jasperserver.search.common.CustomFilter">
             <property name="searchSecurityResolver" ref="${bean.searchSecurityResolver}"/>
+            <property name="id" value="favoriteFilter"/>
+            <property name="filter">
+                <bean class="com.jaspersoft.jasperserver.search.filter.FavoriteFilter" parent="baseSearchFilter" />
+            </property>
+            <property name="defaultOption" value="favoriteFilter-all"/>
+            <property name="roleAccessList" ref="${bean.favoriteFilter.RoleAccessList}"/>
+            <property name="options">
+                <list>
+                    <bean class="com.jaspersoft.jasperserver.search.common.Option">
+                        <property name="id" value="favoriteFilter-all"/>
+                        <property name="labelId" value="SEARCH_ALL_FILES"/>
+                        <property name="roleAccessList" ref="${bean.favoriteFilter.All.RoleAccessList}"/>
+                    </bean>
+                    <bean class="com.jaspersoft.jasperserver.search.common.Option">
+                        <property name="id" value="favoriteFilter-favorites"/>
+                        <property name="labelId" value="SEARCH_FAVORITE_FILES"/>
+                        <property name="roleAccessList" ref="${bean.favoriteFilter.Favorites.RoleAccessList}"/>
+                    </bean>
+                </list>
+            </property>
+            <property name="showCount" value="-1"/>
+        </bean>
+        <bean class="com.jaspersoft.jasperserver.search.common.CustomFilter">
+            <property name="searchSecurityResolver" ref="${bean.searchSecurityResolver}"/>
             <property name="id" value="resourceTypeFilter"/>
             <property name="filter" ref="${bean.search.resourceTypeFilter}"/>
             <property name="defaultOption" value="${bean.libraryResourceTypeFilterDefaultOption}"/>
@@ -420,6 +470,7 @@
 
     <bean id="searchActionModel" class="com.jaspersoft.jasperserver.search.model.SearchActionModelSupport">
         <property name="proVersion" value="${isProVersion}"/>
+        <property name="openInEditor" value="true"/>
     </bean>
 
     <util:list id="sorters">
@@ -645,7 +696,7 @@
     </bean>
 
     <bean id="textFilter" class="com.jaspersoft.jasperserver.search.filter.TextFilter" parent="baseSearchFilter">
-        <property name="databaseCharactersEscapeResolver" ref="databaseCharactersEscapeResolver"/>   
+        <property name="databaseCharactersEscapeResolver" ref="databaseCharactersEscapeResolver"/>
     </bean>
 
     <bean id="accessTypeFilter" class="com.jaspersoft.jasperserver.search.filter.AccessTypeFilter" parent="baseSearchFilter"/>

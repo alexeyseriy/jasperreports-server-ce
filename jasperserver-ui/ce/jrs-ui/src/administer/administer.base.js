@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -56,6 +56,9 @@ window.Administer = _.extend({
         },
         'p#navLogSettings': function () {
             return window.Administer.urlContext + '/log_settings.html';
+        },
+        'p#navGeneralSettings': function () {
+            return window.Administer.urlContext + '/flow.html?_flowId=generalSettingsFlow';
         },
         'p#logCollectors': function () {
             return window.Administer.urlContext + '/logCollectors.html';

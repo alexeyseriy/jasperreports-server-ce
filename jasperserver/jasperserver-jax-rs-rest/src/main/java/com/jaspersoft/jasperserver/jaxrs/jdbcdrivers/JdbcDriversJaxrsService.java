@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -20,6 +20,7 @@
  */
 package com.jaspersoft.jasperserver.jaxrs.jdbcdrivers;
 
+import com.jaspersoft.jasperserver.api.common.properties.PropertiesManagementService;
 import com.jaspersoft.jasperserver.api.common.service.JdbcDriverService;
 import com.jaspersoft.jasperserver.api.metadata.user.domain.Role;
 import com.jaspersoft.jasperserver.api.metadata.user.domain.User;
@@ -33,6 +34,7 @@ import com.jaspersoft.jasperserver.api.ErrorDescriptorException;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -45,12 +47,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * <p></p>
@@ -64,10 +61,17 @@ import java.util.Set;
 public class JdbcDriversJaxrsService {
     @Resource
     private JdbcDriverService jdbcDriverService;
+
+    @Value("${isProVersion:false}")
+    private boolean isProVersion;
     @Resource
     protected Map<String, Map<String, Object>> jdbcConnectionMap;
     @Resource
     protected List<String> configurationAllowedRoles;
+    @Resource(name="propertiesManagementService")
+    protected PropertiesManagementService propertiesManagementService;
+
+    private final static String ALLOW_JAR_FILE_UPLOAD = "allowJarFileUpload";
 
     @GET
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
@@ -118,7 +122,9 @@ public class JdbcDriversJaxrsService {
         Authentication existingAuth = SecurityContextHolder.getContext().getAuthentication();
         Set<Role> roles = ((User) existingAuth.getPrincipal()).getRoles();
         for (Role currentRole : roles) {
-            if (configurationAllowedRoles.contains(currentRole.getRoleName())) {
+            String generalSettingProperty = propertiesManagementService.getProperty("general." + ALLOW_JAR_FILE_UPLOAD);
+            Boolean allowJARUpload = Optional.ofNullable(generalSettingProperty).map(Boolean::valueOf).orElse(!isProVersion);
+            if (configurationAllowedRoles.contains(currentRole.getRoleName()) && allowJARUpload ) {
                 hypermediaRepresentation.addLink(new Link()
                         .setRelation(Relation.create)
                         .setProfile("POST"));

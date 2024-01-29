@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -22,6 +22,7 @@ package com.jaspersoft.jasperserver.inputcontrols.cascade.handlers;
 
 import com.jaspersoft.jasperserver.api.common.util.diagnostic.DiagnosticSnapshotPropertyHelper;
 import com.jaspersoft.jasperserver.api.engine.common.service.ReportInputControlInformation;
+import com.jaspersoft.jasperserver.api.engine.common.service.ReportInputControlValuesInformation;
 import com.jaspersoft.jasperserver.api.metadata.common.domain.DataType;
 import com.jaspersoft.jasperserver.api.metadata.common.domain.InputControl;
 import com.jaspersoft.jasperserver.api.metadata.common.domain.ListOfValuesItem;
@@ -38,6 +39,7 @@ import org.apache.commons.collections.set.ListOrderedSet;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.math3.util.Pair;
+import org.springframework.beans.factory.annotation.Value;
 
 
 import java.math.BigDecimal;
@@ -62,7 +64,7 @@ import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
  */
 public class SingleSelectListInputControlHandler extends BasicInputControlHandler {
 
-    public static final String SELECT = "select";
+    public static final String SELECT = "_select";
 
     private static final Log log = LogFactory.getLog(SingleSelectListInputControlHandler.class);
 
@@ -293,7 +295,7 @@ public class SingleSelectListInputControlHandler extends BasicInputControlHandle
         SelectedValuesDict defaultValueDict = createSelectedValuesDict(defaultValue);
 
         // check if the select parameter value is "allValues"
-        selectAll = isAllValues(inputControl, parameters);
+        selectAll = isAllValues(info, inputControl, parameters);
 
         Map<String, String> errors = new HashMap<>();
 
@@ -451,9 +453,16 @@ public class SingleSelectListInputControlHandler extends BasicInputControlHandle
         return incomingValueStruct;
     }
 
-    protected boolean isAllValues(InputControl inputControl, Map<String, Object> parameters) {
-        Object selectedValue = parameters.get(inputControl.getName()+"_"+SELECT);
-        return  (selectedValue != null && ((String)selectedValue).equalsIgnoreCase(ALL_VALUES));
+    protected boolean isAllValues(ReportInputControlInformation inputControlInformation,
+                                  InputControl inputControl,
+                                  Map<String, Object> parameters) {
+        ReportInputControlValuesInformation valuesInfo = inputControlInformation.getReportInputControlValuesInformation();
+        if (valuesInfo != null && valuesInfo.isAnyValue()) {
+            // Select all values only in a case when we don't have IC values (they are in parameters with IC name as a key)
+            return isNothingSelected(inputControl.getName(), parameters);
+        }
+        Object selectedValue = parameters.get(inputControl.getName() + SELECT);
+        return (selectedValue != null && ((String) selectedValue).equalsIgnoreCase(ALL_VALUES));
     }
 
     protected void setStateTotalCount(InputControlState state, Map<String, Object> parameters) {
@@ -464,7 +473,7 @@ public class SingleSelectListInputControlHandler extends BasicInputControlHandle
 
     protected Object setIncomingValue(String controlName, Map<String, Object> parameters, ReportInputControlInformation info) {
         Object incomingValue = parameters.get(controlName);
-        Object selectedValue = parameters.get(controlName + "_" + SELECT);
+        Object selectedValue = parameters.get(controlName + SELECT);
         boolean isSelectDefaultValues = (selectedValue != null && ((String)selectedValue).equalsIgnoreCase(SELECTED_VALUES));
         boolean isIncomingValueEmpty = isNothingValue(incomingValue);
 
@@ -538,7 +547,7 @@ public class SingleSelectListInputControlHandler extends BasicInputControlHandle
         if (info.getDefaultValue() instanceof Collection<?>) {
             mid =  ((ListOrderedSet)info.getDefaultValue()).asList();
         } else {
-            mid = Arrays.asList(new Object[] {info.getDefaultValue()});
+            mid = Arrays.asList(info.getDefaultValue());
         }
         return mid;
     }
@@ -598,7 +607,8 @@ public class SingleSelectListInputControlHandler extends BasicInputControlHandle
                     String valueToCheckInStringFormat = dataConverterService.formatSingleValue(valueToCheck, null, (Class) null);
                     String selectedInStringFormat = dataConverterService.formatSingleValue(selected, null, (Class) null);
                     if (valueToCheckInStringFormat != null && selectedInStringFormat != null) {
-                        isEqualityByStringFormats = selectedInStringFormat.equals(valueToCheckInStringFormat);
+                        if (isCaseSensitive()) isEqualityByStringFormats = selectedInStringFormat.equals(valueToCheckInStringFormat);
+                        else isEqualityByStringFormats = selectedInStringFormat.equalsIgnoreCase(valueToCheckInStringFormat);
                     }
                 }
             } catch (IllegalStateException e){
@@ -673,11 +683,9 @@ public class SingleSelectListInputControlHandler extends BasicInputControlHandle
         }
 
         protected boolean checkMatch(Object valueToCheck) {
-
             if(objectSet.contains(valueToCheck)) {
                 return true;
             }
-
             if(valueToCheck == null) {
                 return false;
             }
@@ -688,11 +696,16 @@ public class SingleSelectListInputControlHandler extends BasicInputControlHandle
                 if(valueToCheck instanceof Number && bigDecimalSet.contains(toBigDecimal((Number) valueToCheck))) {
                     return true;
                 }
-
                 // check equality by StringFormats
                 String valueInStringFormat = dataConverterService.formatSingleValue(valueToCheck, null, (Class) null);
-                if(valueInStringFormat != null && stringSet.contains(valueInStringFormat)) {
-                    return true;
+                if(valueInStringFormat != null) {
+                    if (!isCaseSensitive()) {
+                        if (stringSet.stream().anyMatch(valueInStringFormat::equalsIgnoreCase)) {
+                            return true;
+                        }
+                    } else if (stringSet.contains(valueInStringFormat)) {
+                        return true;
+                    }
                 }
             } catch(IllegalStateException e) {
                 log.warn(MessageFormat.format(
@@ -700,7 +713,6 @@ public class SingleSelectListInputControlHandler extends BasicInputControlHandle
                         valueToCheck != null ? valueToCheck.getClass() : valueToCheck)
                 );
             }
-
             //when no matching value in default values / incoming values dictionary return false
             return false;
         }
@@ -718,6 +730,7 @@ public class SingleSelectListInputControlHandler extends BasicInputControlHandle
             } else {
                 value = ((String) value).replace("\\,",",");
             }
+      //      value = (value != null ? ((String) value).toUpperCase() : null);
         }
         return value;
     }

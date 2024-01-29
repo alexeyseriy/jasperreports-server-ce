@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -49,9 +49,7 @@ CssClassName.prototype = Object.create({
         } else if (value.length === 0) {
             throw new Error('\'type\' shouldn\'t be an empty string');
         }
-        var isOneOfAvailableTypes = Object.keys(CssClassName.TYPES).some(function (key) {
-            return CssClassName.TYPES[key] === value;
-        });
+        var isOneOfAvailableTypes = Object.values(CssClassName.TYPES).indexOf(value) > -1;
         if (!isOneOfAvailableTypes) {
             throw new Error('\'type\' should be one of available types');
         }

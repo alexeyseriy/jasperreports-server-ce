@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -21,9 +21,16 @@
 
 package com.jaspersoft.jasperserver.api.engine.scheduling.quartz;
 
+import java.util.function.Consumer;
+
+import org.quartz.JobExecutionException;
+
 import com.jaspersoft.jasperserver.api.engine.jasperreports.domain.impl.PaginationParameters;
+import com.jaspersoft.jasperserver.api.engine.scheduling.domain.ReportJob;
+import com.jaspersoft.jasperserver.api.metadata.common.domain.DataContainer;
 
 import net.sf.jasperreports.engine.JRPropertiesHolder;
+import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReportsContext;
 
 
@@ -34,6 +41,7 @@ import net.sf.jasperreports.engine.JasperReportsContext;
  */
 public abstract class AbstractReportOutput implements Output 
 {
+
 	private Boolean isIgnorePagination;
 	private boolean compress = false;
 	private JasperReportsContext jasperReportsContext;
@@ -90,5 +98,42 @@ public abstract class AbstractReportOutput implements Output
 	
 	protected Integer getMaxPageWidth(JRPropertiesHolder propertiesHolder) {
 		return null;
+	}
+
+	public ReportOutput getOutput(ReportJobContext jobContext,
+			JasperPrint jasperPrint) throws JobExecutionException {
+		DataContainer exportData = export(jobContext, jasperPrint, null, null);
+		String filename = getBaseFilename(jobContext) + "." + getFileExtension();
+		return new ReportOutput(exportData, getFileType(), filename);
+	}
+
+	@Override
+	public void createOutputs(ReportJobContext jobContext, JasperPrint jasperPrint,
+			Consumer<ReportOutput> outputConsumer) throws JobExecutionException {
+		ReportSplitter splitter = new ReportSplitter();
+		splitter.splitOutput(jobContext, jasperPrint, 
+				jobDetails -> getBaseFilename(jobContext, jobDetails), 
+				getFileExtension(),
+				(filename, startPageIndex, endPageIndex) -> 
+					createOutput(jobContext, filename, jasperPrint, startPageIndex, endPageIndex),
+				outputConsumer);
+	}
+
+	protected ReportOutput createOutput(ReportJobContext jobContext, String filename, 
+			JasperPrint jasperPrint, Integer startPageIndex, Integer endPageIndex) {
+		DataContainer exportData = export(jobContext, jasperPrint, startPageIndex, endPageIndex);
+		ReportOutput output = new ReportOutput(exportData, getFileType(), filename);
+		return output;
+	}
+
+	protected abstract DataContainer export(ReportJobContext jobContext, 
+			JasperPrint jasperPrint, Integer startPageIndex, Integer endPageIndex);
+	
+	protected String getBaseFilename(ReportJobContext jobContext) {
+		return getBaseFilename(jobContext, jobContext.getReportJob());
+	}
+
+	protected String getBaseFilename(ReportJobContext jobContext, ReportJob outputJobDetails) {
+		return jobContext.getBaseFilename(outputJobDetails);
 	}
 }

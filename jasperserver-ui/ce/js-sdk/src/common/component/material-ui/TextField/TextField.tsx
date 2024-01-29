@@ -7,13 +7,14 @@ import {
 } from '@material-ui/core';
 import {
     INLINE_CLASS,
-    InputSize, InputWidth, SizeToClass, WidthToClass
+    InputSize, InputWidth, SizeToClass, WidthToClass, LABEL_CONTAINED
 } from '../types/InputTypes';
 
 export type TextFieldProps = Omit<MuiTextFieldProps, 'size' | 'error'> & {
     size?: InputSize,
     width?: InputWidth,
     inline?: boolean,
+    labelContained?: boolean,
     error?: string | boolean,
     errorId?: string,
     textFieldClassName?: string,
@@ -26,6 +27,7 @@ export type TextFieldProps = Omit<MuiTextFieldProps, 'size' | 'error'> & {
 export const TextField = forwardRef<HTMLDivElement, TextFieldProps>(({
     size = 'medium',
     width = 'normal',
+    labelContained = false,
     InputLabelProps = {},
     InputProps = {},
     FormHelperTextProps = {},
@@ -45,6 +47,7 @@ export const TextField = forwardRef<HTMLDivElement, TextFieldProps>(({
     ...rest
 }, ref) => {
     const inlineClass = inline ? INLINE_CLASS : '';
+    const labelContainedClass = labelContained ? LABEL_CONTAINED : '';
     const inputSelectClass = select ? 'jr-mInputSelect' : '';
     const { classes: inputLabelPropsClasses = {}, ...InputLabelPropsRest } = InputLabelProps;
     const { classes: inputPropsClasses = {}, ...InputPropsRest } = InputProps;
@@ -95,7 +98,7 @@ export const TextField = forwardRef<HTMLDivElement, TextFieldProps>(({
                 error={hasError}
                 helperText={helperText}
                 variant="outlined"
-                className={`jr-mInput jr-mInputText mui ${inputSelectClass} ${SizeToClass[size]} ${inlineClass} ${WidthToClass[width]} ${textFieldClassName}`}
+                className={`jr-mInput jr-mInputText mui ${inputSelectClass} ${SizeToClass[size]} ${inlineClass} ${WidthToClass[width]} ${labelContainedClass} ${textFieldClassName}`}
                 InputLabelProps={inputLabelProps}
                 InputProps={inputProps}
                 SelectProps={selectProps}

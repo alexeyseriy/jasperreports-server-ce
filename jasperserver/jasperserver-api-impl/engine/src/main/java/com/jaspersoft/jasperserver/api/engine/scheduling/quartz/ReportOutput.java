@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -24,9 +24,9 @@ package com.jaspersoft.jasperserver.api.engine.scheduling.quartz;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.jaspersoft.jasperserver.api.engine.scheduling.domain.ReportJob;
 import com.jaspersoft.jasperserver.api.metadata.common.domain.DataContainer;
 import com.jaspersoft.jasperserver.api.metadata.common.domain.util.DataContainerStreamUtil;
-import com.jaspersoft.jasperserver.api.metadata.common.domain.util.GzipDataContainer;
 
 /**
  * @author sanda zaharia (shertage@users.sourceforge.net)
@@ -34,11 +34,18 @@ import com.jaspersoft.jasperserver.api.metadata.common.domain.util.GzipDataConta
  *
  */
 public class ReportOutput {
+	
+	public static final String QUALIFIER_GENERAL = "_GENERAL";
+	
 	private final DataContainer data;
 	private final String fileType;
 	private final String filename;
 	private final List children;
 	private String repositoryPath;
+	private String executionID;
+	
+	private ReportOutputProperties properties = ReportOutputProperties.GENERAL;
+	private ReportJob jobDetails;
 	
 	public ReportOutput(DataContainer data, String fileType, String filename) {
 		this.data = data;
@@ -78,5 +85,28 @@ public class ReportOutput {
 	public DataContainer getPersistenceData() {
 		return DataContainerStreamUtil.getRawDataContainer(data);
 	}
-	
+
+	public String getExecutionID() {
+		return executionID;
+	}
+
+	public void setExecutionID(String executionID) {
+		this.executionID = executionID;
+	}
+
+	public ReportOutputProperties getProperties() {
+		return properties;
+	}
+
+	public void setProperties(ReportOutputProperties properties) {
+		this.properties = properties;
+	}
+
+	public ReportJob getJobDetails() {
+		return jobDetails;
+	}
+
+	public void setJobDetails(ReportJob jobDetails) {
+		this.jobDetails = jobDetails;
+	}
 }

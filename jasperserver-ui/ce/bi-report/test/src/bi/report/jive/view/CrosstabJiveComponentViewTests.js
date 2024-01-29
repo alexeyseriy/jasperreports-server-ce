@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved. Confidentiality & Proprietary.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved. Confidentiality & Proprietary.
  * Licensed pursuant to commercial TIBCO End User License Agreement.
  */
 import sinon from 'sinon';
@@ -12,7 +12,7 @@ import setTemplates from 'js-sdk/test/tools/setTemplates';
 
 describe('CrosstabJiveComponentView Tests', function () {
     var crosstabJiveComponentView;
-    var $el = $('<div class=\'reportContainer\' data-reportId=\'report_1\'>' + '<table>' + '<thead>' + '</thead>' + '<tbody>' + '<tr>' + '<td class=\'jrxtcolheader\' data-jrxtid=\'fragment_1\' data-jrxtcolidx=\'1\'>' + '</td>' + '</tr>' + '<tr>' + '<td class=\'jrxtdatacell\' data-jrxtid=\'fragment_1\' data-jrxtcolidx=\'1\'>' + '</td>' + '</tr>' + '<tr>' + '<td class=\'jrxtrowheader\' data-jrxtid=\'fragment_1\' data-jrxtcolidx=\'1\'>' + '</td>' + '</tr>' + '</tbody>' + '</table>' + '</div>');
+    var $el = $('<div class=\'reportContainer\' data-reportId=\'report_1\'>' + '<table>' + '<thead>' + '</thead>' + '<tbody>' + '<tr>' + '<th class=\'jrxtcolheader\' data-jrxtid=\'fragment_1\' data-jrxtcolidx=\'1\'>' + '</th>' + '</tr>' + '<tr>' + '<td class=\'jrxtdatacell\' data-jrxtid=\'fragment_1\' data-jrxtcolidx=\'1\'>' + '</td>' + '</tr>' + '<tr>' + '<th class=\'jrxtrowheader\' data-jrxtid=\'fragment_1\' data-jrxtcolidx=\'1\'>' + '</th>' + '</tr>' + '</tbody>' + '</table>' + '</div>');
     var crosstab = {
         id: 'crosstab_1',
         getFragmentId: function () {
@@ -95,7 +95,7 @@ describe('CrosstabJiveComponentView Tests', function () {
         var selectDataColumnStub = sinon.stub(crosstabJiveComponentView, 'selectDataColumn');
         crosstabJiveComponentView.render($el);
         var e = $.Event('click');
-        crosstabJiveComponentView.crosstabElement.find('td.jrxtcolheader[data-jrxtid=fragment_1]').trigger(e);
+        crosstabJiveComponentView.crosstabElement.find('.jrxtcolheader[data-jrxtid=fragment_1]').trigger(e);
         expect(_onClickSpy).toHaveBeenCalledWith(model, e);
         expect(selectDataColumnStub).toHaveBeenCalledWith(model, $(e.currentTarget));
         selectDataColumnStub.restore();
@@ -115,7 +115,7 @@ describe('CrosstabJiveComponentView Tests', function () {
         var setPositionOverlayStub = sinon.stub(crosstabJiveComponentView.overlay, 'setPosition');
         var setPositionFoobarStub = sinon.stub(crosstabJiveComponentView.headerToolbar, 'setPosition');
         var e = $.Event('click');
-        crosstabJiveComponentView.crosstabElement.find('td.jrxtcolheader[data-jrxtid=fragment_1]').trigger(e);
+        crosstabJiveComponentView.crosstabElement.find('.jrxtcolheader[data-jrxtid=fragment_1]').trigger(e);
         var cell = $(e.currentTarget);
         expect(_onClickSpy).toHaveBeenCalledWith(model, e);
         expect(selectDataColumnSpy).toHaveBeenCalledWith(model, cell);
@@ -148,7 +148,7 @@ describe('CrosstabJiveComponentView Tests', function () {
         var setPositionOverlayStub = sinon.stub(crosstabJiveComponentView.overlay, 'setPosition');
         var setPositionFoobarStub = sinon.stub(crosstabJiveComponentView.headerToolbar, 'setPosition');
         var e = $.Event('click');
-        crosstabJiveComponentView.crosstabElement.find('td.jrxtrowheader[data-jrxtid=fragment_1]').trigger(e);
+        crosstabJiveComponentView.crosstabElement.find('.jrxtrowheader[data-jrxtid=fragment_1]').trigger(e);
         var cell = $(e.currentTarget);
         expect(_onClickSpy).toHaveBeenCalledWith(model, e);
         expect(selectRowGroupSpy).toHaveBeenCalledWith(model, cell);
@@ -172,7 +172,7 @@ describe('CrosstabJiveComponentView Tests', function () {
         var crosstabGetColumnOrderSpy = sinon.spy(model, 'getColumnOrder');
         crosstabJiveComponentView.render($el);
         var e = $.Event('click');
-        crosstabJiveComponentView.crosstabElement.find('td.jrxtcolheader[data-jrxtid=fragment_1]').trigger(e);
+        crosstabJiveComponentView.crosstabElement.find('.jrxtcolheader[data-jrxtid=fragment_1]').trigger(e);
         var crosstabSortByDataColumnSpy = sinon.spy(crosstabJiveComponentView.selected.crosstab, 'sortByDataColumn');
         crosstabJiveComponentView.sort('ASCENDING');
         expect(crosstabJiveComponentViewHideSpy).toHaveBeenCalled();
@@ -186,7 +186,7 @@ describe('CrosstabJiveComponentView Tests', function () {
         var crosstabJiveComponentViewHideSpy = sinon.spy(crosstabJiveComponentView, 'hide');
         crosstabJiveComponentView.render($el);
         var e = $.Event('click');
-        crosstabJiveComponentView.crosstabElement.find('td.jrxtrowheader[data-jrxtid=fragment_1]').trigger(e);
+        crosstabJiveComponentView.crosstabElement.find('.jrxtrowheader[data-jrxtid=fragment_1]').trigger(e);
         var crosstabSortRowGroupSpy = sinon.spy(crosstabJiveComponentView.selected.crosstab, 'sortRowGroup');
         crosstabJiveComponentView.sort('DESCENDING');
         expect(crosstabJiveComponentViewHideSpy).toHaveBeenCalled();

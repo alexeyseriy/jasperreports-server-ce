@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved. Confidentiality & Proprietary.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved. Confidentiality & Proprietary.
  * Licensed pursuant to commercial TIBCO End User License Agreement.
  */
 
@@ -11,8 +11,8 @@ var JiveOverlayView = Backbone.View.extend({
     el: overlayTemplate,
     events: { 'click': '_overlayClicked' },
     initialize: function (options) {
-        var options = options || {};
-        this.parentElement = options.parentElement ? $(options.parentElement) : $('body');
+        var overlayOptions = options || {};
+        this.parentElement = overlayOptions.parentElement ? $(overlayOptions.parentElement) : $('body');
         this.rendered = false;
         Backbone.View.prototype.initialize.apply(this, arguments);
     },

@@ -213,7 +213,7 @@ For the jmx.jar component:
 /* ====================================================================
  * The MX4J License, Version 1.0
  *
- * Copyright (c) 2001 MX4J.  All rights reserved.
+ * Copyright (c) 2001 MX4J.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions

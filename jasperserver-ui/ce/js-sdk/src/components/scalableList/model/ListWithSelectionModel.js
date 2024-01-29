@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -22,6 +22,12 @@
 import _ from 'underscore';
 import BaseListWithSelectionModel from './BaseListWithSelectionModel';
 var ListWithSelectionModel = BaseListWithSelectionModel.extend({
+    initialize: function(options) {
+        BaseListWithSelectionModel.prototype.initialize.call(this, options);
+
+        this.caseSensitiveSelection = typeof options.caseSensitiveSelection !== 'undefined' ? options.caseSensitiveSelection : true;
+    },
+
     _addToSelection: function (value, index) {
         this.selection[index] = value;
     },
@@ -32,7 +38,10 @@ var ListWithSelectionModel = BaseListWithSelectionModel.extend({
         this.selection = [];
     },
     _selectionContains: function (value, index) {
-        return this.selection[index] === value;
+        if (this.caseSensitiveSelection) {
+            return this.selection[index] === value;
+        }
+        return this.selection[index].toLowerCase() === value.toLowerCase();
     },
     _getSelection: function () {
         return this.selection;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -24,10 +24,6 @@ import _ from 'underscore';
 import i18n from '../../../i18n/all.properties';
 import config from 'js-sdk/src/jrs.configs';
 import Backbone from 'backbone';
-
-import picker from '../../../components/components.pickers';
-import resource from '../../../resource/resource.base';
-
 import outputTabTemplate from '../../template/editor/outputTabTemplate.htm';
 import RepositoryChooserDialogFactory from 'bi-repository/src/bi/repository/dialog/resourceChooser/RepositoryChooserDialogFactory';
 import repositoryResourceTypes from 'bi-repository/src/bi/repository/enum/repositoryResourceTypes';

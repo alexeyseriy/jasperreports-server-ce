@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -199,7 +199,7 @@ JRS.Controls = (function(jQuery, _, dialogs){
                 if (nextSibling) {
                     parent.insertBefore(el, nextSibling);
                 } else {
-                    parent.appendChild(el);
+                    parent && parent.appendChild(el);
                 }
                 el.style.display = display;
                 if (isIE && el.tagName == 'SELECT') {

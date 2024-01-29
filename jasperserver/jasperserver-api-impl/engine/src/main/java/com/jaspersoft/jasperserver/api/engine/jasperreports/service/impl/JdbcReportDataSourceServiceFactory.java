@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -28,6 +28,9 @@ import com.jaspersoft.jasperserver.api.metadata.user.service.ProfileAttributesRe
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
+
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.extension.annotations.WithSpan;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import com.jaspersoft.jasperserver.api.metadata.jasperreports.domain.JdbcReportDataSource;
@@ -156,10 +159,12 @@ public class JdbcReportDataSourceServiceFactory implements ReportDataSourceServi
         return timezoneId.isEmpty() ? TimeZone.getDefault() : TimeZone.getTimeZone(timezoneId);
     }
 
+	@WithSpan
 	public ReportDataSourceService createService(ReportDataSource reportDataSource) {
 		if (!(reportDataSource instanceof JdbcReportDataSource)) {
 			throw new JSException("jsexception.invalid.jdbc.datasource", new Object[] {reportDataSource.getClass()});
 		}
+		Span.current().setAttribute("dataSourceUri", reportDataSource.getURIString());
 		JdbcReportDataSource jdbcDataSource = updateJdbcReportDataSource((JdbcReportDataSource) reportDataSource);
 		DataSource dataSource = getPoolDataSource(jdbcDataSource.getDriverClass(), jdbcDataSource.getConnectionUrl(),
 		jdbcDataSource.getUsername(), jdbcDataSource.getPassword());
@@ -277,6 +282,7 @@ public class JdbcReportDataSourceServiceFactory implements ReportDataSourceServi
         return new JdbcDataSourceService(dataSource, timezone).withTracer(tracer);
     }
 
+	@WithSpan
 	protected DataSource getPoolDataSource(String driverClass, String url, String username, String password) {
 		long now = System.currentTimeMillis();
 		releaseExpiredPools(now);
@@ -318,17 +324,9 @@ public class JdbcReportDataSourceServiceFactory implements ReportDataSourceServi
 				expired = poolDataSources.removeExpired(now, getPoolTimeout(), getAthenaPoolTimeOut());
 			}
 		}
-
 		if (expired != null && !expired.isEmpty()) {
-			for (Iterator it = expired.iterator(); it.hasNext();) {
-				PooledDataSource ds = (PooledDataSource) it.next();
-				try {
-					ds.release();
-				} catch (Exception e) {
-					log.error("Error while releasing connection pool.", e);
-					// ignore
-				}
-			}
+			JdbcReportDataSourceServiceFactory.CleanupThread cleanupThread = new JdbcReportDataSourceServiceFactory.CleanupThread(expired);
+			cleanupThread.start();
 		}
 	}
 
@@ -522,6 +520,30 @@ public class JdbcReportDataSourceServiceFactory implements ReportDataSourceServi
 
 		public boolean accept(File dir, String name) {
 			return (name.toLowerCase().startsWith(schemaPrefix));
+		}
+	}
+
+
+	class CleanupThread extends Thread {
+
+		private List expiredItems;
+
+		public CleanupThread(List expiredItems) {
+			this.expiredItems = expiredItems;
+		}
+
+		public void run() {
+			if (expiredItems != null && !expiredItems.isEmpty()) {
+				for (Iterator it = expiredItems.iterator(); it.hasNext(); ) {
+					PooledDataSource ds = (PooledDataSource) it.next();
+					try {
+						ds.release();
+					} catch (Exception e) {
+						log.error("Error while releasing connection pool.", e);
+						// ignore
+					}
+				}
+			}
 		}
 	}
 }

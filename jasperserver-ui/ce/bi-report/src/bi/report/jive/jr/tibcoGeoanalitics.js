@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved. Confidentiality & Proprietary.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved. Confidentiality & Proprietary.
  * Licensed pursuant to commercial TIBCO End User License Agreement.
  */
 
@@ -15,7 +15,9 @@ T.settings = { geoWebServices: window.location.protocol != 'https:' ? 'http://ge
 if (!document.querySelectorAll) {
     document.querySelectorAll = function (r, c, i, j, a) {
         var s = document.createStyleSheet();
-        a = document.all, c = [], r = r.replace(/\[for\b/gi, '[htmlFor').split(',');
+        a = document.all;
+        c = [];
+        r = r.replace(/\[for\b/gi, '[htmlFor').split(',');
         for (i = r.length; i--;) {
             s.addRule(r[i], 'k:v');
             for (j = a.length; j--;)
@@ -114,8 +116,8 @@ if (!Array.prototype.forEach) {
         if (typeof fun !== 'function') {
             throw new TypeError();
         }
-        var thisArg = arguments.length >= 2 ? arguments[1] : void 0, i = 0;
-        for (i = 0; i < len; i++) {
+        var thisArg = arguments.length >= 2 ? arguments[1] : void 0;
+        for (let i = 0; i < len; i++) {
             if (i in t) {
                 fun.call(thisArg, t[i], i, t);
             }
@@ -1112,8 +1114,8 @@ if (typeof JSON !== 'object') {
             return originHost === newHost;
         },
         attachIsAjaxParameter: function (url) {
-            var isQueryString = false, i = 0;
-            for (i = 0; i < url.length; i++) {
+            var isQueryString = false;
+            for (let i = 0; i < url.length; i++) {
                 if (url.charAt(i) === '?') {
                     url = url + '&isajax=true';
                     isQueryString = true;
@@ -1147,9 +1149,8 @@ if (typeof JSON !== 'object') {
                 }
             }    // IE XDR doesn't support request headers
             // IE XDR doesn't support request headers
-            var i = 0;
             if (this.xhr.setRequestHeader && options.headers) {
-                for (i = 0; i < options.headers.length; i++) {
+                for (let i = 0; i < options.headers.length; i++) {
                     this.xhr.setRequestHeader(options.headers[i].name, options.headers[i].value);
                 }
             }    //Data payload
@@ -1158,9 +1159,6 @@ if (typeof JSON !== 'object') {
                 this.xhr.send(options.data);
             } else {
                 this.xhr.send(null);
-            }
-            function timeoutHandler() {
-                throw new Error('Loading timeout: ' + url);
             }
             return this;
         },
@@ -1242,7 +1240,7 @@ if (typeof JSON !== 'object') {
             return result;
         },
         cloneFunctions: function (dest) {
-            var i, result = {};
+            let i, result = {};
             for (i in dest) {
                 //if (dest.hasOwnProperty(i)) {
                 if (typeof dest[i] === 'function') {
@@ -1273,10 +1271,10 @@ if (typeof JSON !== 'object') {
             };
         },
         template: function (str, data) {
-            return str.replace(/\{ *([\w_]+) *\}/g, function (str, key) {
+            return str.replace(/\{ *([\w_]+) *\}/g, function (string, key) {
                 var value = data[key];
                 if (value === undefined) {
-                    throw new Error('No value provided for variable ' + str);
+                    throw new Error('No value provided for variable ' + string);
                 } else if (typeof value === 'function') {
                     value = value(data);
                 }
@@ -1421,8 +1419,7 @@ if (typeof JSON !== 'object') {
         initOldIE: function () {
             if (!Array.prototype.indexOf) {
                 Array.prototype.indexOf = function (obj) {
-                    var i = 0;
-                    for (i = 0; i < this.length; i++) {
+                    for (let i = 0; i < this.length; i++) {
                         if (this[i] === obj) {
                             return i;
                         }
@@ -1904,27 +1901,29 @@ if (typeof JSON !== 'object') {
 }(T));
 !function (e) {
     var f;
-    'undefined' != typeof window ? f = window : 'undefined' != typeof global ? f = global : 'undefined' != typeof self && (f = self), f.proj4 = e();
+    'undefined' != typeof window ? f = window : 'undefined' != typeof global ? f = global : 'undefined' != typeof self && (f = self);
+    if ( f ) {
+        f.proj4 = e();
+    }
 }(function () {
-    var define, module, exports;
     return function e(t, n, r) {
-        function s(o, u) {
-            if (!n[o]) {
-                if (!t[o]) {
+        function s(ox, u) {
+            if (!n[ox]) {
+                if (!t[ox]) {
                     var a = typeof require == 'function' && require;
                     if (!u && a)
-                        return a(o, !0);
+                        return a(ox, !0);
                     if (i)
-                        return i(o, !0);
-                    throw new Error('Cannot find module \'' + o + '\'');
+                        return i(ox, !0);
+                    throw new Error('Cannot find module \'' + ox + '\'');
                 }
-                var f = n[o] = { exports: {} };
-                t[o][0].call(f.exports, function (e) {
-                    var n = t[o][1][e];
-                    return s(n ? n : e);
+                var f = n[ox] = { exports: {} };
+                t[ox][0].call(f.exports, function (ex) {
+                    var nx = t[ox][1][ex];
+                    return s(nx ? nx : ex);
                 }, f, f.exports, e, t, n, r);
             }
-            return n[o].exports;
+            return n[ox].exports;
         }
         var i = typeof require == 'function' && require;
         for (var o = 0; o < r.length; o++)
@@ -1932,7 +1931,7 @@ if (typeof JSON !== 'object') {
         return s;
     }({
         1: [
-            function (_dereq_, module, exports) {
+            function (_dereq_, module) {
                 var mgrs = _dereq_('mgrs');
                 function Point(x, y, z) {
                     if (!(this instanceof Point)) {
@@ -1972,7 +1971,7 @@ if (typeof JSON !== 'object') {
             { 'mgrs': 66 }
         ],
         2: [
-            function (_dereq_, module, exports) {
+            function (_dereq_, module) {
                 var parseCode = _dereq_('./parseCode');
                 var extend = _dereq_('./extend');
                 var projections = _dereq_('./projections');
@@ -2014,7 +2013,7 @@ if (typeof JSON !== 'object') {
             }
         ],
         3: [
-            function (_dereq_, module, exports) {
+            function (_dereq_, module) {
                 module.exports = function (crs, denorm, point) {
                     var xin = point.x, yin = point.y, zin = point.z || 0;
                     var v, t, i;
@@ -2066,7 +2065,7 @@ if (typeof JSON !== 'object') {
             {}
         ],
         4: [
-            function (_dereq_, module, exports) {
+            function (_dereq_, module) {
                 var HALF_PI = Math.PI / 2;
                 var sign = _dereq_('./sign');
                 module.exports = function (x) {
@@ -2076,7 +2075,7 @@ if (typeof JSON !== 'object') {
             { './sign': 21 }
         ],
         5: [
-            function (_dereq_, module, exports) {
+            function (_dereq_, module) {
                 var TWO_PI = Math.PI * 2;
                 var sign = _dereq_('./sign');
                 module.exports = function (x) {
@@ -2086,7 +2085,7 @@ if (typeof JSON !== 'object') {
             { './sign': 21 }
         ],
         6: [
-            function (_dereq_, module, exports) {
+            function (_dereq_, module) {
                 module.exports = function (x) {
                     if (Math.abs(x) > 1) {
                         x = x > 1 ? 1 : -1;
@@ -2097,7 +2096,7 @@ if (typeof JSON !== 'object') {
             {}
         ],
         7: [
-            function (_dereq_, module, exports) {
+            function (_dereq_, module) {
                 module.exports = function (x) {
                     return 1 - 0.25 * x * (1 + x / 16 * (3 + 1.25 * x));
                 };
@@ -2105,7 +2104,7 @@ if (typeof JSON !== 'object') {
             {}
         ],
         8: [
-            function (_dereq_, module, exports) {
+            function (_dereq_, module) {
                 module.exports = function (x) {
                     return 0.375 * x * (1 + 0.25 * x * (1 + 0.46875 * x));
                 };
@@ -2113,7 +2112,7 @@ if (typeof JSON !== 'object') {
             {}
         ],
         9: [
-            function (_dereq_, module, exports) {
+            function (_dereq_, module) {
                 module.exports = function (x) {
                     return 0.05859375 * x * x * (1 + 0.75 * x);
                 };
@@ -2121,7 +2120,7 @@ if (typeof JSON !== 'object') {
             {}
         ],
         10: [
-            function (_dereq_, module, exports) {
+            function (_dereq_, module) {
                 module.exports = function (x) {
                     return x * x * x * (35 / 3072);
                 };
@@ -2129,7 +2128,7 @@ if (typeof JSON !== 'object') {
             {}
         ],
         11: [
-            function (_dereq_, module, exports) {
+            function (_dereq_, module) {
                 module.exports = function (a, e, sinphi) {
                     var temp = e * sinphi;
                     return a / Math.sqrt(1 - temp * temp);
@@ -2138,7 +2137,7 @@ if (typeof JSON !== 'object') {
             {}
         ],
         12: [
-            function (_dereq_, module, exports) {
+            function (_dereq_, module) {
                 module.exports = function (ml, e0, e1, e2, e3) {
                     var phi;
                     var dphi;
@@ -2157,7 +2156,7 @@ if (typeof JSON !== 'object') {
             {}
         ],
         13: [
-            function (_dereq_, module, exports) {
+            function (_dereq_, module) {
                 var HALF_PI = Math.PI / 2;
                 module.exports = function (eccent, q) {
                     var temp = 1 - (1 - eccent * eccent) / (2 * eccent) * Math.log((1 - eccent) / (1 + eccent));
@@ -2191,7 +2190,7 @@ if (typeof JSON !== 'object') {
             {}
         ],
         14: [
-            function (_dereq_, module, exports) {
+            function (_dereq_, module) {
                 module.exports = function (e0, e1, e2, e3, phi) {
                     return e0 * phi - e1 * Math.sin(2 * phi) + e2 * Math.sin(4 * phi) - e3 * Math.sin(6 * phi);
                 };
@@ -2199,7 +2198,7 @@ if (typeof JSON !== 'object') {
             {}
         ],
         15: [
-            function (_dereq_, module, exports) {
+            function (_dereq_, module) {
                 module.exports = function (eccent, sinphi, cosphi) {
                     var con = eccent * sinphi;
                     return cosphi / Math.sqrt(1 - con * con);
@@ -2208,7 +2207,7 @@ if (typeof JSON !== 'object') {
             {}
         ],
         16: [
-            function (_dereq_, module, exports) {
+            function (_dereq_, module) {
                 var HALF_PI = Math.PI / 2;
                 module.exports = function (eccent, ts) {
                     var eccnth = 0.5 * eccent;
@@ -2229,7 +2228,7 @@ if (typeof JSON !== 'object') {
             {}
         ],
         17: [
-            function (_dereq_, module, exports) {
+            function (_dereq_, module) {
                 var C00 = 1;
                 var C02 = 0.25;
                 var C04 = 0.046875;
@@ -2257,7 +2256,7 @@ if (typeof JSON !== 'object') {
             {}
         ],
         18: [
-            function (_dereq_, module, exports) {
+            function (_dereq_, module) {
                 var pj_mlfn = _dereq_('./pj_mlfn');
                 var EPSLN = 1e-10;
                 var MAX_ITER = 20;
@@ -2284,7 +2283,7 @@ if (typeof JSON !== 'object') {
             { './pj_mlfn': 19 }
         ],
         19: [
-            function (_dereq_, module, exports) {
+            function (_dereq_, module) {
                 module.exports = function (phi, sphi, cphi, en) {
                     cphi *= sphi;
                     sphi *= sphi;
@@ -2294,7 +2293,7 @@ if (typeof JSON !== 'object') {
             {}
         ],
         20: [
-            function (_dereq_, module, exports) {
+            function (_dereq_, module) {
                 module.exports = function (eccent, sinphi) {
                     var con;
                     if (eccent > 1e-7) {
@@ -2308,7 +2307,7 @@ if (typeof JSON !== 'object') {
             {}
         ],
         21: [
-            function (_dereq_, module, exports) {
+            function (_dereq_, module) {
                 module.exports = function (x) {
                     return x < 0 ? -1 : 1;
                 };
@@ -2316,7 +2315,7 @@ if (typeof JSON !== 'object') {
             {}
         ],
         22: [
-            function (_dereq_, module, exports) {
+            function (_dereq_, module) {
                 module.exports = function (esinp, exp) {
                     return Math.pow((1 - esinp) / (1 + esinp), exp);
                 };
@@ -2324,7 +2323,7 @@ if (typeof JSON !== 'object') {
             {}
         ],
         23: [
-            function (_dereq_, module, exports) {
+            function (_dereq_, module) {
                 module.exports = function (array) {
                     var out = {
                         x: array[0],
@@ -2342,7 +2341,7 @@ if (typeof JSON !== 'object') {
             {}
         ],
         24: [
-            function (_dereq_, module, exports) {
+            function (_dereq_, module) {
                 var HALF_PI = Math.PI / 2;
                 module.exports = function (eccent, phi, sinphi) {
                     var con = eccent * sinphi;
@@ -3199,8 +3198,8 @@ if (typeof JSON !== 'object') {
                 //DGR: 2012-07-29
                 module.exports = function (source, dest, point) {
                     var wp, i, l;
-                    function checkParams(fallback) {
-                        return fallback === PJD_3PARAM || fallback === PJD_7PARAM;
+                    function checkParams(paramsFallback) {
+                        return paramsFallback === PJD_3PARAM || paramsFallback === PJD_7PARAM;
                     }    // Short cut if the datums are identical.
                     // Short cut if the datums are identical.
                     if (source.compare_datums(dest)) {
@@ -3281,7 +3280,7 @@ if (typeof JSON !== 'object') {
             {}
         ],
         31: [
-            function (_dereq_, module, exports) {
+            function (_dereq_, module) {
                 var globals = _dereq_('./global');
                 var parseProj = _dereq_('./projString');
                 var wkt = _dereq_('./wkt');
@@ -3334,7 +3333,7 @@ if (typeof JSON !== 'object') {
             }
         ],
         32: [
-            function (_dereq_, module, exports) {
+            function (_dereq_, module) {
                 var Datum = _dereq_('./constants/Datum');
                 var Ellipsoid = _dereq_('./constants/Ellipsoid');
                 var extend = _dereq_('./extend');
@@ -3403,7 +3402,7 @@ if (typeof JSON !== 'object') {
             }
         ],
         33: [
-            function (_dereq_, module, exports) {
+            function (_dereq_, module) {
                 module.exports = function (destination, source) {
                     destination = destination || {};
                     var value, property;
@@ -3422,7 +3421,7 @@ if (typeof JSON !== 'object') {
             {}
         ],
         34: [
-            function (_dereq_, module, exports) {
+            function (_dereq_, module) {
                 module.exports = function (defs) {
                     defs('EPSG:4326', '+title=WGS 84 (long/lat) +proj=longlat +ellps=WGS84 +datum=WGS84 +units=degrees');
                     defs('EPSG:4269', '+title=NAD83 (long/lat) +proj=longlat +a=6378137.0 +b=6356752.31414036 +ellps=GRS80 +datum=NAD83 +units=degrees');
@@ -3438,7 +3437,7 @@ if (typeof JSON !== 'object') {
             {}
         ],
         35: [
-            function (_dereq_, module, exports) {
+            function (_dereq_, module) {
                 var proj4 = _dereq_('./core');
                 proj4.defaultDatum = 'WGS84';    //default datum
                 //default datum
@@ -3513,7 +3512,7 @@ if (typeof JSON !== 'object') {
             }
         ],
         37: [
-            function (_dereq_, module, exports) {
+            function (_dereq_, module) {
                 var D2R = 0.017453292519943295;
                 var PrimeMeridian = _dereq_('./constants/PrimeMeridian');
                 module.exports = function (defData) {
@@ -6457,7 +6456,7 @@ if (typeof JSON !== 'object') {
             }
         ],
         64: [
-            function (_dereq_, module, exports) {
+            function (_dereq_, module) {
                 var D2R = 0.017453292519943295;
                 var R2D = 57.29577951308232;
                 var PJD_3PARAM = 1;
@@ -6471,8 +6470,8 @@ if (typeof JSON !== 'object') {
                     if (Array.isArray(point)) {
                         point = toPoint(point);
                     }
-                    function checkNotWGS(source, dest) {
-                        return (source.datum.datum_type === PJD_3PARAM || source.datum.datum_type === PJD_7PARAM) && dest.datumCode !== 'WGS84';
+                    function checkNotWGS(src, destination) {
+                        return (src.datum.datum_type === PJD_3PARAM || src.datum.datum_type === PJD_7PARAM) && destination.datumCode !== 'WGS84';
                     }    // Workaround for datum shifts towgs84, if either source or destination projection is not wgs84
                     // Workaround for datum shifts towgs84, if either source or destination projection is not wgs84
                     if (source.datum && dest.datum && (checkNotWGS(source, dest) || checkNotWGS(dest, source))) {
@@ -6533,7 +6532,7 @@ if (typeof JSON !== 'object') {
             }
         ],
         65: [
-            function (_dereq_, module, exports) {
+            function (_dereq_, module) {
                 var D2R = 0.017453292519943295;
                 var extend = _dereq_('./extend');
                 function mapit(obj, key, v) {
@@ -7633,7 +7632,7 @@ if (typeof JSON !== 'object') {
             {}
         ],
         67: [
-            function (_dereq_, module, exports) {
+            function (_dereq_, module) {
                 module.exports = {
                     'name': 'proj4',
                     'version': '2.2.2-alpha',
@@ -7680,13 +7679,13 @@ if (typeof JSON !== 'object') {
             {}
         ],
         './includedProjections': [
-            function (_dereq_, module, exports) {
+            function (_dereq_, module) {
                 module.exports = _dereq_('Jf/0WF');
             },
             {}
         ],
         'Jf/0WF': [
-            function (_dereq_, module, exports) {
+            function (_dereq_, module) {
                 var projs = [
                     _dereq_('./lib/projections/tmerc'),
                     _dereq_('./lib/projections/utm'),
@@ -8218,7 +8217,7 @@ if (typeof JSON !== 'object') {
             this.$container.style.position = 'relative';
             T.DomUtil.addClass(this.$container, 'tibco-map');
             var layers = this.$container.layers = T.DomUtil.create('div', 'layers-container', this.$container, 'layers-container');
-            var controls = this.$container.controls = T.DomUtil.create('div', 'controls-container', this.$container);
+            this.$container.controls = T.DomUtil.create('div', 'controls-container', this.$container);
             layers.style.position = 'absolute';    //T.DomUtil.size(layers, this.getSize());
             //T.DomUtil.size(layers, this.getSize());
             T.DomUtil.position(layers, new T.Point(0, 0));
@@ -8685,7 +8684,7 @@ if (typeof JSON !== 'object') {
             return bounds;
         },
         getProjectedBounds: function () {
-            var key, queryParams = this.options.queryParams, image = this.image, crs = this.options.crs, size = this.getSize(), bottomLeft = new T.Point(0, 0), topRight = new T.Point(0, 0), projCenter = this.untransform(this.calculateCenterInPixel()), half = size.divideBy(2).multiplyBy(crs.resolutions[this.getZoom()]);    //map.untransform(size.divideBy(2));
+            var crs = this.options.crs, size = this.getSize(), bottomLeft = new T.Point(0, 0), topRight = new T.Point(0, 0), projCenter = this.untransform(this.calculateCenterInPixel()), half = size.divideBy(2).multiplyBy(crs.resolutions[this.getZoom()]);    //map.untransform(size.divideBy(2));
             //Compute bounds in projected coordinates
             //map.untransform(size.divideBy(2));
             //Compute bounds in projected coordinates
@@ -8937,7 +8936,7 @@ if (typeof JSON !== 'object') {
     Polyline.prototype = {
         /* Override */
         projectCoords: function () {
-            var i, j;
+            var i;
             this.projectedCoords = [];
             for (i = 0; i < this.coords.length; i++) {
                 this.projectedCoords.push(this.layer.map.latLngToContainerPoint(this.options.reverseCoordinates ? this.coords[i].concat().reverse() : this.coords[i]).floor());
@@ -8973,7 +8972,7 @@ if (typeof JSON !== 'object') {
     Polygon.prototype = {
         /* Override */
         projectCoords: function () {
-            var i, j, k, line;
+            var i, j, line;
             this.projectedCoords = [];
             for (i = 0; i < this.coords.length; i++) {
                 line = [];
@@ -9014,7 +9013,7 @@ if (typeof JSON !== 'object') {
     MultiPolyline.prototype = {
         /* Override */
         projectCoords: function () {
-            var i, j, k, line = [];
+            var i, j, line = [];
             this.projectedCoords = [];
             for (i = 0; i < this.coords.length; i++) {
                 line = [];
@@ -9783,7 +9782,7 @@ if (typeof JSON !== 'object') {
             }
         },
         reloadTiles: function () {
-            var zoom = this.map.getZoom(), bounds = this.map.getPixelBounds(), tileSize = this.options.tileSize;
+            var bounds = this.map.getPixelBounds(), tileSize = this.options.tileSize;
             var tileBounds = new T.Bounds(bounds.min.divideBy(tileSize).floor(), bounds.max.divideBy(tileSize).floor());
             this.tilesLoaded = 0;    //tileBounds.extend(tileBounds.min.add(new T.Point(-1, -1)));
             //tileBounds.extend(tileBounds.max.add(new T.Point(1, 1)));
@@ -10070,7 +10069,7 @@ if (typeof JSON !== 'object') {
             }
         },
         getLoadedTilesPercent: function (container) {
-            var tiles = container.getElementsByTagName('img'), i, j = 0, len = tiles.length, tile;
+            var tiles = container.getElementsByTagName('img'), i, j = 0, len = tiles.length;
             if (len === 0) {
                 return 0;
             }
@@ -10271,8 +10270,7 @@ if (typeof JSON !== 'object') {
             }
         },
         reset: function () {
-            var i = 0;
-            for (i = 0; i < this.markers.length; i++) {
+            for (let i = 0; i < this.markers.length; i++) {
                 this.markers[i].reset();
             }
         },
@@ -10313,8 +10311,7 @@ if (typeof JSON !== 'object') {
              * Removes all markers from the markers layer
              */
         removeAllMarkers: function () {
-            var i = 0;
-            for (i = 0; i < this.markers.length; i++) {
+            for (let i = 0; i < this.markers.length; i++) {
                 this.markers[i].layer = null;
                 this.markers[i].onRemove(this);
             }
@@ -10554,11 +10551,11 @@ if (typeof JSON !== 'object') {
             return this;
         },
         removeGeometry: function (geometry) {
-            var index = this.geometries.indexOf(geometry), i = 0;
+            var index = this.geometries.indexOf(geometry);
             if (index > -1) {
                 this.geometries.splice(index, 1);
                 this.clear();
-                for (i = 0; i < this.geometries.length; i++) {
+                for (let i = 0; i < this.geometries.length; i++) {
                     this.geometries[i].draw(this.geometries[i]);
                 }
             }
@@ -10843,7 +10840,7 @@ if (typeof JSON !== 'object') {
          * @param {Object} [options](#options) The VectorLayer options
          */
     var VectorLayer = function (options) {
-        var i;    // Call super class constructor
+        // Call super class constructor
         // Call super class constructor
         base.call(this, options);
         if (T.Util.browserVersion.ielt9) {
@@ -11225,13 +11222,13 @@ if (typeof JSON !== 'object') {
              * If no style is supported by the current configuration (map service/map type) the default tile URL is used.
              */
         setMapStyle: function (mapStyle) {
-            var availableMapStyles = this.mapTypeServiceData['tile styles'], styleFound = false, i = 0;    // No styles available for this map type
+            var availableMapStyles = this.mapTypeServiceData['tile styles'], styleFound = false;    // No styles available for this map type
             // No styles available for this map type
             if (!availableMapStyles) {
                 // Set tiles url
                 this.setTilesUrl(this.mapTypeServiceData['tile url']);
             } else {
-                for (i = 0; i < availableMapStyles.length; i++) {
+                for (let i = 0; i < availableMapStyles.length; i++) {
                     if (availableMapStyles[i].id === mapStyle) {
                         styleFound = true;    // Save map style
                         // Save map style
@@ -11277,14 +11274,14 @@ if (typeof JSON !== 'object') {
              * Gets all available map styles for the current configutaion (map type/map service)
              */
         getAvailableMapStyles: function () {
-            var availableMapStyles = [], i = 0;
+            var availableMapStyles = [];
             if (!this.mapTypeServiceData) {
                 throw new Error('Map services error!');
             }
             if (!this.mapTypeServiceData['tile styles']) {
                 return availableMapStyles;
             }
-            for (i = 0; i < this.mapTypeServiceData['tile styles'].length; i++) {
+            for (let i = 0; i < this.mapTypeServiceData['tile styles'].length; i++) {
                 availableMapStyles.push(this.mapTypeServiceData['tile styles'][i].id);
             }
             return availableMapStyles;
@@ -11309,11 +11306,10 @@ if (typeof JSON !== 'object') {
              * Gets the layers map service by specifying the map type.
              */
         getMapServiceByMapType: function (mapType) {
-            var i = 0;
             if (!mapType || !this.mapServices || this.mapServices.length === 0) {
                 throw new Error('Map services error!');
             }
-            for (i = 0; i < this.mapServices.length; i++) {
+            for (var i = 0; i < this.mapServices.length; i++) {
                 if (this.mapServices[i].name === mapType) {
                     return this.mapServices[i];
                 }
@@ -11324,7 +11320,7 @@ if (typeof JSON !== 'object') {
              * Gets the latest version of map services.
              */
         getLastVersionOfMapData: function (mapData) {
-            var i = 0, latestMapData = null;
+            let i = 0, latestMapData = null;
             if (!mapData || mapData.length === 0) {
                 throw new Error('Map services error!');
             }
@@ -11488,7 +11484,6 @@ if (typeof JSON !== 'object') {
         /* Overload */
         onImageLoad: function () {
             var self = this.layer;
-            var img;
             this.completed = true;
             self.image.style.zIndex = 0;
             self.backImage.style.zIndex = -1;
@@ -11555,7 +11550,7 @@ if (typeof JSON !== 'object') {
         /* Override */
         getTileUrl: function (point) {
             /* If the tiles position exceeds boundaries for specific zoom recalculate it */
-            var size, tilePos, crs = this.map.options.crs, url = this.url, tileSize = this.options.tileSize, queryParams = this.options.queryParams, tileSizePoint = new T.Point(tileSize, tileSize), topLeft, topRight, bottomLeft, bottomRight, topLeftLatLng, bottomRightLatLng, key;    // Compute position and size
+            var size, tilePos, crs = this.map.options.crs, url = this.url, tileSize = this.options.tileSize, queryParams = this.options.queryParams, tileSizePoint = new T.Point(tileSize, tileSize), topLeft, bottomRight, key;    // Compute position and size
             // Compute position and size
             tilePos = point.multiplyBy(tileSize);
             topLeft = crs.untransform(tilePos, this.map.getZoom());
@@ -11628,8 +11623,7 @@ if (typeof JSON !== 'object') {
             }
         },
         reset: function () {
-            var i = 0;
-            for (i = 0; i < this.popups.length; i++) {
+            for (let i = 0; i < this.popups.length; i++) {
                 this.popups[i].reset();
             }
         },
@@ -11670,8 +11664,7 @@ if (typeof JSON !== 'object') {
              * Removes all popups from the layer
              */
         removeAllPopups: function () {
-            var i = 0;
-            for (i = 0; i < this.popups.length; i++) {
+            for (let i = 0; i < this.popups.length; i++) {
                 this.popups[i].layer = null;
                 this.popups[i].onRemove(this);
             }
@@ -12341,8 +12334,7 @@ if (typeof JSON !== 'object') {
              * @return {Number} The index of the text in the attribution text collection
              */
         getAttributionIndex: function (text) {
-            var i = 0;
-            for (i = 0; i < this.attributions.length; i++) {
+            for (let i = 0; i < this.attributions.length; i++) {
                 if (text === this.attributions[i]) {
                     return i;
                 }
@@ -12625,9 +12617,9 @@ if (typeof JSON !== 'object') {
             }
         },
         reset: function () {
-            var layers = this.map.getLayers(), i = 0;
+            var layers = this.map.getLayers();
             this.clearLayers();
-            for (i = 0; i < layers.length; i++) {
+            for (let i = 0; i < layers.length; i++) {
                 this.createLayer(layers[i]);
             }
             this.bindKeyEvents();
@@ -12635,7 +12627,7 @@ if (typeof JSON !== 'object') {
         // ## Creates header
         // Creates control header
         createHeader: function () {
-            var label = null, collapse = null;
+            var label = null;
             this.$headerContainer = T.DomUtil.create('div', this.CONTROL_LAYERS_HEADER_CLASS, this.$container);    //create container
             //create container
             this.$headerContainer.style.fontSize = this.options.fontSize + 'pt';
@@ -12643,7 +12635,6 @@ if (typeof JSON !== 'object') {
             label = T.DomUtil.create('div', this.HEADER_LABEL_CLASS, this.$headerContainer);    //create label
             //create label
             T.DomUtil.html(label, 'Layers');
-            collapse = T.DomUtil.create('div', this.HEADER_COLLAPSE_CLASS, this.$headerContainer);    //create collapse element
             // Add events
             //create collapse element
             // Add events
@@ -12857,10 +12848,10 @@ if (typeof JSON !== 'object') {
              * Resets control.
              */
         reset: function () {
-            var layers = this.getMapTibcoLayers(), i = 0;    // Remove layers
+            var layers = this.getMapTibcoLayers();    // Remove layers
             // Remove layers
             this.clearContainer(this.$layersContainer, this.LAYER_CONTAINER_CLASS);
-            for (i = 0; i < layers.length; i++) {
+            for (let i = 0; i < layers.length; i++) {
                 this.createLayer(layers[i]);
             }
         },
@@ -12868,7 +12859,7 @@ if (typeof JSON !== 'object') {
              * Creates control header
              */
         createHeader: function () {
-            var label = null, collapse = null;
+            var label = null;
             this.$headerContainer = T.DomUtil.create('div', this.CONTROL_LAYERS_HEADER_CLASS, this.$container);    //create container
             //create container
             this.$headerContainer.style.fontSize = this.options.fontSize + 'pt';
@@ -12876,7 +12867,6 @@ if (typeof JSON !== 'object') {
             label = T.DomUtil.create('div', this.HEADER_LABEL_CLASS, this.$headerContainer);    //create label
             //create label
             T.DomUtil.html(label, 'Tibco Layers');
-            collapse = T.DomUtil.create('div', this.HEADER_COLLAPSE_CLASS, this.$headerContainer);    //create collapse element
             // Add events
             //create collapse element
             // Add events
@@ -12921,7 +12911,7 @@ if (typeof JSON !== 'object') {
              * Creates the options lists (map type & map style) for the current layer.
              */
         createLayerOptions: function () {
-            var i = 0, mapTypesContainer = null, mapStylesContainer = null, mapTypesOptionContainer = null, mapStylesOptionContainer = null, availableMapTypes = null, availableMapStyles = null, mapTypeLabelContainer = null, mapStyleLabelContainer = null, groupContainer = null;
+            var mapTypesContainer = null, mapStylesContainer = null, mapTypesOptionContainer = null, mapStylesOptionContainer = null, availableMapTypes = null, availableMapStyles = null, mapTypeLabelContainer = null, mapStyleLabelContainer = null, groupContainer = null;
             if (!this.selectedLayerData) {
                 throw new Error('No layer selected!');
             }    // Remove all options
@@ -12940,7 +12930,7 @@ if (typeof JSON !== 'object') {
             T.DomUtil.html(mapTypeLabelContainer, 'Map type:');    // Create map types select
             // Create map types select
             mapTypesContainer = T.DomUtil.create('select', this.LAYER_OPTIONS_SELECT_CLASS, groupContainer);
-            for (i = 0; i < availableMapTypes.length; i++) {
+            for (let i = 0; i < availableMapTypes.length; i++) {
                 mapTypesOptionContainer = T.DomUtil.create('option', this.LAYER_OPTION_CLASS);
                 T.DomUtil.html(mapTypesOptionContainer, availableMapTypes[i]);
                 mapTypesContainer.appendChild(mapTypesOptionContainer);    //Add events
@@ -12965,9 +12955,9 @@ if (typeof JSON !== 'object') {
             T.DomUtil.html(mapStyleLabelContainer, 'Map style:');    // Create map types select
             // Create map types select
             mapStylesContainer = T.DomUtil.create('select', this.LAYER_OPTIONS_SELECT_CLASS, groupContainer);
-            for (i = 0; i < availableMapStyles.length; i++) {
+            for (let j = 0; j < availableMapStyles.length; j++) {
                 mapStylesOptionContainer = T.DomUtil.create('option', this.LAYER_OPTION_CLASS);
-                T.DomUtil.html(mapStylesOptionContainer, availableMapStyles[i]);
+                T.DomUtil.html(mapStylesOptionContainer, availableMapStyles[j]);
                 mapStylesContainer.appendChild(mapStylesOptionContainer);    //Add events
                 //Add events
                 T.DomEventUtil.on(mapStylesContainer, 'change', this.onMapStyleChanged, this);
@@ -12979,8 +12969,8 @@ if (typeof JSON !== 'object') {
              * Gets all the TibcoLayer type layers in the map.
              */
         getMapTibcoLayers: function () {
-            var layers = this.map.getLayers(), tibcoLayers = [], i = 0;
-            for (i = 0; i < layers.length; i++) {
+            var layers = this.map.getLayers(), tibcoLayers = [];
+            for (let i = 0; i < layers.length; i++) {
                 if (layers[i] instanceof T.TibcoLayer) {
                     tibcoLayers.push(layers[i]);
                 }
@@ -13232,7 +13222,7 @@ if (typeof JSON !== 'object') {
             return this.height - topPosition;
         },
         setPositionForZoom: function (zoom) {
-            var position = null, snapPosition = null;
+            var position = null;
             zoom = zoom !== undefined ? zoom : this.map.zoom;
             position = this.getBottomPosition(zoom * this.zoomSkipInterval);
             T.DomUtil.position(this.$zoomThumbContainer, new T.Point(0, position));
@@ -13585,9 +13575,9 @@ if (typeof JSON !== 'object') {
                 withCredentials: false,
                 on: {
                     success: function (result) {
-                        var resultObject = JSON.parse(result), geocoderResults = [], i = 0;    // Loop & convert to proper format
+                        var resultObject = JSON.parse(result), geocoderResults = [];    // Loop & convert to proper format
                         // Loop & convert to proper format
-                        for (i = 0; i < resultObject.length; i++) {
+                        for (let i = 0; i < resultObject.length; i++) {
                             geocoderResults.push(new T.GeocoderResult(resultObject[i]));
                         }    // Resolve promise
                         // Resolve promise
@@ -13652,9 +13642,9 @@ if (typeof JSON !== 'object') {
                 withCredentials: false,
                 on: {
                     success: function (result) {
-                        var resultObject = JSON.parse(result), geocoderResults = [], i = 0;    // Loop & convert to proper format
+                        var resultObject = JSON.parse(result), geocoderResults = [];    // Loop & convert to proper format
                         // Loop & convert to proper format
-                        for (i = 0; i < resultObject.length; i++) {
+                        for (let i = 0; i < resultObject.length; i++) {
                             geocoderResults.push(new T.GeocoderResult(resultObject[i]));
                         }    // Resolve promise
                         // Resolve promise

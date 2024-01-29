@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -20,10 +20,15 @@
  */
 package com.jaspersoft.jasperserver.export.modules.repository.beans;
 
+import com.jaspersoft.jasperserver.api.JSException;
+import com.jaspersoft.jasperserver.api.common.util.JndiUtils;
 import com.jaspersoft.jasperserver.api.metadata.common.domain.Resource;
 import com.jaspersoft.jasperserver.api.metadata.jasperreports.domain.JndiJdbcReportDataSource;
 import com.jaspersoft.jasperserver.export.modules.repository.ResourceExportHandler;
 import com.jaspersoft.jasperserver.export.modules.repository.ResourceImportHandler;
+
+import javax.naming.InvalidNameException;
+import java.text.MessageFormat;
 
 /**
  * @author tkavanagh
@@ -42,7 +47,12 @@ public class JndiJdbcDataSourceBean extends ResourceBean {
 
 	protected void additionalCopyTo(Resource res, ResourceImportHandler importHandler) {
 		JndiJdbcReportDataSource ds = (JndiJdbcReportDataSource) res;
-		ds.setJndiName(getJndiName());
+		try {
+			JndiUtils.validateName(getJndiName());
+			ds.setJndiName(getJndiName());
+		} catch (InvalidNameException e) {
+			throw new JSException(MessageFormat.format("The JNDI service name \"{0}\" is invalid.", getJndiName()), e);
+		}
 		ds.setTimezone(getTimezone());
 	}
 

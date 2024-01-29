@@ -12,5 +12,5 @@
       "npmClientArgs": ["--production=false"]
     }
   },
-  "version": "7.8.0"
+  "version": "8.2.0"
 }

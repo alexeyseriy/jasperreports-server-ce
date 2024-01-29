@@ -1,0 +1,39 @@
+Manifest-Version: 1.0
+Ant-Version: Apache Ant 1.8.2
+Created-By: Apache Maven ${maven.version}
+Build-Jdk: ${java.version}
+Archiver-Version: Plexus Archiver
+Built-By: schubar
+Dependencies: jdk.unsupported
+Components-Categories: Connectors, Observability
+
+Name: Connectors
+Athena-Artifacts: athena-jdbc42-2.0.18.1000.jar
+Cassandra-Artifacts: cassandra-jdbc42-2.0.10.1011.jar
+Impala-Artifacts: impala-jdbc42-2.6.21.1025.jar
+Js-Elasticsearch-Artifacts: elasticsearch-jdbc-7.13.4.jar
+Js-Tdv-Artifacts: tdv-csjdbc8-8.2.0.jar
+Mariadb-Artifacts: mariadb-java-client-2.5.3.jar
+Mongodb-Artifacts: bson-3.10.2.jar mongodb-driver-3.10.2.jar mongodb-dri
+ ver-core-3.10.2.jar
+Mysql-Artifacts: mysql-connector-java-8.0.19.jar
+Neo4j-Artifacts: neo4j-jdbc42-1.0.8.1009.jar
+Postgresql-Artifacts: postgresql-42.2.20.jar
+Snowflake-Artifacts: snowflake-jdbc-3.13.5.jar
+Spark-Artifacts: spark-jdbc42-2.6.18.1023.jar
+Ti-Autorest-Artifacts: TIautorest-6.0.0.004291.jar
+Ti-Cassandra-Artifacts: TIcassandra-6.0.3.jar
+Ti-Db2-Artifacts: TIdb2-5.1.4.000288.jar
+Ti-Googlebigquery-Artifacts: TIgooglebigquery-6.0.0.000279.jar
+Ti-Hive-Artifacts: TIhive-5.14.1.jar
+Ti-Impala-Artifacts: TIimpala-5.14.2.jar
+Ti-Mongodb-Artifacts: TImongodb-6.0.2.000510.jar
+Ti-Oracle-Artifacts: TIoracle-6.0.0.000032.jar
+Ti-Redshift-Artifacts: TIredshift-5.14.1.jar
+Ti-Sforce-Artifacts: TIsforce-6.0.0.001533.jar
+Ti-Sparksql-Artifacts: TIsparksql-6.0.1.000124.jar
+Ti-Sqlserver-Artifacts: TIsqlserver-6.0.0.000541.jar
+
+Name: Observability
+Javamelody-Artifacts: javamelody-core-1.91.0.jar jrobin-1.5.9.jar
+

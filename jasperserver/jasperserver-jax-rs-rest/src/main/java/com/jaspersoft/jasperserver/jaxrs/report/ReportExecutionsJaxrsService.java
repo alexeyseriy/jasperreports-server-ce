@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -32,6 +32,7 @@ import com.jaspersoft.jasperserver.remote.common.CallTemplate;
 import com.jaspersoft.jasperserver.remote.common.RemoteServiceWrapper;
 import com.jaspersoft.jasperserver.remote.exception.IllegalParameterValueException;
 import com.jaspersoft.jasperserver.remote.services.*;
+import io.opentelemetry.extension.annotations.SpanAttribute;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
@@ -125,11 +126,11 @@ public class ReportExecutionsJaxrsService extends RemoteServiceWrapper<RunReport
 			) 
 		}
 	)        
-    public Response getReportExecution(@Parameter(description = "The report execution ID") @PathParam("executionId") final String executionId) {
+    public Response getReportExecution(@Parameter(description = "The report execution ID") @PathParam("executionId") @SpanAttribute("executionId") final String executionId) {
         return callRemoteService(new ConcreteCaller<Response>() {
             @Override
             public Response call(RunReportService remoteService) throws ErrorDescriptorException {
-                return Response.ok(remoteService.getReportExecution(executionId)).build();
+                return Response.ok(remoteService.getReportExecution(getExecutionId(executionId))).build();
             }
         });
     }
@@ -151,11 +152,11 @@ public class ReportExecutionsJaxrsService extends RemoteServiceWrapper<RunReport
 			) 
 		}
 	)        
-    public Response deleteReportExecution(@Parameter(description = "The report execution ID") @PathParam("executionId") final String executionId) {
+    public Response deleteReportExecution(@Parameter(description = "The report execution ID") @PathParam("executionId") @SpanAttribute("executionId") final String executionId) {
         return callRemoteService(new ConcreteCaller<Response>() {
             @Override
             public Response call(RunReportService remoteService) throws ErrorDescriptorException {
-                remoteService.deleteReportExecution(executionId);
+                remoteService.deleteReportExecution(getExecutionId(executionId));
                 return Response.status(Response.Status.NO_CONTENT).build();
             }
         });
@@ -195,17 +196,44 @@ public class ReportExecutionsJaxrsService extends RemoteServiceWrapper<RunReport
 			) 
 		}
 	)        
-    public Response getOutputResource(@Parameter(description = "The report execution ID") @PathParam("executionId") final String executionId,
+    public Response getOutputResource(@Parameter(description = "The report execution ID") @PathParam("executionId") @SpanAttribute("executionId") final String executionId,
     		@Parameter(description = "The report export ID") @PathParam("exportId") final String exportId,
     		@Parameter(description = "Flag to suppress the response Content-Disposition header") @QueryParam("suppressContentDisposition") @DefaultValue("false") final Boolean suppressContentDisposition) {
         return callRemoteService(new ConcreteCaller<Response>() {
             @Override
             public Response call(RunReportService remoteService) throws ErrorDescriptorException {
-                ReportOutputResource reportOutputResource = remoteService.getOutputResource(executionId, exportId);
+                ReportOutputResource reportOutputResource = remoteService.getOutputResource(getExecutionId(executionId), getExportId(exportId));
                 return ReportExecutionHelper.buildResponseFromOutputResource(reportOutputResource, suppressContentDisposition);
             }
         });
     }
+
+	@GET
+	@Path("/{executionId}/rawParameterValues")
+	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+	@Operation(
+			operationId = "ReportExecutionsJaxrsService_0080",
+			summary = "Request for report execution raw parameter values.",
+			responses = {
+					@ApiResponse(
+							responseCode = "200",
+							description = "Success.\n\nThe content is the raw report parameters(input control values) used to run the report."
+					),
+					@ApiResponse(
+							responseCode = "404",
+							description = "Not found.\n\nWhen the report execution ID or the export ID specified in the request does not exist."
+					)
+			}
+	)
+	public Response getRawParameterValues(@Parameter(description = "The report execution ID") @PathParam("executionId") final String executionId) {
+		return callRemoteService(new ConcreteCaller<Response>() {
+			@Override
+			public Response call(RunReportService remoteService) throws ErrorDescriptorException {
+				final ReportExecution reportExecution = remoteService.getReportExecution(getExecutionId(executionId));
+				return Response.ok(reportExecution.getRawParameters()).build();
+			}
+		});
+	}
 
     @POST
     @Path("/{executionId}/parameters")
@@ -227,7 +255,7 @@ public class ReportExecutionsJaxrsService extends RemoteServiceWrapper<RunReport
 		}
 	)        
     public Response getReportInputParametersViaPost(
-    		@Parameter(description = "The report execution ID") @PathParam("executionId") final String executionId,
+    		@Parameter(description = "The report execution ID") @PathParam("executionId") @SpanAttribute("executionId") final String executionId,
     		@Parameter(description = "Specifies that new parameters must force the server to get fresh data by querying the data source.") @QueryParam("freshData") @DefaultValue("false") Boolean freshData, 
     		@RequestBody(
 				description = "List of report parameters with updated values",
@@ -235,7 +263,7 @@ public class ReportExecutionsJaxrsService extends RemoteServiceWrapper<RunReport
 					array = @ArraySchema(schema = @Schema(description = "Report parameter with updated values.",  implementation = ReportParameter.class))
 				)
     		) List<ReportParameter> parameterList) {
-        final ReportExecution reportExecution = remoteService.getReportExecution(executionId);
+        final ReportExecution reportExecution = remoteService.getReportExecution(getExecutionId(executionId));
         reportExecution.setRawParameters(new ReportParameters(parameterList).getRawParameters());
         remoteService.startReportExecution(reportExecution, new ReportExecutionOptions(reportExecution.getOptions()).setFreshData(freshData));
         return Response.noContent().build();
@@ -271,7 +299,7 @@ public class ReportExecutionsJaxrsService extends RemoteServiceWrapper<RunReport
 		}
 	)    
     public Response export(
-    		@Parameter(description = "The report execution ID") @PathParam("executionId") final String executionId,
+    		@Parameter(description = "The report execution ID") @PathParam("executionId") @SpanAttribute("executionId") final String executionId,
     		@RequestBody(
     				content = @Content(
     					schema = @Schema(
@@ -283,7 +311,7 @@ public class ReportExecutionsJaxrsService extends RemoteServiceWrapper<RunReport
         return callRemoteService(new ConcreteCaller<Response>() {
             @Override
             public Response call(RunReportService remoteService) throws ErrorDescriptorException {
-                return Response.ok(remoteService.executeExport(executionId, exportOptions)).build();
+                return Response.ok(remoteService.executeExport(getExecutionId(executionId), exportOptions)).build();
             }
         });
     }
@@ -311,13 +339,14 @@ public class ReportExecutionsJaxrsService extends RemoteServiceWrapper<RunReport
 		}
 	)    
     public Response getAttachment(
-    		@Parameter(description = "The report execution ID") @PathParam("executionId") final String executionId,
+    		@Parameter(description = "The report execution ID") @PathParam("executionId") @SpanAttribute("executionId") final String executionId,
     		@Parameter(description = "The report export ID") @PathParam("exportId") final String exportId, 
     		@Parameter(description = "The name of the file attachment") final @PathParam("attachment") String attachmentName) {
         return callRemoteService(new ConcreteCaller<Response>() {
             @Override
             public Response call(RunReportService remoteService) throws ErrorDescriptorException {
-                final ReportOutputResource attachment = remoteService.getAttachment(executionId, exportId, attachmentName);
+                final ReportOutputResource attachment = remoteService.getAttachment(getExecutionId(executionId),
+						getExportId(exportId), attachmentName);
                 return ReportExecutionHelper.buildResponseFromOutputResource(attachment);
             }
         });
@@ -404,12 +433,13 @@ public class ReportExecutionsJaxrsService extends RemoteServiceWrapper<RunReport
 		summary = "Returns the export execution status.", 
 		hidden = true
 	)    
-    public Response getExportExecutionStatus(@PathParam("executionId") final String executionId,
+    public Response getExportExecutionStatus(@PathParam("executionId") @SpanAttribute("executionId") final String executionId,
             @PathParam("exportId") final String exportId){
         return callRemoteService(new ConcreteCaller<Response>() {
             @Override
             public Response call(RunReportService remoteService) throws ErrorDescriptorException {
-                final String status = remoteService.getExportExecution(executionId, exportId).getStatus().toString();
+                final String status = remoteService.getExportExecution(getExecutionId(executionId),
+						getExportId(exportId)).getStatus().toString();
                 ReportExecutionStatusEntity statusEntity = new ReportExecutionStatusEntity();
                 statusEntity.setValue(status);
                 return Response.ok(statusEntity).build();
@@ -445,12 +475,12 @@ public class ReportExecutionsJaxrsService extends RemoteServiceWrapper<RunReport
 		}
 	)    
     public Response getExportExecutionStatusObject(
-    		@Parameter(description = "The report execution ID") @PathParam("executionId") final String executionId,
+    		@Parameter(description = "The report execution ID") @PathParam("executionId") @SpanAttribute("executionId") final String executionId,
     		@Parameter(description = "The report export ID") @PathParam("exportId") final String exportId){
         return callRemoteService(new ConcreteCaller<Response>() {
             @Override
             public Response call(RunReportService remoteService) throws ErrorDescriptorException {
-				final ExportExecution exportExecution = remoteService.getExportExecution(executionId, exportId);
+				final ExportExecution exportExecution = remoteService.getExportExecution(getExecutionId(executionId), getExportId(exportId));
 				final ExecutionStatus executionStatus = exportExecution.getStatus();
 
 				ExportExecutionStatusObject statusObject = new ExportExecutionStatusObject();
@@ -479,11 +509,11 @@ public class ReportExecutionsJaxrsService extends RemoteServiceWrapper<RunReport
 		summary = "Returns the report execution status.", 
 		hidden = true
 	)    
-    public Response getReportExecutionStatus(@PathParam("executionId") final String executionId){
+    public Response getReportExecutionStatus(@PathParam("executionId") @SpanAttribute("executionId") final String executionId){
         return callRemoteService(new ConcreteCaller<Response>() {
             @Override
             public Response call(RunReportService remoteService) throws ErrorDescriptorException {
-                final String status = remoteService.getReportExecution(executionId).getStatus().toString();
+                final String status = remoteService.getReportExecution(getExecutionId(executionId)).getStatus().toString();
                 ReportExecutionStatusEntity statusEntity = new ReportExecutionStatusEntity();
                 statusEntity.setValue(status);
                 return Response.ok(statusEntity).build();
@@ -516,11 +546,11 @@ public class ReportExecutionsJaxrsService extends RemoteServiceWrapper<RunReport
 			) 
 		}
 	)    
-    public Response getReportExecutionStatusObject(@Parameter(description = "The report execution ID") @PathParam("executionId") final String executionId){
+    public Response getReportExecutionStatusObject(@Parameter(description = "The report execution ID") @PathParam("executionId") @SpanAttribute("executionId") final String executionId){
         return callRemoteService(new ConcreteCaller<Response>() {
             @Override
             public Response call(RunReportService remoteService) throws ErrorDescriptorException {
-                final ReportExecution reportExecution = remoteService.getReportExecution(executionId);
+                final ReportExecution reportExecution = remoteService.getReportExecution(getExecutionId(executionId));
                 return Response.ok( new ExecutionStatusObject()
                                 .setValue(reportExecution.getStatus())
                                 .setErrorDescriptor(reportExecution.getErrorDescriptor())
@@ -552,11 +582,11 @@ public class ReportExecutionsJaxrsService extends RemoteServiceWrapper<RunReport
 			)
 		}
 	)
-	public Response getReportInfo(@PathParam("executionId") final String executionId) {
+	public Response getReportInfo(@PathParam("executionId") @SpanAttribute("executionId") final String executionId) {
         return callRemoteService(new ConcreteCaller<Response>() {
             @Override
             public Response call(RunReportService remoteService) throws ErrorDescriptorException {
-                return remoteService.getReportInfo(executionId);
+                return remoteService.getReportInfo(getExecutionId(executionId));
             }
         });
     }
@@ -584,11 +614,11 @@ public class ReportExecutionsJaxrsService extends RemoteServiceWrapper<RunReport
 			)
 		}
 	)
-	public Response getReportExecutionPageStatus(@PathParam("executionId") String executionId, @PathParam("pages") String pages) {
+	public Response getReportExecutionPageStatus(@PathParam("executionId") @SpanAttribute("executionId") String executionId, @PathParam("pages") String pages) {
         return callRemoteService(new ConcreteCaller<Response>() {
             @Override
             public Response call(RunReportService remoteService) throws ErrorDescriptorException {
-                return remoteService.getReportExecutionPageStatus(executionId, pages);
+                return remoteService.getReportExecutionPageStatus(getExecutionId(executionId), pages);
             }
         });
     }
@@ -603,11 +633,11 @@ public class ReportExecutionsJaxrsService extends RemoteServiceWrapper<RunReport
 		hidden = true
 		//FIXMEDOC response headers?
 	)
-    public Response runReportAction(@PathParam("executionId") String executionId, @FormParam("action") String actionData) {
+    public Response runReportAction(@PathParam("executionId") @SpanAttribute("executionId") String executionId, @FormParam("action") String actionData) {
         return callRemoteService(new ConcreteCaller<Response>() {
             @Override
             public Response call(RunReportService remoteService) throws ErrorDescriptorException {
-                return remoteService.runReportAction(executionId, actionData);
+                return remoteService.runReportAction(getExecutionId(executionId), actionData);
             }
         });
     }
@@ -642,7 +672,7 @@ public class ReportExecutionsJaxrsService extends RemoteServiceWrapper<RunReport
 			) 
 		}
 	)    
-    public Response cancelReportExecution(@Parameter(description = "The report execution ID") @PathParam("executionId") final String executionId, 
+    public Response cancelReportExecution(@Parameter(description = "The report execution ID") @PathParam("executionId") @SpanAttribute("executionId") final String executionId,
     		@RequestBody(
 				content = {
 				    @Content(mediaType= MediaType.APPLICATION_JSON, schema = @Schema(description = "Send a `status` descriptor in JSON format with the value `cancelled`", example = ResponseExample.CANCEL_REPORT_EXECUTION_JSON)),
@@ -653,10 +683,10 @@ public class ReportExecutionsJaxrsService extends RemoteServiceWrapper<RunReport
         if (statusEntity != null && ReportExecutionStatusEntity.VALUE_CANCELLED.equals(statusEntity.getValue()))
             response = callRemoteService(new ConcreteCaller<Response>() {
                 public Response call(RunReportService remoteService) throws ErrorDescriptorException {
-                    final Boolean cancellationResult = remoteService.cancelReportExecution(executionId);
+                    final Boolean cancellationResult = remoteService.cancelReportExecution(getExecutionId(executionId));
 
                     if (statusEntity.getAsyncCancel()) {
-                    	return remoteService.getStatusForAsyncCancelledExecution(executionId);
+                    	return remoteService.getStatusForAsyncCancelledExecution(getExecutionId(executionId));
 					}
 
                     return cancellationResult ? Response.ok(new ReportExecutionStatusEntity()).build()
@@ -742,4 +772,16 @@ public class ReportExecutionsJaxrsService extends RemoteServiceWrapper<RunReport
             }
         });
     }
+
+	private String getExecutionId(String executionID) {
+		if (executionID != null && executionID.toLowerCase().startsWith("uuid:")) {
+			return executionID.substring(5);
+		}
+		return executionID;
+	}
+
+	private String getExportId(String exportID) {
+		return getExecutionId(exportID);
+	}
+
 }

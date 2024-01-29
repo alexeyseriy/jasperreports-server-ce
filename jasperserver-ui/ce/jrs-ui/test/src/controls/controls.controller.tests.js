@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -260,7 +260,7 @@ describe('Controller', function () {
                     error: 'Error'
                 });
 
-                expect(controller.viewModel.controls.test1.fetch).toHaveBeenCalledWith('testUri', paginationOptions);
+                expect(controller.viewModel.controls.test1.fetch).not.toHaveBeenCalled();
                 expect(controller.viewModel.controls.test2.fetch).toHaveBeenCalledWith('testUri', paginationOptions);
                 expect(controller.viewModel.controls.test3.fetch).toHaveBeenCalledWith('testUri', paginationOptions);
 

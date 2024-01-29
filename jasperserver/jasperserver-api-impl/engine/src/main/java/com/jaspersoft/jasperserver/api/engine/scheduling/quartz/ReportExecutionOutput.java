@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2019 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -20,6 +20,8 @@
  */
 package com.jaspersoft.jasperserver.api.engine.scheduling.quartz;
 
+import java.util.function.Consumer;
+
 import org.quartz.JobExecutionException;
 
 /**
@@ -29,6 +31,6 @@ public interface ReportExecutionOutput {
 
 	String getOutputFormat();
 	
-	ReportOutput getReportOutput(ReportJobContext reportJobContext) throws JobExecutionException;
+	void createReportOutput(ReportJobContext reportJobContext, Consumer<ReportOutput> outputConsumer) throws JobExecutionException;
 	
 }

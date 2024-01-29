@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2021 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -32,7 +32,7 @@
        2c. import conflict dialog
 
   --------------------------------------
-    File last modified Jan 12, 2021
+    File last modified Oct 10, 2022
   --------------------------------------  */
 
 
@@ -120,12 +120,6 @@
     user-select: none;
 }
 
-.export-view .selectRolesUsers.pickWells .control.searchLockup input {
-    box-sizing: border-box;
-    padding: 0 24px 8px 2px;
-    width: 100%;
-}
-
 .export-view .group.rolesAndUsers .control.radio {
     float: left;
     margin-right: 16px;
@@ -153,10 +147,6 @@
     vertical-align: top;
 }
 
-.export-view .button-select-all .disabled {
-    cursor: default;
-}
-
 .export-view .authorityPicker {
     margin-bottom: 25px;
 }
@@ -177,8 +167,36 @@
     zoom: 1;
 }
 
+/* States */
+.export-view .button-select-all .disabled {
+    cursor: default;
+}
+
 .export-view .button-select-all.disabled {
     pointer-events: none;
+}
+
+/* found selectBorder on Export page
+   moved from pageSpecific.css */
+.selectBorder {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 5px;
+    border: 1px none #C1C1C1;
+    z-index: 10;
+}
+
+.selectBorder.upper {
+    top: 0;
+    border-top-color: #848484;
+    border-top-style: solid;
+}
+
+.selectBorder.lower {
+    bottom: 0;
+    border-bottom-color: #E1E1E1;
+    border-bottom-style: solid;
 }
 
 /* -------------------- */

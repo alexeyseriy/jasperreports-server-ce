@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -24,6 +24,7 @@ import com.jaspersoft.jasperserver.api.metadata.common.domain.impl.IdedObject;
 import com.jaspersoft.jasperserver.api.metadata.common.service.ResourceFactory;
 import com.jaspersoft.jasperserver.api.common.crypto.PasswordCipherer;
 import com.jaspersoft.jasperserver.api.metadata.common.service.impl.hibernate.PersistentObjectResolver;
+import com.jaspersoft.jasperserver.api.metadata.common.service.impl.hibernate.persistent.RepoFavoriteResource;
 import com.jaspersoft.jasperserver.api.metadata.common.service.impl.hibernate.persistent.RepoReportThumbnail;
 import com.jaspersoft.jasperserver.api.metadata.user.domain.Role;
 import com.jaspersoft.jasperserver.api.metadata.user.domain.User;
@@ -57,6 +58,17 @@ public class RepoUser implements User, IdedObject {
     private List attributes = null;
     private RepoTenant tenant = null;
     protected Set<RepoReportThumbnail> thumbnails = null;
+	protected Set<RepoFavoriteResource> favorites = null;
+
+	public Set<RepoFavoriteResource> getFavorites() {
+		return favorites;
+	}
+
+	public void setFavorites(Set<RepoFavoriteResource> favorites) {
+		this.favorites = favorites;
+	}
+	private Set<RepoProfileAttribute> profileAttributes = null;
+	private Integer numberOfFailedLoginAttempts;
 
 	/**
 	 * @return
@@ -296,7 +308,8 @@ public class RepoUser implements User, IdedObject {
 		setExternallyDefined(u.isExternallyDefined());
 		setEnabled(u.isEnabled());
 		setPreviousPasswordChangeTime(u.getPreviousPasswordChangeTime());
-		
+		setNumberOfFailedLoginAttempts(u.getNumberOfFailedLoginAttempts());
+
         String tenantId = (u.getTenantId() == null) ? TenantService.ORGANIZATIONS : u.getTenantId();
 		RepoTenant pTenant = resolver.getPersistentTenant(tenantId, true);
 		setTenant(pTenant);
@@ -332,6 +345,7 @@ public class RepoUser implements User, IdedObject {
 		u.setExternallyDefined(isExternallyDefined());
 		u.setEnabled(isEnabled());
 		u.setPreviousPasswordChangeTime(getPreviousPasswordChangeTime());
+		u.setNumberOfFailedLoginAttempts(getNumberOfFailedLoginAttempts());
         if (TenantService.ORGANIZATIONS.equals(getTenantId())) {
             u.setTenantId(null);
         } else {
@@ -407,4 +421,35 @@ public class RepoUser implements User, IdedObject {
     public void setThumbnails(Set<RepoReportThumbnail> thumbnails) {
         this.thumbnails = thumbnails;
     }
+
+	/**
+	 * @hibernate.set
+	 * 		name="profileAttributes" lazy="true" cascade="none"
+	 * 		where="principalobjectclass = 'com.jaspersoft.jasperserver.api.metadata.user.domain.impl.hibernate.RepoUser'
+	 *
+	 * @hibernate.key
+	 * 		column="principalobjectid"
+	 *
+	 * @hibernate.one-to-many
+	 * 		class="com.jaspersoft.jasperserver.api.metadata.user.domain.impl.hibernate.RepoProfileAttribute"
+	 *
+	 * @return Set
+	 */
+	public Set<RepoProfileAttribute> getProfileAttributes() {
+		return profileAttributes;
+	}
+
+	public void setProfileAttributes(Set<RepoProfileAttribute> profileAttributes) {
+		this.profileAttributes = profileAttributes;
+	}
+
+	@Override
+	public Integer getNumberOfFailedLoginAttempts() {
+		return numberOfFailedLoginAttempts == null ? 0 : numberOfFailedLoginAttempts;
+	}
+
+	@Override
+	public void setNumberOfFailedLoginAttempts(Integer numberOfFailedLoginAttempts) {
+		this.numberOfFailedLoginAttempts = numberOfFailedLoginAttempts;
+	}
 }

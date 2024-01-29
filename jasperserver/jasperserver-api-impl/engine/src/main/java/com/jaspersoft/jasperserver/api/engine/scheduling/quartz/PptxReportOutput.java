@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -23,10 +23,10 @@ package com.jaspersoft.jasperserver.api.engine.scheduling.quartz;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Collections;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.quartz.JobExecutionException;
 
 import com.jaspersoft.jasperserver.api.JSExceptionWrapper;
 import com.jaspersoft.jasperserver.api.engine.jasperreports.common.PptxExportParametersBean;
@@ -39,6 +39,7 @@ import net.sf.jasperreports.engine.JRPropertiesUtil;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.export.ooxml.JRPptxExporter;
 import net.sf.jasperreports.export.SimpleExporterInput;
+import net.sf.jasperreports.export.SimpleExporterInputItem;
 import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
 import net.sf.jasperreports.export.SimplePptxReportConfiguration;
 
@@ -57,16 +58,16 @@ public class PptxReportOutput extends AbstractReportOutput
 	{
 	}
 
-	/** 
-	 * @see com.jaspersoft.jasperserver.api.engine.scheduling.quartz.Output#getOutput()
-	 */
-	public ReportOutput getOutput(
-			ReportJobContext jobContext,
-			JasperPrint jasperPrint) throws JobExecutionException
-	{
+	@Override
+	protected DataContainer export(ReportJobContext jobContext, 
+			JasperPrint jasperPrint, Integer startPageIndex, Integer endPageIndex) {
 		try {
 			JRPptxExporter exporter = new JRPptxExporter(getJasperReportsContext());
-			exporter.setExporterInput(new SimpleExporterInput(jasperPrint));
+			SimplePptxReportConfiguration reportConfiguration = new SimplePptxReportConfiguration();
+			reportConfiguration.setStartPageIndex(startPageIndex);
+			reportConfiguration.setEndPageIndex(endPageIndex);
+            exporter.setExporterInput(new SimpleExporterInput(Collections.singletonList(
+            		new SimpleExporterInputItem(jasperPrint, reportConfiguration))));
 			
 			
 			boolean close = false;
@@ -87,9 +88,7 @@ public class PptxReportOutput extends AbstractReportOutput
 
 				close = false;
 				pptxDataOut.close();
-				
-				String filename = jobContext.getBaseFilename() + "." + getFileExtension();
-				return new ReportOutput(pptxData, getFileType(), filename);
+				return pptxData;
 			} catch (IOException e) {
 				throw new JSExceptionWrapper(e);
 			} finally {

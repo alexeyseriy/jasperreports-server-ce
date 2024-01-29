@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -33,19 +33,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.Collections.singletonList;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class JSCorsProcessorTest {
 
     @InjectMocks
-    JSCorsProcessor corsProcessor;
+    private JSCorsProcessor corsProcessor;
 
     private MockHttpServletRequest request;
-    private MockHttpServletResponse response = new MockHttpServletResponse();
-    private Map<String, List<String>> testHeaderUrlPatterns = new HashMap();
-    private Map<String, List<String>> testHeaderValues = new HashMap();
-    private List<String> patternList = new ArrayList();
-    private List<String> headerValuesList = new ArrayList();
+    private final MockHttpServletResponse response = new MockHttpServletResponse();
+    private final Map<String, List<String>> testHeaderUrlPatterns = new HashMap<>();
+    private final Map<String, List<String>> testHeaderValues = new HashMap<>();
+    private final List<String> patternList = new ArrayList<>();
 
     @Before
     public void init() {
@@ -53,30 +54,40 @@ public class JSCorsProcessorTest {
         request = new MockHttpServletRequest();
         request.setServletPath(null);
         request.setContextPath("http://localhost.jaspersoft.com:8080/jasperserver-pro");
+        response.setHeader("Accept", "text/html");
         patternList.add("/runtime/[0-9A-Za-z]*/rest_v2/settings/.*");
-        headerValuesList.add("Accept-Language");
         testHeaderUrlPatterns.put("Vary", patternList);
-        testHeaderValues.put("Vary", headerValuesList);
+        testHeaderUrlPatterns.put("Accept", patternList);
+        testHeaderValues.put("Vary", singletonList("Accept-Language"));
+        testHeaderValues.put("Accept", singletonList("application/json"));
     }
 
 
     @Test
-    public void shouldAddHeaderForValidRequests() throws Exception {
+    public void shouldAddHeaderForValidRequests() {
         request.setRequestURI("http://localhost.jaspersoft.com:8080/jasperserver-pro/runtime/27F3EE97/rest_v2/settings/auth");
         corsProcessor.setHeaderUrlPatterns(testHeaderUrlPatterns);
         corsProcessor.setHeaderValues(testHeaderValues);
         corsProcessor.addJrsHeaders(response, request);
-        assertEquals(response.getHeader("Vary").contains("Accept-Language"), true);
+        assertEquals(response.getHeader("Vary"), "Accept-Language");
     }
 
-
     @Test
-    public void shouldNotAddHeaderForInValidRequests() throws Exception {
+    public void shouldNotAddHeaderForInValidRequests() {
         request.setRequestURI("http://localhost.jaspersoft.com:8080/jasperserver-pro/login.html");
         corsProcessor.setHeaderUrlPatterns(testHeaderUrlPatterns);
         corsProcessor.setHeaderValues(testHeaderValues);
         corsProcessor.addJrsHeaders(response, request);
-        assertEquals(response.getHeader("Vary"), null);
+        assertNull(response.getHeader("Vary"));
+    }
+
+    @Test
+    public void shouldAddOldHeaderValueForValidRequests() {
+        request.setRequestURI("http://localhost.jaspersoft.com:8080/jasperserver-pro/runtime/27F3EE97/rest_v2/settings/auth");
+        corsProcessor.setHeaderUrlPatterns(testHeaderUrlPatterns);
+        corsProcessor.setHeaderValues(testHeaderValues);
+        corsProcessor.addJrsHeaders(response, request);
+        assertEquals(response.getHeader("Accept"), "text/html, application/json");
     }
 
 }

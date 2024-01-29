@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -24,10 +24,7 @@ package com.jaspersoft.jasperserver.api.security.externalAuth.processors;
 
 import com.jaspersoft.jasperserver.api.JasperServerAPI;
 import com.jaspersoft.jasperserver.api.metadata.common.service.RepositoryService;
-import com.jaspersoft.jasperserver.api.metadata.user.service.ObjectPermissionService;
-import com.jaspersoft.jasperserver.api.metadata.user.service.ProfileAttributeService;
-import com.jaspersoft.jasperserver.api.metadata.user.service.TenantService;
-import com.jaspersoft.jasperserver.api.metadata.user.service.UserAuthorityService;
+import com.jaspersoft.jasperserver.api.metadata.user.service.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
@@ -51,7 +48,9 @@ public abstract class AbstractExternalUserProcessor implements ExternalUserProce
     private ProfileAttributeService profileAttributeService;
     private ObjectPermissionService objectPermissionService;
 
-	/**
+    protected ExternalUserLoginEventService externalUserLoginEventService;
+
+    /**
 	 * Main processor method.
 	 */
 	@Transactional(propagation = Propagation.REQUIRED)
@@ -106,4 +105,11 @@ public abstract class AbstractExternalUserProcessor implements ExternalUserProce
         this.objectPermissionService = objectPermissionService;
     }
 
+    public ExternalUserLoginEventService getExternalUserLoginEventService() {
+        return externalUserLoginEventService;
+    }
+
+    public void setExternalUserLoginEventService(ExternalUserLoginEventService externalUserLoginEventService) {
+        this.externalUserLoginEventService = externalUserLoginEventService;
+    }
 }

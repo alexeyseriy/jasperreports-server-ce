@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -30,18 +30,18 @@ import com.jaspersoft.jasperserver.core.util.type.GenericTypeProcessorRegistry;
 import com.jaspersoft.jasperserver.dto.common.ClientTypeUtility;
 import com.jaspersoft.jasperserver.dto.common.validations.SupportsValidation;
 import com.jaspersoft.jasperserver.remote.common.JrsBeanValidator;
-import com.jaspersoft.jasperserver.remote.connection.storage.ContextDataStorage;
 import com.jaspersoft.jasperserver.remote.connection.storage.ContextDataPair;
+import com.jaspersoft.jasperserver.remote.connection.storage.ContextDataStorage;
 import com.jaspersoft.jasperserver.remote.exception.IllegalParameterValueException;
 import com.jaspersoft.jasperserver.remote.exception.MandatoryParameterNotFoundException;
 import com.jaspersoft.jasperserver.remote.exception.OperationCancelledException;
 import com.jaspersoft.jasperserver.remote.exception.ResourceNotFoundException;
 import com.jaspersoft.jasperserver.remote.exception.UnsupportedOperationErrorDescriptorException;
 import com.jaspersoft.jasperserver.remote.resources.converters.ToServerConverter;
-import org.springframework.stereotype.Service;
 import com.jaspersoft.jasperserver.remote.validation.ClientValidator;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
@@ -65,7 +65,8 @@ import java.util.concurrent.Future;
  */
 @Service
 public class ContextsManager {
-    private final static Log log = LogFactory.getLog(ContextsManager.class);
+    private static final Logger log = LogManager.getLogger(ContextsManager.class);
+
     @Resource
     private List<ContextQueryExecutor> queryExecutors;
     private Map<String, Class<?>> queryTypeToClassMapping;
@@ -118,8 +119,33 @@ public class ContextsManager {
         final Map<String, Object> data = new HashMap<String, Object>();
         final Object context = strategy.createContext(ctx, contextDescription, data);
         ContextDataPair item = new ContextDataPair(context, data).setExternalContextClass(contextDescription.getClass());
-        return contextDataStorage.save(item);
+        UUID uuid = contextDataStorage.save(item);
+        log.debug("Created new context: {}", uuid);
+        return uuid;
     }
+
+
+    public UUID createRawContext(Object contextDescription) throws IllegalParameterValueException {
+        if (contextDescription == null) {
+            throw new MandatoryParameterNotFoundException("body");
+        }
+        final Map<String, Object> data = new HashMap<String, Object>();
+        ContextDataPair item = new ContextDataPair(contextDescription, data).setExternalContextClass(contextDescription.getClass());
+        UUID uuid = contextDataStorage.save(item);
+        log.debug("Created raw context: {}", uuid);
+        return uuid;
+    }
+
+    public void updateRawContext(UUID uuid, Object contextDescription) throws IllegalParameterValueException {
+        if (contextDescription == null) {
+            throw new MandatoryParameterNotFoundException("body");
+        }
+        final Map<String, Object> data = new HashMap<String, Object>();
+        ContextDataPair item = new ContextDataPair(contextDescription, data).setExternalContextClass(contextDescription.getClass());
+        contextDataStorage.update(uuid, item);
+        log.debug("Updated raw context: {}", uuid);
+    }
+
 
     public boolean isMetadataSupported(ExecutionContext ctx, Object contextDescription, String metadataClientType) {
         final ContextMetadataBuilder<?> metadataBuilder = getMetadataBuilder(contextDescription);
@@ -219,16 +245,26 @@ public class ContextsManager {
     }
 
     public Object getContext(UUID uuid, Map<String, String[]> additionalProperties) throws ResourceNotFoundException {
+        log.debug("Get context: {}", uuid);
         final ContextDataPair pair = contextDataStorage.get(uuid);
         return pair != null ? getStrategy(pair)
                 .getContextForClient(pair.getContext(), pair.getData(), additionalProperties) : null;
     }
 
+    public Object getRawContext(UUID uuid) {
+        log.debug("Get raw context: {}", uuid);
+        final ContextDataPair pair = contextDataStorage.get(uuid);
+        return (pair != null ? pair.getContext() : null);
+    }
 
     public void removeContext(UUID uuid) throws ResourceNotFoundException {
+        log.debug("Remove context: {}", uuid);
         final ContextDataPair pair = contextDataStorage.get(uuid, false);
         if (pair != null) {
-            getStrategy(pair).deleteContext(pair.getContext(), pair.getData());
+            ContextManagementStrategy<Object, Object> strategy = getStrategy(pair);
+            if (strategy != null) {
+                strategy.deleteContext(pair.getContext(), pair.getData());
+            }
         }
         contextDataStorage.delete(uuid);
         contextExecutorService.cancelContext(uuid);
@@ -237,6 +273,7 @@ public class ContextsManager {
     // generic processor registry assures safety of call
     @SuppressWarnings("unchecked")
     public Object getContextMetadata(UUID uuid, final Map<String, String[]> options) throws ResourceNotFoundException, UnsupportedOperationErrorDescriptorException {
+        log.debug("Get context metadata: {}", uuid);
         final ContextDataPair pair = contextDataStorage.get(uuid);
         final Object context = pair.getContext();
         ContextMetadataBuilder typeProcessor = genericTypeProcessorRegistry.getTypeProcessor(context.getClass(), ContextMetadataBuilder.class, false);
@@ -254,13 +291,11 @@ public class ContextsManager {
         final Object mergedContext = profileAttributesResolver.mergeObject(context, uuid.toString());
         final ContextMetadataBuilder typeProcessorClosure = typeProcessor;
         final Map<String, Object> data = pair.getData();
-        return callAndGet(uuid, new Callable<Object>() {
-            public Object call() throws Exception {
-                if(log.isDebugEnabled())log.debug("Starting building of metadata for context " + context.toString());
-                final Object result = typeProcessorClosure.build(mergedContext, options, data);
-                if(log.isDebugEnabled())log.debug("Building of metadata completed. Context " + context.toString());
-                return result;
-            }
+        return callAndGet(uuid, () -> {
+            log.debug("Starting building of metadata for context {}", context);
+            final Object result = typeProcessorClosure.build(mergedContext, options, data);
+            log.debug("Building of metadata completed. Context {}", context);
+            return result;
         });
     }
 
@@ -283,6 +318,7 @@ public class ContextsManager {
     }
 
     public Object getContextMetadata(UUID uuid, Object metadataParams) {
+        log.debug("Get context metadata: {}", uuid);
         final ContextDataPair pair = contextDataStorage.get(uuid);
         final Object context = pair.getContext();
         final ContextParametrizedMetadataBuilder typeProcessor = genericTypeProcessorRegistry
@@ -293,14 +329,11 @@ public class ContextsManager {
         final Object mergedContext = profileAttributesResolver.mergeObject(context, uuid.toString());
         final Object mergedMetadataParams = profileAttributesResolver.mergeObject(metadataParams, uuid.toString());
         final Map<String, Object> data = pair.getData();
-        return callAndGet(uuid, new Callable<Object>() {
-            @Override
-            public Object call() throws Exception {
-                if(log.isDebugEnabled())log.debug("Starting building of metadata for context " + context.toString());
-                final Object result = typeProcessor.build(mergedContext, mergedMetadataParams, data);
-                if(log.isDebugEnabled())log.debug("Building of metadata completed. Context " + context.toString());
-                return result;
-            }
+        return callAndGet(uuid, () -> {
+            log.debug("Starting building of metadata for context {}", context);
+            final Object result = typeProcessor.build(mergedContext, mergedMetadataParams, data);
+            log.debug("Building of metadata completed. Context {}", context);
+            return result;
         });
     }
 
@@ -324,14 +357,11 @@ public class ContextsManager {
         final ContextDataPair contextDataPair = contextDataStorage.get(uuid);
         final Object context = contextDataPair.getContext();
         final ContextQueryExecutor<Object, Object> queryExecutor = getQueryExecutor(query, context);
-        return callAndGet(uuid, new Callable<Object>() {
-            @Override
-            public Object call() throws Exception {
-                if(log.isDebugEnabled())log.debug("Starting of query execution for context " + context.toString());
-                final Object result = queryExecutor.executeQuery(query, context, queryParameters, contextDataPair.getData());
-                if(log.isDebugEnabled())log.debug("Query execution is completed. Context " + context.toString());
-                return result;
-            }
+        return callAndGet(uuid, () -> {
+            log.debug("Starting of query execution for context {}", context);
+            final Object result = queryExecutor.executeQuery(query, context, queryParameters, contextDataPair.getData());
+            log.debug("Query execution is completed. Context {}", context);
+            return result;
         });
     }
 
@@ -340,14 +370,11 @@ public class ContextsManager {
         final ContextDataPair contextDataPair = contextDataStorage.get(uuid);
         final Object context = contextDataPair.getContext();
         final ContextQueryExecutor<Object, Object> queryExecutor = getQueryExecutor(query, context);
-        return callAndGet(uuid, new Callable<Object>() {
-            @Override
-            public Object call() throws Exception {
-                if(log.isDebugEnabled())log.debug("Starting of query execution for metadata. Context " + context.toString());
-                final Object result = queryExecutor.executeQueryForMetadata(query, context, contextDataPair.getData());
-                if(log.isDebugEnabled())log.debug("Query execution for metadata is completed. Context " + context.toString());
-                return result;
-            }
+        return callAndGet(uuid, () -> {
+            log.debug("Starting of query execution for metadata. Context {}", context);
+            final Object result = queryExecutor.executeQueryForMetadata(query, context, contextDataPair.getData());
+            log.debug("Query execution for metadata is completed. Context {}", context);
+            return result;
         });
     }
 

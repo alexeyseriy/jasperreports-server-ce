@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -744,7 +744,7 @@ public class ReportSchedulingFacade
             List<ReportJobSummary> jobs = persistenceService.listJobs(context, reportJobCriteria, 0, -1, null, isAscending);
             setSummaryRuntimeInformation(context, jobs);
 
-            if (reportJobCriteria.isRuntimeInformationModified() && reportJobCriteria.getRuntimeInformationModel() != null)
+            if (reportJobCriteria != null && reportJobCriteria.isRuntimeInformationModified() && reportJobCriteria.getRuntimeInformationModel() != null)
                 jobs = filterSummaryRuntimeInformation(jobs, reportJobCriteria.getRuntimeInformationModel());
 
             // apply runtime sorting
@@ -767,6 +767,12 @@ public class ReportSchedulingFacade
                 newList.add(jobs.get(i));
             }
             return newList;
+        } else if(reportJobCriteria != null && reportJobCriteria.getRuntimeInformationModel() != null &&
+                reportJobCriteria.isRuntimeInformationModified()){
+            List<ReportJobSummary> jobs = persistenceService.listJobs(context, reportJobCriteria, startIndex, numberOfRows, sortType, isAscending);
+            setSummaryRuntimeInformation(context, jobs);
+            jobs = filterSummaryRuntimeInformation(jobs, reportJobCriteria.getRuntimeInformationModel());
+            return jobs;
         } else {
             final List<ReportJobSummary> reportJobSummaries = persistenceService.listJobs(context, reportJobCriteria, startIndex, numberOfRows, sortType, isAscending);
             setSummaryRuntimeInformation(context, reportJobSummaries);
@@ -879,12 +885,51 @@ public class ReportSchedulingFacade
                 if (!equals(reportJobSummary.getRuntimeInformation().getNextFireTime(), runtimeInfo.getNextFireTime())) continue;
             } else if (runtimeInfo.isPreviousFireTimeModified() && runtimeInfo.getPreviousFireTime() != null) {
                 if (!equals(reportJobSummary.getRuntimeInformation().getPreviousFireTime(), runtimeInfo.getPreviousFireTime())) continue;
-            } else if (runtimeInfo.isStateModified() && runtimeInfo.getStateCode() != null) {
-                if (!runtimeInfo.getStateCode().equals(reportJobSummary.getRuntimeInformation().getStateCode())) continue;
+            } else if (runtimeInfo.isStateModified() && runtimeInfo.getStateCodes() != null) {
+                if (!runtimeInfo.getStateCodes().contains(reportJobSummary.getRuntimeInformation().getStateCode())) continue;
+            } else if (runtimeInfo.isPreviousFireTimeFromModified()) {
+                if(runtimeInfo.isPreviousFireTimeToModified()){
+                    if (!equalsOrBetween(reportJobSummary.getRuntimeInformation().getPreviousFireTime(),
+                            runtimeInfo.getPreviousFireTimeFrom(), runtimeInfo.getPreviousFireTimeTo())) continue;
+                } else{
+                    if(!after(reportJobSummary.getRuntimeInformation().getPreviousFireTime(), runtimeInfo.getPreviousFireTimeFrom())) continue;
+                }
+            } else if(runtimeInfo.isPreviousFireTimeToModified()){
+                if(!runtimeInfo.isPreviousFireTimeFromModified()){
+                    if(!before(reportJobSummary.getRuntimeInformation().getPreviousFireTime(), runtimeInfo.getPreviousFireTimeTo())) continue;
+                }
+            } else if (runtimeInfo.isNextFireTimeFromModified()) {
+                if(runtimeInfo.isNextFireTimeToModified()){
+                    if (!equalsOrBetween(reportJobSummary.getRuntimeInformation().getNextFireTime(),
+                            runtimeInfo.getNextFireTimeFrom(), runtimeInfo.getNextFireTimeTo())) continue;
+                }else{
+                    if(!after(reportJobSummary.getRuntimeInformation().getNextFireTime(), runtimeInfo.getNextFireTimeFrom())) continue;
+                }
+            } else if(runtimeInfo.isNextFireTimeToModified()){
+                if(!runtimeInfo.isNextFireTimeFromModified()){
+                    if(!before(reportJobSummary.getRuntimeInformation().getNextFireTime(), runtimeInfo.getNextFireTimeTo())) continue;
+                }
             }
             newList.add(reportJobSummary);
         }
         return newList;
+    }
+
+    private boolean after(Date date1, Date date2){
+        if ((date1 == null) || (date2 == null)) return false;
+        Calendar calendar1  = new GregorianCalendar();
+        calendar1.setTime(date1);
+        Calendar calendar2  = new GregorianCalendar();
+        calendar2.setTime(date2);
+        return calendar1.after(calendar2);
+    }
+    private boolean before(Date date1, Date date2){
+        if ((date1 == null) || (date2 == null)) return false;
+        Calendar calendar1  = new GregorianCalendar();
+        calendar1.setTime(date1);
+        Calendar calendar2  = new GregorianCalendar();
+        calendar2.setTime(date2);
+        return calendar1.before(calendar2);
     }
 
     private boolean equals(Object obj1, Object obj2) {
@@ -903,6 +948,27 @@ public class ReportSchedulingFacade
         } else if ((obj1 instanceof String) && (obj2 instanceof String)) {
             return ((String) obj1).equalsIgnoreCase((String)obj2);
         } else return obj1.equals(obj2);
+    }
+
+    private boolean equalsOrBetween(Object obj1, Object fromObj, Object toObj) {
+        if ((obj1 == null) || (fromObj == null) || toObj == null) return false;
+        if ((obj1 instanceof Date) && (fromObj instanceof Date) && (toObj instanceof Date)) {
+            Calendar calendar1  = new GregorianCalendar();
+            calendar1.setTime((Date)obj1);
+            calendar1.set(Calendar.SECOND, 0);
+            calendar1.set(Calendar.MILLISECOND, 0);
+            Calendar calendar2  = new GregorianCalendar();
+            calendar2.setTime((Date)fromObj);
+            calendar2.set(Calendar.SECOND, 0);
+            calendar2.set(Calendar.MILLISECOND, 0);
+            Calendar calendar3  = new GregorianCalendar();
+            calendar3.setTime((Date)toObj);
+            calendar3.set(Calendar.SECOND, 0);
+            calendar3.set(Calendar.MILLISECOND, 0);
+            return (calendar1.compareTo(calendar2) >= 0 && calendar1.compareTo(calendar3) <= 0);
+        } else if ((obj1 instanceof String) && (fromObj instanceof String)) {
+            return ((String) obj1).equalsIgnoreCase((String)toObj);
+        } else return obj1.equals(fromObj);
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
@@ -1116,6 +1182,12 @@ public class ReportSchedulingFacade
         if (!hasTriggerErrors(errors)) {
 			scheduler.validate(job, errors);
 		}
+		return errors;
+	}
+
+	public ValidationErrors validateEffectiveJobOutput(ExecutionContext context, ReportJob job) {
+		ValidationErrors errors = validator.validateEffectiveJobOutput(context, job);
+        validateScheduledJobOutputLocation(errors, context, job);
 		return errors;
 	}
 

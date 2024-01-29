@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright (C) 2005 - 2019 TIBCO Software Inc. All rights reserved. Confidentiality & Proprietary.
-  ~ Licensed pursuant to commercial TIBCO End User License Agreement.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved. Confidential & Proprietary.
+  ~ Licensed pursuant to commercial Cloud Software Group, Inc End User License Agreement.
   -->
 
 <assembly xmlns="http://maven.apache.org/ASSEMBLY/2.1.0"

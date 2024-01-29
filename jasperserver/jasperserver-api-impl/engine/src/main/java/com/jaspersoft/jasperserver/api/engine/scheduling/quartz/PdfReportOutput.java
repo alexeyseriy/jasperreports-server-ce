@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -28,7 +28,6 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.quartz.JobExecutionException;
 
 import com.jaspersoft.jasperserver.api.JSExceptionWrapper;
 import com.jaspersoft.jasperserver.api.engine.common.service.EngineService;
@@ -56,15 +55,15 @@ public class PdfReportOutput extends AbstractReportOutput
 	{
 	}
 
-	/** 
-	 * @see com.jaspersoft.jasperserver.api.engine.scheduling.quartz.Output#getOutput()
-	 */
-	public ReportOutput getOutput(
-			ReportJobContext jobContext,
-			JasperPrint jasperPrint) throws JobExecutionException
-	{
+	@Override
+	protected DataContainer export(ReportJobContext jobContext, JasperPrint jasperPrint,
+			Integer startPageIndex, Integer endPageIndex) {
 		Map params = new HashMap();
 		params.put(JRExporterParameter.JASPER_PRINT, jasperPrint);
+		if (startPageIndex != null) {
+			params.put(JRExporterParameter.START_PAGE_INDEX, startPageIndex);
+			params.put(JRExporterParameter.END_PAGE_INDEX, endPageIndex);
+		}
 		
 		boolean close = true;
 		DataContainer pdfData = jobContext.createDataContainer(this);
@@ -89,9 +88,7 @@ public class PdfReportOutput extends AbstractReportOutput
 				}
 			}
 		}
-		
-		String filename = jobContext.getBaseFilename() + "." + getFileExtension();
-		return new ReportOutput(pdfData, getFileType(), filename);
+		return pdfData;
 	}
 
 	/**

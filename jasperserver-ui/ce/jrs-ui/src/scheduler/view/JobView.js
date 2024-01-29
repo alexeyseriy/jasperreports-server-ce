@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -28,7 +28,7 @@ import xssUtil from 'js-sdk/src/common/util/xssUtil';
 import ConfirmationDialog from 'js-sdk/src/common/component/dialog/ConfirmationDialog';
 import jobStateEnum from '../enum/jobStateEnum';
 import date from 'js-sdk/src/common/util/parse/date';
-import {JSTooltip, tooltipModule} from '../../components/components.tooltip';
+import {JSTooltip} from '../../components/components.tooltip';
 
 var getLastRanDate = function(model) {
     if (model.state.previousFireTime) {

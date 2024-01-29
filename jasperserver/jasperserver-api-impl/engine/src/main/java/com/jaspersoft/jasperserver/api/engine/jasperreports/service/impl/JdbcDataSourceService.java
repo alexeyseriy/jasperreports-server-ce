@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -22,6 +22,7 @@ package com.jaspersoft.jasperserver.api.engine.jasperreports.service.impl;
 
 import com.jaspersoft.jasperserver.api.engine.jasperreports.util.JRTimezoneJdbcQueryExecuterFactory;
 import com.jaspersoft.jasperserver.api.metadata.common.service.JSDataSourceConnectionFailedException;
+import io.opentelemetry.extension.annotations.WithSpan;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.cloud.sleuth.Tracer;
@@ -52,7 +53,8 @@ public class JdbcDataSourceService extends BaseJdbcDataSource {
 	}
 
 
-	protected Connection createConnection() {
+    @WithSpan
+    protected Connection createConnection() {
 		try {
 			Connection c = TibcoDriverManagerImpl.getInstance().unlockConnection(dataSource);
       if (log.isDebugEnabled()) {
@@ -66,7 +68,8 @@ public class JdbcDataSourceService extends BaseJdbcDataSource {
 		}
 	}
 
-	public void setReportParameterValues(Map parameterValues) {
+    @WithSpan
+    public void setReportParameterValues(Map parameterValues) {
 		super.setReportParameterValues(parameterValues);
 		//TODO implement as java.sql.Connection decoration?
 		parameterValues.put(JRTimezoneJdbcQueryExecuterFactory.PARAMETER_TIMEZONE, timezone);

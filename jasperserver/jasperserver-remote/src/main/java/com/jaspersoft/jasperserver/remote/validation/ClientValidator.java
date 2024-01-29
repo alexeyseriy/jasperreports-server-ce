@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -37,6 +37,8 @@ import java.util.List;
 public interface ClientValidator<T> {
 
     List<Exception> validate(ExecutionContext ctx, T value);
+
+    @Deprecated
     default List<Exception> validate(T value) {
         return this.validate(ExecutionContextImpl.getRuntimeExecutionContext(), value);
     }

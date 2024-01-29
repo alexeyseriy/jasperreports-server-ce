@@ -1,0 +1,37 @@
+export enum AriaProps {
+    ActiveDescendant = 'aria-activedescendant',
+    Atomic = 'aria-atomic',
+    AutoComplete = 'aria-autocomplete',
+    Busy = 'aria-busy', //  (state)
+    Checked = 'aria-checked', //  (state)
+    Controls = 'aria-controls',
+    DescribedBy = 'aria-describedby',
+    Disabled = 'aria-disabled', //  (state)
+    DropEffect = 'aria-dropeffect',
+    Expanded = 'aria-expanded', //  (state)
+    FlowTo = 'aria-flowto',
+    Grabbed = 'aria-grabbed', //  (state)
+    HasPopup = 'aria-haspopup',
+    Hidden = 'aria-hidden', //  (state)
+    Invalid = 'aria-invalid', //  (state)
+    Label = 'aria-label',
+    LabelledBy = 'aria-labelledby',
+    Level = 'aria-level',
+    Live = 'aria-live',
+    MultiLine = 'aria-multiline',
+    MultiSelectable = 'aria-multiselectable',
+    Orientation = 'aria-orientation',
+    Owns = 'aria-owns',
+    PosInSet = 'aria-posinset',
+    Pressed = 'aria-pressed', //  (state)
+    ReadOnly = 'aria-readonly',
+    Relevant = 'aria-relevant',
+    Required = 'aria-required',
+    Selected = 'aria-selected', //  (state)
+    SetSize = 'aria-setsize',
+    Sort = 'aria-sort',
+    ValueMax = 'aria-valuemax',
+    ValueMin = 'aria-valuemin',
+    ValueNow = 'aria-valuenow',
+    ValueText = 'aria-valuetext',
+}

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -48,6 +48,8 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 /**
@@ -138,7 +140,7 @@ public class SearchResourcesActivity extends AbstractActivity<ResourceLookupColl
 
                 embeddedElements =  new PluralEmbeddedElement(getOwnRelation());
 
-                String message = isSearch ? getMessage("view.list") : getMessage("view.repository");
+                String message = isSearch ? getMessage(getMessageType(resourceTypes)) : getMessage("view.repository");
 
                 embeddedElements.add(new Link()
                         .setHref(webFlowUrl)
@@ -164,7 +166,7 @@ public class SearchResourcesActivity extends AbstractActivity<ResourceLookupColl
         return embeddedElements;
     }
 
-    private String buildRestUrl() {
+    protected String buildRestUrl() {
 
         String url = requestInfoProvider.getBaseUrl() + "rest_v2/hypermedia/resources";
 
@@ -191,6 +193,10 @@ public class SearchResourcesActivity extends AbstractActivity<ResourceLookupColl
 
         if (criteria.getSortBy() != null){
             result.add("sortBy="+criteria.getSortBy());
+        }
+
+        if (criteria.isFavorites() == true){
+            result.add("favorites="+true);
         }
 
         if (criteria.getAccessType() != null){
@@ -247,10 +253,28 @@ public class SearchResourcesActivity extends AbstractActivity<ResourceLookupColl
             result = PARAMETER_FILTER_ID+"="+"resourceTypeFilter&"
                     +PARAMETER_FILTER_OPTION+"="+resourceType;
         }
-
-
         return result;
     }
+
+    protected String getMessageType(List<String> resourceTypes) {
+        // check whether it is all data source resources
+        if (resourceTypes.size() > 1 && resourceTypes.stream().allMatch( s -> ResourceMediaType.DATASOURCE_TYPES.contains(s))) {
+            return "view.list.datasource";
+        }
+        // check whether it is mix resources.  If so, use generic message
+        if (resourceTypes.stream().distinct().count() != 1) {
+            return "view.list";
+        }
+        Map<String, String> map = Stream.of(new String[][] {
+                {ResourceMediaType.ADHOC_DATA_VIEW_CLIENT_TYPE, "view.list.adhocview"},
+                {ResourceMediaType.REPORT_UNIT_CLIENT_TYPE, "view.list.report"},
+                {ResourceMediaType.SEMANTIC_LAYER_DATA_SOURCE_CLIENT_TYPE, "view.list.domain"},
+                {ResourceMediaType.DASHBOARD_CLIENT_TYPE, "view.list.dashboard"},
+        }).collect(Collectors.toMap(m -> m[0], m -> m[1]));
+        // try to use specific message if possible
+        return map.getOrDefault(resourceTypes.get(0), "view.list");
+    }
+
 
     protected String buildRepositoryUrl(){
         return MessageFormat.format(

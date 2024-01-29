@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -44,7 +44,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
   <bean id="propertyConfigurer" class="com.jaspersoft.jasperserver.api.common.properties.DecryptingPropertyPlaceholderConfigurer">
     <property name="locations">
       <list>
-        <value>/WEB-INF/hibernate.properties</value>
+        <value>/WEB-INF/classes/hibernate.properties</value>
         <value>/WEB-INF/js.quartz.properties</value>
         <value>/WEB-INF/js.spring.properties</value>
         <value>/WEB-INF/js.scheduling.properties</value>
@@ -53,7 +53,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
         <value>/WEB-INF/js.aws.datasource.properties</value>
         <value>/WEB-INF/js.externalAuth.properties</value>
         <value>/WEB-INF/js.config.properties</value>
-          <value>/WEB-INF/classes/relativedate.properties</value>
+        <value>/WEB-INF/classes/relativedate.properties</value>
       </list>
     </property>
     <property name="properties">

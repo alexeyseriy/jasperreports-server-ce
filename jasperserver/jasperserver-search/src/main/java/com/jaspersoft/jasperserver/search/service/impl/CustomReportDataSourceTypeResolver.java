@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -20,8 +20,8 @@
  */
 package com.jaspersoft.jasperserver.search.service.impl;
 
+import com.jaspersoft.jasperserver.api.metadata.common.domain.FileResource;
 import com.jaspersoft.jasperserver.api.metadata.common.domain.Resource;
-import com.jaspersoft.jasperserver.api.metadata.common.domain.ResourceLookup;
 import com.jaspersoft.jasperserver.api.metadata.common.service.RepositoryService;
 import com.jaspersoft.jasperserver.api.metadata.jasperreports.domain.CustomReportDataSource;
 import com.jaspersoft.jasperserver.search.service.ResourceTypeResolver;
@@ -47,6 +47,14 @@ public class CustomReportDataSourceTypeResolver implements ResourceTypeResolver 
         } else {
             return resource.getResourceType();
         }
+    }
+
+    public String getFileResourceFileType(Resource resource) {
+        if (resource.getResourceType().equals(FileResource.class.getCanonicalName())) {
+            FileResource fileResource = (FileResource) repositoryService.getResource(null, resource.getURIString());
+            return fileResource.getFileType();
+        }
+        return null;
     }
 
     private String getResourceType(String uri) {

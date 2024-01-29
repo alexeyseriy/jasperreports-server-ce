@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -49,6 +49,7 @@ public class ClientUserTest extends BaseDTOPresentableTest<ClientUser> {
                 createFullyConfiguredInstance().setTenantId("24"),
                 createFullyConfiguredInstance().setUsername("user2"),
                 createFullyConfiguredInstance().setRoleSet(new HashSet<ClientRole>(Arrays.asList(new ClientRole().setExternallyDefined(true), new ClientRole().setName("name2")))),
+                createFullyConfiguredInstance().setNumberOfFailedLoginAttempts(7),
                 // with null values
                 createFullyConfiguredInstance().setFullName(null),
                 createFullyConfiguredInstance().setPassword(null),
@@ -58,7 +59,8 @@ public class ClientUserTest extends BaseDTOPresentableTest<ClientUser> {
                 createFullyConfiguredInstance().setPreviousPasswordChangeTime(null),
                 createFullyConfiguredInstance().setTenantId(null),
                 createFullyConfiguredInstance().setUsername(null),
-                createFullyConfiguredInstance().setRoleSet(null)
+                createFullyConfiguredInstance().setRoleSet(null),
+                createFullyConfiguredInstance().setNumberOfFailedLoginAttempts(null)
         );
     }
 
@@ -74,6 +76,7 @@ public class ClientUserTest extends BaseDTOPresentableTest<ClientUser> {
         clientUser.setTenantId("23");
         clientUser.setUsername("user");
         clientUser.setRoleSet(new HashSet<ClientRole>(Arrays.asList(new ClientRole(), new ClientRole().setName("name"))));
+        clientUser.setNumberOfFailedLoginAttempts(0);
         return clientUser;
     }
 

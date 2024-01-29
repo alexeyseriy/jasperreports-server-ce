@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -21,8 +21,16 @@
 package com.jaspersoft.jasperserver.api.security.externalAuth.wrappers.spring.ldap;
 
 import com.jaspersoft.jasperserver.api.JasperServerAPI;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.core.log.LogMessage;
 import org.springframework.ldap.core.ContextSource;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.ldap.userdetails.DefaultLdapAuthoritiesPopulator;
+import org.springframework.security.ldap.userdetails.LdapAuthority;
+
+import java.util.*;
 
 /**
  * Wrapper class for org.springframework.security.ldap.userdetails.DefaultLdapAuthoritiesPopulator
@@ -32,7 +40,36 @@ import org.springframework.security.ldap.userdetails.DefaultLdapAuthoritiesPopul
  */
 @JasperServerAPI
 public class JSDefaultLdapAuthoritiesPopulator extends DefaultLdapAuthoritiesPopulator {
-	public JSDefaultLdapAuthoritiesPopulator(ContextSource contextSource, String groupSearchBase) {
+	private static final Log logger = LogFactory.getLog(JSDefaultLdapAuthoritiesPopulator.class);
+	private boolean convertToUpperCase = true;
+	public JSDefaultLdapAuthoritiesPopulator(ContextSource contextSource, String groupSearchBase)  {
 		super(contextSource, groupSearchBase);
+	}
+
+	@Override
+	public Set<GrantedAuthority> getGroupMembershipRoles(String userDn, String username) {
+		if (getGroupSearchBase() == null) {
+			return new HashSet();
+		} else {
+			Set<GrantedAuthority> authorities = new HashSet();
+			if (logger.isDebugEnabled()) {
+				logger.debug("Searching for roles for user '" + username + "', DN = '" + userDn + "', with filter " + getGroupSearchFilter() + " in search base '" + getGroupSearchBase() + "'");
+			}
+
+			Set<String> userRoles = getLdapTemplate().searchForSingleAttributeValues(getGroupSearchBase(), getGroupSearchFilter(), new String[]{userDn, username}, getGroupRoleAttribute());
+			if (logger.isDebugEnabled()) {
+				logger.debug("Roles from search: " + userRoles);
+			}
+
+			String role;
+			for(Iterator var5 = userRoles.iterator(); var5.hasNext(); authorities.add(new SimpleGrantedAuthority(getRolePrefix() + role))) {
+				role = (String)var5.next();
+				if (convertToUpperCase) {
+					role = role.toUpperCase();
+				}
+			}
+
+			return authorities;
+		}
 	}
 }

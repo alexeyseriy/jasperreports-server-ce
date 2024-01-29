@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -64,6 +64,15 @@ public abstract class RepoResourceBase implements IdedRepoObject, RepoReportData
 
    // protected Set<AccessEvent> accessEvents = null;
     protected Set<RepoReportThumbnail> thumbnails = null;
+	protected Set<RepoFavoriteResource> favorites = null;
+
+	public Set<RepoFavoriteResource> getFavorites() {
+		return favorites;
+	}
+
+	public void setFavorites(Set<RepoFavoriteResource> favorites) {
+		this.favorites = favorites;
+	}
 
 	protected RepoFolder parent;
 

@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -493,7 +493,8 @@
     <!-- db props -->
     <property name="dbProps" value="${currentConf}/db.properties"/>
 
-
+    <!-- connectors props -->
+    <property name="componentsProps" value="${currentConf}/components.properties"/>
 
     <!-- app server props -->
     <property name="appSrvProps" value="${currentConf}/app.srv.properties"/>
@@ -719,6 +720,13 @@
         </sequential>
     </macrodef>
 
+    <macrodef name="initRequiredPropertiesToDefaultValues">
+        <sequential>
+            <property name="js-pro-path" value=""/>
+            <property name="mvn-mirror" value="https://repo1.maven.org/maven2"/>
+        </sequential>
+    </macrodef>
+
     <macrodef name="gen-config-if-required">
         <sequential>
             <if>
@@ -751,7 +759,7 @@
                 </else>
             </if>
 
-            <echo level="info"> Back-End version: ${buildArtifactVersionName}</echo>
+            <echo level="info">Back-End version: ${buildArtifactVersionName}</echo>
             <echo level="info">Front-End version: ${fafBuildArtifactVersionName}</echo>
 
             <if>
@@ -780,6 +788,9 @@
                     <!-- load db props -->
                     <property file="${dbProps}"/>
 
+                    <!-- load connectors props -->
+                    <property file="${componentsProps}"/>
+
                     <!-- load app server props -->
                     <property file="${appSrvProps}"/>
 
@@ -800,6 +811,8 @@
                     <!-- recreate build conf -->
                     <delete dir="${currentConf}"/>
                     <mkdir dir="${currentConf}"/>
+
+                    <initRequiredPropertiesToDefaultValues/>
 
                     <!-- copy and load base props -->
                     <filterCopyLoad file="${masterPropsSource}" toFile="${masterProps}"/>
@@ -1230,42 +1243,95 @@
     <target name="list-files" description="list all files">
         <ant antfile="${js-pro-path}/build-config.xml" inheritall="true" inheritrefs="true" target="list-files"/>
     </target>
-    
+
     <target name="test-ce-all-props" description="Tests that all JasperServer CE properties are initialized">
       <var name="listOfPropsCE" value="dbType,dbHost,dbUsername,dbPassword,dbPort,js.dbName,sugarcrm.dbName,foodmart.dbName,
       webAppNameCE" />
-      
-      <if>
-        <not>
-          <isset property="CATALINA_HOME"/>
-        </not>
-        <then>
-          <var name="listOfPropsCE" value="${listOfPropsCE},appServerType,appServerDir" />
-        </then>
-      </if>
-
-      <validatePropsNotBlank properties="${listOfPropsCE}" />
+        <if>
+            <not>
+                <isset property="CATALINA_HOME"/>
+            </not>
+            <then>
+                <var name="listOfPropsCE" value="${listOfPropsCE},appServerType,appServerDir" />
+            </then>
+        </if>
+        <validatePropsNotBlank properties="${listOfPropsCE}" />
     </target>
 
     <target name="test-pro-all-props" description="Tests that all JasperServer Pro properties are initialized">
       <var name="listOfPropsPro" value="dbType,dbHost,dbUsername,dbPassword,dbPort,js.dbName,sugarcrm.dbName,foodmart.dbName,
       webAppNamePro" />
-      <if>
-          <isset property="installType"/>
-          <then>
-          <if>
-          <equals arg1="${installType}" arg2="split"></equals>
-              <then>
-                  <var name="listOfPropsPro" value="dbType,dbHost,dbUsername,dbPassword,dbPort,js.dbName,sugarcrm.dbName,foodmart.dbName,
+        <if>
+            <isset property="installType"/>
+            <then>
+                <if>
+                    <equals arg1="${installType}" arg2="split"></equals>
+                    <then>
+                        <if>
+                            <and>
+                                <equals arg1="${js.setup.mode}" arg2="upgrade" />
+                                <not><equals arg1="${js.option}" arg2="test" /></not>
+                                <or>
+                                    <not> <isset property="SKIP_UPGRADE_CONSENT"/></not>
+                                    <and>
+                                        <isset property="SKIP_UPGRADE_CONSENT"/>
+                                        <not><equals arg1="${SKIP_UPGRADE_CONSENT}" arg2="true" /></not>
+                                    </and>
+                                </or>
+                            </and>
+                            <then>
+                                <input message="The script has detected that your instance is a split installation (repository and audit in separate databases), and it will remain split after the upgrade. If you have a compact installation, exit the script and set installType and audit properties correctly in default_master.properties. Failure to do so may break the upgrade and damage your instance. Enter 'y' to confirm or 'n' to exit. The default is 'n':"
+                                       validargs="y,n" defaultvalue="n" addproperty="upgradeConsent" />
+                                <if>
+                                    <equals arg1="${upgradeConsent}" arg2="y" />
+                                    <then>
+                                        <var name="listOfPropsPro" value="dbType,dbHost,dbUsername,dbPassword,dbPort,js.dbName,sugarcrm.dbName,foodmart.dbName,
                     webAppNamePro,audit.dbHost,audit.dbUsername,audit.dbPassword,audit.dbPort,audit.dbName" />
-              </then>
-              <else>
-                  <fail>Error: installType is set to invalid value.</fail>
-              </else>
-          </if>
-          </then>
-      </if>
-      <if>
+                                    </then>
+                                    <else>
+                                        <fail>Abort: Upgrade aborted as per request.</fail>
+                                    </else>
+                                </if>
+                            </then>
+                            <else>
+                                <var name="listOfPropsPro" value="dbType,dbHost,dbUsername,dbPassword,dbPort,js.dbName,sugarcrm.dbName,foodmart.dbName,
+                    webAppNamePro,audit.dbHost,audit.dbUsername,audit.dbPassword,audit.dbPort,audit.dbName" />
+                            </else>
+                        </if>
+                    </then>
+                    <else>
+                        <fail>Error: installType is set to invalid value.</fail>
+                    </else>
+                </if>
+            </then>
+            <else>
+                <if>
+                    <and>
+                        <equals arg1="${js.setup.mode}" arg2="upgrade" />
+                        <not><equals arg1="${js.option}" arg2="test" /></not>
+                        <or>
+                            <not> <isset property="SKIP_UPGRADE_CONSENT"/></not>
+                            <and>
+                                <isset property="SKIP_UPGRADE_CONSENT"/>
+                                <not><equals arg1="${SKIP_UPGRADE_CONSENT}" arg2="true" /></not>
+                            </and>
+                        </or>
+                    </and>
+                    <then>
+                        <input message="The script has detected that your instance is a compact installation (repository and audit in the same database), and it will remain compact after the upgrade. If you have a split installation, exit the script and set installType and audit properties correctly in default_master.properties. Failure to do so may break the upgrade and damage your instance. Enter 'y' to confirm or 'n' to exit. The default is 'n':"
+                               validargs="y,n" defaultvalue="n" addproperty="upgradeConsent" />
+                        <if>
+                            <equals arg1="${upgradeConsent}" arg2="n" />
+                            <then>
+                                <fail>Abort: Upgrade aborted as per request.</fail>
+                            </then>
+                        </if>
+                    </then>
+                </if>
+            </else>
+        </if>
+
+        <if>
         <not>
           <isset property="CATALINA_HOME"/>
         </not>
@@ -1309,6 +1375,7 @@
         <if>
             <available classname="org.codehaus.groovy.ant.Groovy"/>
             <then>
+                <echo>Found Groovy in classpath</echo>
                 <taskdef name="groovy" classname="org.codehaus.groovy.ant.Groovy"/>
             </then>
             <elseif>
@@ -1324,15 +1391,36 @@
                 </then>
             </elseif>
             <else>
-                <echo>Didn't find groovy JAR, downloading it</echo>
+                <var name="groovy.version" value="3.0.13"/>
+                <echo>Didn't find groovy JAR, downloading groovy ${groovy.version}</echo>
                 <runmaven dir="${basedir}">
                     <arg value="dependency:copy"/>
-                    <arg value="-Dartifact=org.codehaus.groovy:groovy-all:3.0.7:jar"/>
+                    <arg value="-Dartifact=org.codehaus.groovy:groovy:${groovy.version}:jar"/>
+                    <arg value="-DoutputDirectory=${ant.home}/lib"/>
+                </runmaven>
+                <runmaven dir="${basedir}">
+                    <arg value="dependency:copy"/>
+                    <arg value="-Dartifact=org.codehaus.groovy:groovy-ant:${groovy.version}:jar"/>
+                    <arg value="-DoutputDirectory=${ant.home}/lib"/>
+                </runmaven>
+                <runmaven dir="${basedir}">
+                    <arg value="dependency:copy"/>
+                    <arg value="-Dartifact=org.codehaus.groovy:groovy-console:${groovy.version}:jar"/>
+                    <arg value="-DoutputDirectory=${ant.home}/lib"/>
+                </runmaven>
+                <runmaven dir="${basedir}">
+                    <arg value="dependency:copy"/>
+                    <arg value="-Dartifact=org.codehaus.groovy:groovy-nio:${groovy.version}:jar"/>
+                    <arg value="-DoutputDirectory=${ant.home}/lib"/>
+                </runmaven>
+                <runmaven dir="${basedir}">
+                    <arg value="dependency:copy"/>
+                    <arg value="-Dartifact=org.codehaus.groovy:groovy-astbuilder:${groovy.version}:jar"/>
                     <arg value="-DoutputDirectory=${ant.home}/lib"/>
                 </runmaven>
                 <taskdef name="groovy" classname="org.codehaus.groovy.ant.Groovy">
                     <classpath>
-                        <fileset dir="${ant.home}/lib" includes="groovy-*.jar" />
+                        <fileset dir="${ant.home}/lib" includes="groovy-*.jar"/>
                     </classpath>
                 </taskdef>
             </else>

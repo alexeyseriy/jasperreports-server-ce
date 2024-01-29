@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -182,7 +182,7 @@ public class ExportExecutionOptions {
 				+ "As of JasperReports Server 6.0, it is also possible to specify `json` if your reports are designed for data "
 				+ "export. For more information, see the JasperReports Library samples documentation.", 
 		required=true,
-		allowableValues =  {"pdf", "html", "csv", "xls", "xlsx", "docx", "pptx", "odt", "ods", "rtf", "xml", "jrprint", "json", "data_csv"},
+		allowableValues =  {"pdf", "html", "csv", "xls", "xlsx", "docx", "pptx", "odt", "ods", "rtf", "xml", "jrprint", "json", "data_csv", "data_xlsx"},
 		example = "html"
 	)
     public String getOutputFormat() {

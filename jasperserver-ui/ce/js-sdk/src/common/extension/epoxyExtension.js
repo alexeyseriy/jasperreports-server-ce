@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -118,7 +118,7 @@ Epoxy.binding.addHandler('validationErrorClass', {
     init: function ($element, value, bindings, context) {
         this.attr = getAttrName($element, 'validationErrorClass');
         var model = this.view.model;
-        this._onAttrValidated = function (model, attr, error) {
+        this._onAttrValidated = function (modelOnValidate, attr, error) {
             $element[error ? 'addClass' : 'removeClass']('error');
         };
         model.on('validate:' + this.attr, this._onAttrValidated);
@@ -137,7 +137,7 @@ Epoxy.binding.addHandler('validationErrorText', {
     init: function ($element, value, bindings, context) {
         this.attr = getAttrName($element, 'validationErrorText');
         var model = this.view.model;
-        this._onAttrValidated = function (model, attr, error) {
+        this._onAttrValidated = function (modelOnValidate, attr, error) {
             $element.text(error || '');
         };
         model.on('validate:' + this.attr, this._onAttrValidated);
@@ -209,8 +209,8 @@ Epoxy.binding.addHandler('radioDiv', {
     init: function ($element, value, bindings, context) {
         var attr = getAttrName($element, 'radioDiv');
         this.callback = function () {
-            var value = $element.data('value');
-            bindings[attr](value);
+            var elementValue = $element.data('value');
+            bindings[attr](elementValue);
         };
         $element.on('click', _.bind(this.callback, this));
     },

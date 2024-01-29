@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -54,8 +54,8 @@ var classUtil = {
         }
         Subclass.prototype.constructor = Subclass;
         Subclass.parent = parent.prototype;
-        Subclass.extend = function (obj) {
-            return classUtil.inherit(Subclass, obj);
+        Subclass.extend = function (objToInherit) {
+            return classUtil.inherit(Subclass, objToInherit);
         };
         return Subclass;
     },

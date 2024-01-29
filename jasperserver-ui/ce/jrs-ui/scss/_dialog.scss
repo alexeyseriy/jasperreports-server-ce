@@ -21,7 +21,7 @@
 
 /* =======================================
    DIALOG BOX MODULE
-   Last modified date:     May 21, 2020
+   Last modified date:     Dec 16, 2021
    Last modified by:       Anna Leeg
  * ======================================== */
 
@@ -261,4 +261,11 @@
 
 .jr-mDialog.jr-isHidden.jr {
   display: none;
+}
+
+//  ------------------------------------------------------------
+//  SPECIAL RULE - PREVENTS FOCUS STYLES FROM GETTING CUT OFF
+//  ------------------------------------------------------------
+.jr-mDialog.jr .jr-mGrid.jr {
+  overflow: visible;
 }

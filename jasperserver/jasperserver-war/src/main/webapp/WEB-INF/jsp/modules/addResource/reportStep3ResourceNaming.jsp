@@ -1,6 +1,6 @@
 <%@ page contentType="text/html; charset=utf-8" %>
 <%--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -146,7 +146,7 @@
                                                     <label title="<spring:message code='dialog.file.selectSaveLocation'/>" for="folderUri" class="control browser<c:if test="${status.error}"> error</c:if>">
                                                         <span class="wrap"><spring:message code="dialog.file.destination"/>:</span>
                                                         <input id="folderUri" type="text" name="${status.expression}" value="${status.value}" <c:if test="${editMode or fileResource.source=='CONTENT_REPOSITORY'}">disabled="disabled"</c:if> />
-                                                        <button id="browser_button" type="button" class="button action" <c:if test="${editMode or fileResource.source=='CONTENT_REPOSITORY'}">disabled="disabled"</c:if>><span class="wrap"><spring:message code="button.browse"/><span class="icon"></span></span></button>
+                                                        <button id="browser_button" type="button" class="button action up" <c:if test="${editMode or fileResource.source=='CONTENT_REPOSITORY'}">disabled="disabled"</c:if>><span class="wrap"><spring:message code="button.browse"/><span class="icon"></span></span></button>
                                                         <c:if test="${status.error}">
                                                             <span class="message warning">${status.errorMessage}</span>
                                                         </c:if>

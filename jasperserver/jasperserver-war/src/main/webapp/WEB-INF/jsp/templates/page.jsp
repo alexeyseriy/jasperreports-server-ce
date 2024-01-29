@@ -1,6 +1,6 @@
 <%@ page contentType="text/html; charset=utf-8" %>
 <%--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -46,6 +46,8 @@ Usage:
 <%@ taglib prefix="tx" uri="http://tiles.apache.org/tags-tiles-extras"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jstl/core_rt" %>
 <%@ taglib prefix="js" uri="/WEB-INF/jasperserver.tld" %>
+<%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
+
 
 <tx:useAttribute id="pageTitle" name="pageTitle" classname="java.lang.String" ignore="false"/>
 <tx:useAttribute id="bodyID" name="bodyID" classname="java.lang.String" ignore="false"/><%-- This should be renamed to 'pageID' but would require name change on all calling pages --%>
@@ -53,6 +55,7 @@ Usage:
 <tx:useAttribute id="bodyClass" name="bodyClass" classname="java.lang.String" ignore="false"/>
 <tx:useAttribute id="moduleName" name="moduleName" classname="java.lang.String" ignore="true"/>
 <tx:useAttribute id="decorate" name="decorate" classname="java.lang.String" ignore="true"/>
+<tx:useAttribute id="showServerSettingsHeader" name="showServerSettingsHeader" classname="java.lang.String" ignore="true"/>
 
 <%
     if (pageTitle.length() == 0) { throw new JSException("Attribute \"pageTitle\" can't be empty."); }
@@ -66,7 +69,7 @@ Usage:
     <tiles:insertAttribute name="headerContent" ignore="true"/>
     <c:if test="${not empty moduleName}">
         <jsp:include page="../modules/commonScripts.jsp"/>
-        <script language="JavaScript" src="${scriptsUri}/${moduleName}.js" defer></script>
+        <script src="${scriptsUri}/${moduleName}.js" defer></script>
     </c:if>
 </head>
 <body id="<tiles:getAsString name="bodyID"/>" class="<tiles:getAsString name="pageClass" ignore="true"/>">
@@ -75,6 +78,13 @@ Usage:
 
 <div id="display" class="body <tiles:getAsString name="bodyClass"/>">
     <a name="maincontent" id="maincontent"></a>
+    <c:if test="${showServerSettingsHeader==true}">
+    		<div class="pageHeader">
+    			<div class="pageHeader-title">
+    				<div class="pageHeader-title-text"><spring:message code="general.page.title.server.settings"/></div>
+    			</div>
+    		</div>
+    	</c:if>
     <tiles:insertAttribute name="bodyContent" defaultValue="" ignore="true"/>
 </div><!-- /#display -->
 </body>

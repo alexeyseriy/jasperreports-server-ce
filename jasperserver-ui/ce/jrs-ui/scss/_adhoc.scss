@@ -102,7 +102,14 @@
   min-height: em(28px, 16px);
   height: auto;
   line-height: (28px / 16px);
-  text-align: center;
+}
+
+.jr-mAdhoc-visualization-title-text.editable {
+  cursor: pointer;
+}
+
+.jr-mAdhoc-visualization-title-text.editable {
+  cursor: pointer;
 }
 
 .jr-mAdhoc-visualization-title-text.editable {
@@ -116,6 +123,7 @@
   position: absolute;
   top: em(11px);
   left: em(11px);
+  z-index: $zindex-element-lvl-0;
 }
 
 .jr-mAdhoc-visualization-launcher.jr-isMinimized.jr {

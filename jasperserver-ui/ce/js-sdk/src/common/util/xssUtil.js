@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -31,7 +31,7 @@ var htmlTagWhiteList = 'a,abbr,acronym,address,animate,animateMotion,animateTran
     'canvas,caption,center,circle,cite,clipPath,code,col,colgroup,color-profile,dd,defs,desc,details,dfn,discard,div,dl,dt,ellipse,em,' +
     'feBlend,feColorMatrix,feComponentTransfer,feComposite,feConvolveMatrix,feDiffuseLighting,feDisplacementMap,feDistantLight,feFlood,feFuncA,feFuncB,feFuncG,feFuncR,feGaussianBlur,feImage,feMerge,feMergeNode,feMorphology,feOffset,fePointLight,feSpecularLighting,feSpotLight,feTile,feTurbulence,' +
     'fieldset,filter,font,footer,form,h1,h2,h3,h4,h5,h6,head,' +
-    'header,hr,html,i,g,iframe,image,img,input,js-templateNonce,label,legend,li,line,linearGradient,main,map,mark,marker,mask,menu,menuitem,meta,metadata,mpath,nav,ol,option,p,path,pattern,polygon,polyline,' +
+    'header,hr,html,i,g,image,img,input,js-templateNonce,label,legend,li,line,linearGradient,main,map,mark,marker,mask,menu,menuitem,meta,metadata,mpath,nav,ol,option,p,path,pattern,polygon,polyline,' +
     'pre,radialGradient,rect,section,select,set,small,span,stop,strike,strong,style,sub,summary,sup,svg,switch,symbol,table,tbody,td,text,textPath,textarea,tfoot,th,thead,title,tr,tspan,u,ul,use,view';
 
 // None of the chars in the values of the map should appear as the map key to
@@ -157,7 +157,7 @@ var canonicExclusionRegex = RegExp('(?:' + regexKeys(canonicExclusionMap).join('
 var reverseCanonicExclusionRegex = RegExp('(?:' + regexKeys(reverseCanonicExclusionMap).join('|') + ')', 'g');
 
 /**
- * Canonicalize/decode the string from any HTML encoding to ASCII.
+ * Canonicalize/decode characters of interest from the HTML encoding (DEC, HEX and Entity name) to ASCII characters.
  * Hard escaped characters listed as keys in escapeMap are not canonicalized to prevent soft
  * escape from reversing the hard escape as in xssUtil.softHtmlEscape(xssUtil.hardEscape(str))
  *
@@ -171,14 +171,62 @@ function _canonicalize(string) {
     // exclude potentially hard escaped chars from escapeMap values
     string = canonicExclusionRegex.test(string) ? string.replace(canonicExclusionRegex, function(match) { return canonicExclusionMap[match]; }) : string;
 
-    var canonicElem = document.createElement('textarea');
-    canonicElem.innerHTML = string; // eslint-disable-line
-    string = canonicElem.value;
+    // In this block, we need to decode characters in the string '/:=javascriptond' from their encoded variants.
+    // This string of characters is based on next strings:
+    //     'javascript:' -- used to define javascript action taken by tags
+    //     'on=' -- used to define actions taken by tags
+    //     'srcdoc' -- used to define srcdoc attribute of the iframe
+    // Other encoded symbols are not important to our XSS protection because any XSS threat depend on these characters.
+    // For the reference on encodings you may take a look here:
+    // https://en.wikipedia.org/wiki/List_of_XML_and_HTML_character_entity_references#Character_entity_references_in_HTML
+    // It seems like there are just 3 encodings (DEC, HEX and Entity name) which are supported across browsers
+    // as of 2022.
+
+    // translating DEC encoded symbols into characters. It's like '&#47' or '&#47;' into '/'
+    // yes, this approach translates all DEC-encodings, which is OK with us
+    string = string.replace(/&#(\d+);?/g, ((match, dec) => String.fromCharCode(dec) ));
+
+    // translating HEX encoded symbols into characters. It's like '&#x2F' or '&#x2F;' into '/'
+    // yes, again, this approach translates all HEX-encodings, which is OK with us
+    string = string.replace(/&#x([a-f0-9]+);?/ig, ((match, group) => String.fromCharCode(parseInt(group, 16)) ));
+
+    // translating Entity-name encoded symbols into characters. It's like '&sol;' into '/'
+    const entityNameDecodingMap = {
+        '&tab;': '\t',
+        '&newline;': '\n',
+        '&sol;': '/',
+        '&colon;': ':',
+        '&equals;': '=',
+
+        '&tab': '\t',
+        '&newline': '\n',
+        '&sol': '/',
+        '&colon': ':',
+        '&equals': '='
+    };
+    const regexpEscapeMap = RegExp('(?:' + Object.keys(entityNameDecodingMap).join('|') + ')', 'ig');
+    string = string.replace(regexpEscapeMap, (match) => entityNameDecodingMap[match.toLowerCase()] );
 
     // revert the chars excluded above to their original values
     string = reverseCanonicExclusionRegex.test(string) ? string.replace(reverseCanonicExclusionRegex, function(match) { return reverseCanonicExclusionMap[match]; }) : string;
 
     return string;
+}
+
+/**
+ * Removes tabulation, new line and "carriage return" characters from the string "javascript:"
+ *
+ * @param string
+ * @returns string
+ * @private
+ */
+function _removeBreakUpCharacters (string) {
+    // We are removing "tab", "new line" and "carriage return" characters inserted into "javascript:" string, so from
+    // "ja\tva\r\nscript:" we are getting "javascript:"
+
+    const jsKeyword = 'javascript:';
+    const jsKeywordSearchRegExp = RegExp(jsKeyword.split('').join('[\t\r\n]*'), 'ig');
+    return string.replace(jsKeywordSearchRegExp, jsKeyword);
 }
 
 /**
@@ -289,9 +337,11 @@ function _getWhitelistRightRegex() {
     return _getWhitelistRightRegex.rightTagRegexp;
 }
 
-//regex map used to escape HTML tag attributes which produce javascript context.
+// Regex map used to escape HTML tag attributes which produce javascript context.
 // During 'soft' html escape, the map keys are converted into Regexp(\b<key>\b, 'gi')
 // and replaced with the corresponding map values.
+// Important: the code of _canonicalize() method is based on characters used in regexs defined here.
+// So if you going to add some new symbols into any regex pattern, please, consider checking code of _canonicalize().
 var _defaultAttribSoftEscapeMap = {
     'regex': [
         /\bjavascript:/ig,
@@ -389,10 +439,12 @@ var _xssSoftHtmlEscape = function(string, options) {
 
     // If the string contains nonce (not noncePrefix in the 1st pos-n), it comes from JRS; it's safe to exec javascript.
     var xssNonce = _getXssNonce();
-    if (xssNonce && string.indexOf(xssNonce) > 0)
+    if (xssNonce && string.indexOf(xssNonce) >= 0)
         return string;
 
     string = _canonicalize(string);
+
+    string = _removeBreakUpCharacters(string);
 
     //avoid escaping < or > in <TAG> or </TAG>, where TAG is white-listed
     if (options.whiteList && options.whiteList instanceof Array && options.whiteList.length > 0) {
@@ -491,5 +543,6 @@ var _xssUnescape = function(string) {
 export default {
     softHtmlEscape: _xssSoftHtmlEscape,
     hardEscape: _xssHardEscape,
-    unescape: _xssUnescape
+    unescape: _xssUnescape,
+    canonicalize: _canonicalize
 };

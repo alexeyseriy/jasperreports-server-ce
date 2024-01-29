@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -354,6 +354,7 @@ Make sure you have compiled the jasperserver source code.
             <arg value="--keypass=${deprecatedImportExportEncSecret.keypass}" />
         </run-import-export>
         <import-profile-attribute key="auditDB" attrValue="${audit.dbName}"/>
+        <import-profile-attribute key="repositoryDB" attrValue="${js.dbName}"/>
     </target>
 
     <target name="import-sample-data-ce" depends="keystore-properties"
@@ -492,21 +493,19 @@ General Example:
 
   js-ant import -DimportFile=my-reports.zip
 
-Windows Example:
-
   js-ant import -DimportFile=my-reports-and-users.zip -DimportArgs="--update"
 
   js-ant import -DimportFile=my-reports-and-users.zip -DimportArgs="--update --skip-user-update"
 
-  js-ant import-upgrade -DimportFile=js-cp-export.zip -DimportArgs="--include-server-settings --secret-key='0x6f 0x00 ...'
+Windows Example:
+
+  js-ant import-upgrade -DimportFile=js-cp-export.zip -DimportArgs="--include-server-settings --secret-key='0x6f 0x00 ...'"
 
 Linux Example:
 
-  ./js-ant import -DimportFile=my-reports-and-users.zip -DimportArgs="--update"
+  (Linux: Note, The double quote character needs to be escaped with Backslash)
 
-  ./js-ant import -DimportFile=my-reports-and-users.zip -DimportArgs="--update --skip-user-update"
-
-  ./js-ant import-upgrade -DimportFile=cp_everythinglatest.zip -DimportArgs=\"--include-server-settings --secret-key=\'0x6f 0x00 ...\'\"
+  js-ant import-upgrade -DimportFile=cp_everythinglatest.zip -DimportArgs="--include-server-settings --secret-key=\"0x6f 0x00 ...\""
 
 </echo>
     </target>
@@ -527,21 +526,19 @@ General Example:
 
   js-ant import-ce -DimportFile=my-reports.zip
 
-Windows Example:
-
   js-ant import-ce -DimportFile=my-reports-and-users.zip -DimportArgs="--update"
 
   js-ant import-ce -DimportFile=my-reports-and-users.zip -DimportArgs="--update --skip-user-update"
+
+Windows Example:
 
   js-ant import-upgrade -DimportFile=js-cp-export.zip -DimportArgs="--include-server-settings --secret-key='0x6f 0x00 ...'"
 
 Linux Example:
 
-  ./js-ant import-ce -DimportFile=my-reports-and-users.zip -DimportArgs="--update"
+   (Linux: Note, The double quote character needs to be escaped with Backslash)
 
-  ./js-ant import-ce -DimportFile=my-reports-and-users.zip -DimportArgs="--update --skip-user-update"
-
-  ./js-ant import-upgrade -DimportFile=cp_everythinglatest.zip -DimportArgs=\"--include-server-settings --secret-key=\'0x6f 0x00 ...\'\"
+  js-ant import-upgrade -DimportFile=cp_everythinglatest.zip -DimportArgs="--include-server-settings --secret-key=\"0x6f 0x00 ...\""
 
         </echo>
     </target>
@@ -563,8 +560,6 @@ General Example:
 
   js-ant export-everything -DexportFile=js-export-all.zip
 
-Windows Example:
-
   js-ant export -DexportFile=my-reports-and-users.zip
                 -DexportArgs="--uris /organizations/organization_1/reports
                 --users jasperadmin|organization_1,joeuser|organization_1"
@@ -572,28 +567,20 @@ Windows Example:
   js-ant export -DexportFile=js-organization-1.zip -DexportArgs="--everything
                 --organization organization_1"
 
-  js-ant export -DexportFile=my-reports-and-users.zip
-                  -DexportArgs="--uris /organizations/organization_1/reports
-                  --keyalias=importExport72AndOlderSecret --secret-key="0x6f 0x00 ...""
+
+Windows Example:
+
+    js-ant export -DexportFile=my-reports-and-users.zip
+    -DexportArgs="--uris /organizations/organization_1/reports
+    --keyalias=importExport72AndOlderSecret --secret-key='0x6f 0x00 ...'"
 
 Linux Example:
 
-  ./js-ant export -DexportFile=my-reports-and-users.zip
+  (Linux: Note, The double quote character needs to be escaped with Backslash)
+
+  js-ant export -DexportFile=my-reports-and-users.zip
                   -DexportArgs="--uris /organizations/organization_1/reports
-                  --users 'jasperadmin\|organization_1,joeuser\|organization_1'"
-
-  ./js-ant export -DexportFile=my-reports-and-users.zip
-                  -DexportArgs=\"--uris /organizations/organization_1/reports
-                  --users 'jasperadmin\|organization_1,joeuser\|organization_1'\"
-
-  ./js-ant export -DexportFile=js-organization-1.zip -DexportArgs=\"--everything
-                  --organization organization_1\"
-
-                (linux: note escape backslash on | and " characters and use of ' character)
-
-  ./js-ant export -DexportFile=my-reports-and-users.zip
-                  -DexportArgs="--uris /organizations/organization_1/reports
-                  --keyalias=importExport72AndOlderSecret --secret-key="0x6f 0x00 ...""
+                  --keyalias=importExport72AndOlderSecret --secret-key=\"0x6f 0x00 ...\""
 </echo>
 
     </target>
@@ -615,27 +602,21 @@ General Example:
 
   js-ant export-everything-ce -DexportFile=js-export-all.zip
 
-Windows Example:
-
   js-ant export-ce -DexportFile=my-reports-and-users.zip
                    -DexportArgs="--uris /reports
                    --users jasperadmin,joeuser"
+Windows Example:
 
-  a js-ant export -DexportFile=my-reports-and-users.zip
+  js-ant export -DexportFile=my-reports-and-users.zip
                   -DexportArgs="--uris /organizations/organization_1/reports
-                  --keyalias=importExport72AndOlderSecret --secret-key="0x6f 0x00 ...""
+                  --keyalias=importExport72AndOlderSecret --secret-key='0x6f 0x00 ...'"
 Linux Example:
 
-  ./js-ant export-ce -DexportFile=my-reports-and-users.zip
-                     -DexportArgs="--uris /reports
-                     --users 'jasperadmin,joeuser'"
+  (Linux: Note, The double quote character needs to be escaped with Backslash)
 
-            (linux: note use of the ' character)
-
-  ./js-ant export -DexportFile=my-reports-and-users.zip
+  js-ant export -DexportFile=my-reports-and-users.zip
                   -DexportArgs="--uris /organizations/organization_1/reports
-                  --keyalias=importExport72AndOlderSecret --secret-key="0x6f 0x00 ...""
-
+                  --keyalias=importExport72AndOlderSecret --secret-key=\"0x6f 0x00 ...\""
 
         </echo>
     </target>
@@ -658,6 +639,7 @@ Linux Example:
                     <var name="importExportConfig" value="${importExportConfigPro}"/>
                     <local name="iecpjar"/>
                     <property name="iecpjar" value="${importExportConfig}/lib/iecp.jar"/>
+                    <make-ie-classpath-jar ieLibDir="${importExportConfig}/lib" classpathjar="${iecpjar}"/>
                     <java classname="com.jaspersoft.jasperserver.export.ProfileAttributeImportCommand" fork="true" failonerror="true">
                         <arg value="--import"/>
                         <arg value="--profile-attr-name=@{key}"/>

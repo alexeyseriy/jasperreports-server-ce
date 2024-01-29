@@ -1,5 +1,5 @@
 /*!
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2023 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -21,7 +21,7 @@
 
 /* ====================================
    TABLE MODULE STYLESHEET
-   Last modified date:    May 22, 2020
+   Last modified date:    Feb 1, 2023
    Last modified by:      Anna Leeg
 * ==================================== */
 
@@ -795,8 +795,8 @@
 }
 
 .jr-mTablePresentation.jr .jr-mTable-cellAll.jr {
-  width: 96%;
   height: 100%;
+  width: 92%;
 }
 
 .jr-mTablePresentation.jr .jr-mTable-cellDropstarter.jr .jr-mTable-cell-dropzone.jr {

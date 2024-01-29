@@ -21,7 +21,7 @@
 
 /* =============================================
     ICON MODULE STYLESHEET
-    Last change date:    August 30, 2019
+    Last change date:    October 29, 2021
     Last changed by:     Anna Leeg
  * ============================================= */
 
@@ -58,6 +58,12 @@
     line-height: (16px / 11px);
   }
 */
+
+.jr-mIconTiny.jr {
+  font-size: 11px;           // new base font size
+  height: em(20px, 11px);
+  line-height: (20px / 11px);
+}
 
 .jr-mIconSmall.jr {
     font-size: 14px;           // new base font size

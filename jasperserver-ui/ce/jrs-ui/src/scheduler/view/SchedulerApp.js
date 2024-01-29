@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -98,6 +98,8 @@ export default Backbone.View.extend({
         // by default we open list of jobs unless we are in the 'runInBackground' mode
         if (this.runInBackgroundMode) {
             this.runNowRequest();
+        } else if (this.isJobEditFromServerMonitoring()) {
+            this.openEditJobInterface(this.schedulerStartupParams.jobId);
         } else {
             this.openJobsListInterface();
         }
@@ -210,11 +212,15 @@ export default Backbone.View.extend({
         this.openJobsListInterface();
     },
 
+    isJobEditFromServerMonitoring: function () {
+        return this.schedulerStartupParams.jobId && this.schedulerStartupParams.jobEditFromMonitoring;
+    },
+
     cancelJobCreation: function () {
         if (this.schedulerAccelator) {
             schedulerUtils._closeScheduleOverlay();
             schedulerUtils._detachEvents();
-        }else if(this.runInBackgroundMode) {
+        }else if(this.runInBackgroundMode|| this.isJobEditFromServerMonitoring()) {
             // in 'runInBackground' mode we have to get back to previous page
             schedulerUtils.getBackToPreviousLocation();
         } else {
@@ -224,7 +230,7 @@ export default Backbone.View.extend({
     },
 
     jobHasBeenCreated: function () {
-        if (this.runInBackgroundMode) {
+        if (this.runInBackgroundMode  || this.isJobEditFromServerMonitoring()) {
             // in 'runInBackground' mode we have to get back to previous page
             schedulerUtils.getBackToPreviousLocation();
         } else {

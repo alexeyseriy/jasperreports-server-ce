@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -24,12 +24,18 @@ import com.jaspersoft.jasperserver.api.common.domain.impl.ExecutionContextImpl;
 import com.jaspersoft.jasperserver.api.metadata.user.domain.Role;
 import com.jaspersoft.jasperserver.api.metadata.user.domain.User;
 import com.jaspersoft.jasperserver.api.metadata.user.service.TenantService;
+import com.jaspersoft.jasperserver.api.metadata.user.service.impl.UserAuthorityServiceImpl;
 import com.jaspersoft.jasperserver.api.security.externalAuth.ExternalAuthProperties;
 import com.jaspersoft.jasperserver.api.security.externalAuth.processors.ExternalUserProcessor;
 import com.jaspersoft.jasperserver.api.security.externalAuth.processors.ExternalUserSetupProcessor;
 import com.jaspersoft.jasperserver.externalAuth.mocks.MockExternalJDBCUserDetailsService;
 import com.jaspersoft.jasperserver.externalAuth.mocks.MockSsoTicketValidatorImpl;
+import com.jaspersoft.jasperserver.util.test.BaseServiceSetupTestNG;
 import org.hibernate.SessionFactory;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -39,19 +45,29 @@ import org.springframework.security.web.FilterChainProxy;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import javax.annotation.Resource;
+import javax.inject.Inject;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.*;
 
+import static com.jaspersoft.jasperserver.api.common.util.StaticExecutionContextProvider.getExecutionContext;
 import static org.testng.Assert.*;
 
 /**
@@ -89,8 +105,18 @@ public class SSOIntegrationTest extends BaseTransactionalTestNGSpringContextTest
 	@Resource(name = "externalJDBCUserDetailsService")
 	private MockExternalJDBCUserDetailsService mockExternalJDBCUserDetailsService;
 
+	@Autowired
+	private PlatformTransactionManager transactionManager;
+
+	private TransactionTemplate transactionTemplate;
+
 	@Resource
 	private SessionFactory sessionFactory;
+
+	@BeforeMethod
+	private void setUp()	{
+		transactionTemplate = new TransactionTemplate(transactionManager);
+	}
 
 	/**
 	 * Testing sso filter chain external user creation without external roles
@@ -100,9 +126,6 @@ public class SSOIntegrationTest extends BaseTransactionalTestNGSpringContextTest
 	public void testUserWithoutExternalRoles() {
 		try {
 			logger.info("Starting testUserWithoutExternalRoles.");
-
-			createTenant("", TenantService.ORGANIZATIONS, "root", TenantService.ORGANIZATIONS, " ", "/", "/", "default");
-			sessionFactory.getCurrentSession().flush();
 			//test redirect to login screen
 			final MockHttpServletRequest mockRequest = new MockHttpServletRequest("GET", "/home.html");
 			mockRequest.setServletPath("/home.html");
@@ -140,7 +163,6 @@ public class SSOIntegrationTest extends BaseTransactionalTestNGSpringContextTest
 					externalAuthProperties.getTicketParameterName() + "=" + testTicket +
 					"&" + externalAuthProperties.getServiceParameterName() + "=" + URLEncoder.encode(mockRequest2.getRequestURL().toString(), "ISO-8859-1"));
 			assertTrue(testTicketValidationUrl.equals(ticketValidationUrl), "Ticket validation url " + ticketValidationUrl + " was not as expected: " + testTicketValidationUrl);
-
 			sessionFactory.getCurrentSession().flush();
 			//check user created
 			User user = userAuthorityService.getUser(new ExecutionContextImpl(), mockSsoTicketValidator.getTestValidatedPrincipal());
@@ -176,9 +198,13 @@ public class SSOIntegrationTest extends BaseTransactionalTestNGSpringContextTest
 	public void testUserWithExternalRoles() {
 		try {
 			logger.info("Starting testUserWithExternalRoles.");
-
-			createTenant("", TenantService.ORGANIZATIONS, "root", TenantService.ORGANIZATIONS, " ", "/", "/", "default");
-			sessionFactory.getCurrentSession().flush();
+			transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+			transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+				@Override
+				protected void doInTransactionWithoutResult(TransactionStatus status) {
+					createTenant("", TenantService.ORGANIZATIONS, "root", TenantService.ORGANIZATIONS, " ", "/", "/", "default");
+				}
+			});
 			final String EXTERNAL_TEST_ROLE_1 = "EXTERNAL_TEST_ROLE_1";
 			final String EXTERNAL_TEST_ROLE_2 = "EXTERNAL_TEST_ROLE_2";
 			final List<String> EXTERNAL_TEST_ROLE_LIST = new LinkedList<String>(Arrays.asList(EXTERNAL_TEST_ROLE_1, EXTERNAL_TEST_ROLE_2));
@@ -301,6 +327,23 @@ public class SSOIntegrationTest extends BaseTransactionalTestNGSpringContextTest
 	public void  tearDown() {
 		mockSsoTicketValidator.cleanup();
 		mockExternalJDBCUserDetailsService.cleanup();
+	}
+
+	@AfterClass
+	public void cleanUp	()	{
+
+/*		This is to cleanup the "testUser" and "ROLE_USER" which are persisted in the jasperserver
+		database during SSO tests. If this cleanup is not done, upcoming tests in the
+		production-data suite would fail.*/
+
+		User testUser = userAuthorityService.getUser(null, "testUser");
+		Role role = userAuthorityService.getRole(null, BaseServiceSetupTestNG.ROLE_USER);
+		if(role!=null)	{
+			userAuthorityService.removeRole(getExecutionContext(), testUser, role);
+			userAuthorityService.deleteRole(getExecutionContext(), BaseServiceSetupTestNG.ROLE_USER );
+		}
+		userAuthorityService.deleteUser(getExecutionContext(), "testUser");
+
 	}
 
 }

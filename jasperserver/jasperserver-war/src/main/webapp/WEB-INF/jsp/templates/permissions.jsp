@@ -1,6 +1,6 @@
 <%@ page contentType="text/html; charset=utf-8" %>
 <%--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -53,23 +53,22 @@ Usage:
     <t:putAttribute name="headerClass" value="mover"/>
     <t:putAttribute name="containerTitle"><spring:message code="permissionsDialog.title" javaScriptEscape="true"/>:&nbsp;<span class="path">the/path/to/the/object/here</span></t:putAttribute>
     <t:putAttribute name="bodyContent">
-        <ul id="permissionsViewBy" class="list tabSet text control horizontal responsive">
-            <li class="label first"><p class="wrap"><spring:message code="permissionsDialog.viewBy" javaScriptEscape="true"/>:</p></li>
-            <li class="tab"><p class="wrap button"><spring:message code="permissionsDialog.byUser" javaScriptEscape="true"/></p></li>
-            <li class="tab last selected"><p class="wrap button"><spring:message code="permissionsDialog.byRole" javaScriptEscape="true"/></p></li>
+        <ul id="viewMode" class="list tabSet text control horizontal responsive" tabindex="0" role="tablist" js-navtype="tablist" aria-labelledby="permissionDialogTitle permissionsViewByTabLabel">
+            <li role="none" class="label first" id="permissionsViewByTabLabel"><p class="wrap"><spring:message code="permissionsDialog.viewBy" javaScriptEscape="true"/>:</p></li>
+            <li role="tab" class="tab tablistleaf"><p class="wrap button" tabindex="-1"><spring:message code="permissionsDialog.byUser" javaScriptEscape="true"/></p></li>
+            <li role="tab" class="tab tablistleaf last selected"><p class="wrap button" tabindex="-1"><spring:message code="permissionsDialog.byRole" javaScriptEscape="true"/></p></li>
         </ul>
         <t:insertTemplate template="/WEB-INF/jsp/templates/control_searchLockup.jsp">
             <t:putAttribute name="containerID" value="searchPermissionsBox"/>
             <t:putAttribute name="inputID" value="permissionsSearchInput"/>
         </t:insertTemplate>
-
+        <p class="message hint" tabindex="0"><spring:message code="permissionsDialog.hint" javaScriptEscape="true"/></p>
         <t:insertTemplate template="/WEB-INF/jsp/templates/container.jsp">
             <t:putAttribute name="containerID" value="permissionsListContainer"/>
             <t:putAttribute name="containerClass" value="control groupBox fillParent"/>
             <t:putAttribute name="bodyContent">${bodyContent}</t:putAttribute>
         </t:insertTemplate>
-        <p class="message hint"><spring:message code="permissionsDialog.hint" javaScriptEscape="true"/></p>
-        <p class="message warning"><spring:message code="permissionsDialog.navWarning" javaScriptEscape="true"/></p>
+        <p class="message warning" tabindex="0"><spring:message code="permissionsDialog.navWarning" javaScriptEscape="true"/></p>
     </t:putAttribute>
     <t:putAttribute name="footerContent">
         <button id="permissionsApply" class="button action primary up"><span class="wrap"><spring:message code="button.apply"/></span><span class="icon"></span></button>

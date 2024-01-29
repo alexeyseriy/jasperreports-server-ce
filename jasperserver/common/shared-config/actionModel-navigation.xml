@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -31,6 +31,7 @@
             <selectAction labelKey="menu.repository">
                 <option labelKey="menu.search" action="primaryNavModule.navigationOption" actionArgs="search"/>
                 <option labelKey="menu.all" action="primaryNavModule.navigationOption" actionArgs="browse"/>
+                <option labelKey="menu.favorites" action="primaryNavModule.navigationOption" actionArgs="favorites"/>
                 <option labelKey="menu.jobs" action="primaryNavModule.navigationOption" actionArgs="jobs"/>
 <!--
                 <option labelKey="menu.reports" action="primaryNavModule.navigationOption" actionArgs="report"/>
@@ -91,7 +92,7 @@
                 <condition test="isProVersion">
                 <condition test="!banUserRole">
                     <condition test="checkAuthenticationRoles" testArgs="ROLE_SUPERUSER">
-                        <option labelKey="menu.server.settings" action="primaryNavModule.navigationOption" actionArgs="logSettings"/>
+                        <option labelKey="menu.server.settings" action="primaryNavModule.navigationOption" actionArgs="generalSettings"/>
                     </condition>
                 </condition>
                 </condition>
@@ -100,6 +101,13 @@
                     <option labelKey="menu.mondrian.properties" action="primaryNavModule.navigationOption" actionArgs="mondrianProperties"/>
 -->
                     <option labelKey="menu.server.settings" action="primaryNavModule.navigationOption" actionArgs="logSettings"/>
+                </condition>
+                <condition test="isProVersion">
+                    <condition test="isAvailableAdminConsole">
+                        <condition test="checkAuthenticationRoles" testArgs="ROLE_ADMINISTRATOR">
+                            <option labelKey="server.monitoring.toolbar.menu" action="primaryNavModule.navigationOption" actionArgs="adminConsole"/>
+                        </condition>
+                    </condition>
                 </condition>
             </selectAction>
         </condition>

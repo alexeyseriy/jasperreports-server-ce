@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -36,7 +36,7 @@
   ==
   == Internationalized schema using utf-8 encoding
   ==
-  == (C) Copyright 2007 TIBCO Software Inc. and others.
+  == (C) Copyright 2023 Cloud Software Group, Inc. and others.
   -->
 
 <!-- Shared dimensions -->

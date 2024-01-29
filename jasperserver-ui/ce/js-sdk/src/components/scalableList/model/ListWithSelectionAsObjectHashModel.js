@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -22,20 +22,40 @@
 import _ from 'underscore';
 import BaseListWithSelectionModel from './BaseListWithSelectionModel';
 var ListWithSelectionAsObjectHashModel = BaseListWithSelectionModel.extend({
-    _addToSelection: function (value, index) {
-        this.selection[value] = true;
+    initialize: function(options) {
+        BaseListWithSelectionModel.prototype.initialize.call(this, options);
+
+        this.caseSensitiveSelection = typeof options.caseSensitiveSelection !== 'undefined' ? options.caseSensitiveSelection : true;
     },
+
+    _addToSelection: function (value, index) {
+        if (this.caseSensitiveSelection) {
+            this.selection[value] = true;
+        } else {
+            this.selection[value.toLowerCase()] = value;
+        }
+    },
+
     _removeFromSelection: function (value, index) {
+        if (!this.caseSensitiveSelection) {
+            value = value.toLowerCase();
+        }
         delete this.selection[value];
     },
     _clearSelection: function () {
         this.selection = {};
     },
     _selectionContains: function (value, index) {
+        if (!this.caseSensitiveSelection) {
+            value = value.toLowerCase();
+        }
         return this.selection[value];
     },
     _getSelection: function () {
-        return _.keys(this.selection);
+        if (this.caseSensitiveSelection) {
+            return _.keys(this.selection);
+        }
+        return _.values(this.selection);
     },
     select: function (selection, options) {
         this._clearSelection();

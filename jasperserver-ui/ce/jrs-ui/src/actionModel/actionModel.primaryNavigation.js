@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -36,7 +36,7 @@ var primaryNavModule = {
     ACTION_MODEL_TAG: 'navigationActionModel',
     CONTEXT_POSTFIX: '_mutton',
     NAVIGATION_MUTTON_DOM_ID: 'navigation_mutton',
-    NAVIGATION_MENU_PARENT_DOM_ID: 'navigationOptions',
+    NAVIGATION_MENU_PARENT_CLASS: '.js-navigationOptions',
     /**
      * Navigation paths used in the navigation menu
      */
@@ -55,6 +55,10 @@ var primaryNavModule = {
             url: 'flow.html',
             params: '_flowId=searchFlow&mode=search'
         },
+        favorites: {
+            url: 'flow.html',
+            params: '_flowId=searchFlow&mode=search&filterId=favoriteFilter&filterOption=favoriteFilter-favorites'
+        },
         report: {
             url: 'flow.html',
             params: '_flowId=searchFlow&mode=search&filterId=resourceTypeFilter&filterOption=resourceTypeFilter-reports&searchText='
@@ -71,6 +75,10 @@ var primaryNavModule = {
         adminHome: {
             url: 'flow.html',
             params: '_flowId=adminHomeFlow'
+        },
+        generalSettings: {
+            url: 'flow.html',
+            params: '_flowId=generalSettingsFlow'
         },
         organization: {
             url: 'flow.html',
@@ -118,6 +126,7 @@ var primaryNavModule = {
             params: '_flowId=addDataSourceFlow&ParentFolderUri=' + encodeURIComponent('/datasources')
         },
         logSettings: { url: 'log_settings.html' },
+        adminConsole: { url: 'adminConsole.html' },
         createReport: { url: 'view/view/modules/adhoc/createReport' }
     },
     /**
@@ -183,16 +192,17 @@ var primaryNavModule = {
         var mutton = jQuery('#' + this.NAVIGATION_MUTTON_DOM_ID)[0].clone('true');
         var textPlacement = jQuery(mutton).children('.button');
         jQuery(mutton).attr('id', domId);    //TODO: see if we can do this with builder (maybe not)
+        jQuery(mutton).find('p').attr('id', domId + '_label');    //TODO: see if we can do this with builder (maybe not)
         //TODO: see if we can do this with builder (maybe not)
         var text = document.createTextNode(label);
         textPlacement.append(text);
-        var navigationMenuParent = jQuery('#' + this.NAVIGATION_MENU_PARENT_DOM_ID)[0];
+        var navigationMenuParent = jQuery(this.NAVIGATION_MENU_PARENT_CLASS)[0];
         navigationMenuParent && navigationMenuParent.append(mutton);
     },
     /* Show the drop-down menu for a given top-level menu item on the menu bar. */
-    showNavButtonMenu: function (event, object) {
+    showNavButtonMenu: function (event, object, label) {
         var elementId = jQuery(object).attr('id');
-        actionModel.showDropDownMenu(event, object, elementId + this.CONTEXT_POSTFIX, this.NAVIGATION_MENU_CLASS, this.ACTION_MODEL_TAG);
+        actionModel.showDropDownMenu(event, object, elementId + this.CONTEXT_POSTFIX, this.NAVIGATION_MENU_CLASS, this.ACTION_MODEL_TAG, label);
         jQuery('#' + 'menu')[0].parentId = elementId;
     },
     /**

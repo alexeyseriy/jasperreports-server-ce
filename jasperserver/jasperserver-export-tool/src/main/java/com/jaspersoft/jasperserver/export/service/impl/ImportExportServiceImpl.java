@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -89,6 +89,7 @@ public abstract class ImportExportServiceImpl implements ImportExportService, Zi
     public final static String ORGANIZATION = "organization";
     public final static String RESOURCE_TYPES = "resource-types";
     public final static String SKIP_DEPENDENT_RESOURCES = "skip-dependent-resources";
+    public final static String SKIP_FAVORITE_RESOURCES = "skip-favorite-resources";
     public static final String SKIP_SUBORGANIZATIONS = "skip-suborganizations";
     public final static String URIS_PARAMETER = "uris";
     public final static String URIS_OF_SCHEDULED_PARAMETER = "report-jobs";

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -33,7 +33,7 @@ describe('Primary navigation', function () {
 
     beforeEach(function () {
         setTemplates(menuText, mainNavigationText);
-    })
+    });
 
     var navActionModel = {
         'main_home_mutton': [],
@@ -58,15 +58,15 @@ describe('Primary navigation', function () {
         expect(args).toEqual(expectedArgs);
     });
     it('should create mutton elements', function () {
-        jQuery('#navigationOptions .mutton').remove();
+        jQuery(`${primaryNavModule.NAVIGATION_MENU_PARENT_CLASS} .mutton`).remove();
         primaryNavModule.createMutton('test_id', 'test');
-        var mutton = jQuery('#navigationOptions #test_id');
+        var mutton = jQuery(`${primaryNavModule.NAVIGATION_MENU_PARENT_CLASS} #test_id`);
         expect(mutton.length).toEqual(1);
         expect(mutton).toHaveClass('mutton');
         expect(mutton.text().strip()).toEqual('test');
     });
     it('should open menu on mutton', function () {
-        jQuery('#navigationOptions .mutton').remove();
+        jQuery(`${primaryNavModule.NAVIGATION_MENU_PARENT_CLASS} .mutton`).remove();
         spyOn(actionModel, 'showDynamicMenu');
 
         primaryNavModule.initializeNavigation();
@@ -123,4 +123,27 @@ describe('Primary navigation', function () {
         primaryNavModule.navigationOption();
         expect(primaryNavModule.setNewLocation).toHaveBeenCalled();
     });
+    it('should check if it is nav button',function(){
+        let elem = jQuery('<div class="mutton"></div>');
+        let obj = primaryNavModule.isNavButton(elem);
+        expect(obj).toBe(true);
+    });
+    it('should call global action logout ',function(){
+        let option='logOut';
+        spyOn(primaryNavModule.globalActions,'logOut');
+        spyOn(primaryNavModule, 'setNewLocation');
+        primaryNavModule.navigationOption(option);
+        expect(primaryNavModule.globalActions.logOut).toHaveBeenCalled();
+    });
+    it('should execute function and navigate to particular page(body id)',function(){
+        jQuery(document.body).attr('id','designer');
+        window.designerBase = {
+            confirmAndLeave: function () {
+                return (()=>{});
+            }
+        };
+        spyOn(primaryNavModule, 'setNewLocation');
+        primaryNavModule.navigationOption();
+        expect(primaryNavModule.setNewLocation).not.toHaveBeenCalled();
+    })
 });

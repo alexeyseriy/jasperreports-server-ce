@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -56,7 +56,7 @@ export default BaseDataSourceView.extend({
     chooseTreeNodes: function (e) {
         e.preventDefault();
         this.$('[name=toRight]').attr('disabled', 'disabled').removeClass('over');
-        var self = this, nodes = this.subDataSourcesTree.selectedNodes, models = _.compact(_.map(nodes, function (node) {
+        var nodes = this.subDataSourcesTree.selectedNodes, models = _.compact(_.map(nodes, function (node) {
             return !node ? null : new SubDataSourceModel({
                 name: node.name,
                 id: node.param.id,
@@ -198,13 +198,13 @@ export default BaseDataSourceView.extend({
         }
     },
     _unhideAvailableSubDataSources: function (uri) {
-        function expandTreePath(tree, uri) {
-            tree.processNodePath(uri, function (node) {
+        function expandTreePath(tree, treePathUri) {
+            tree.processNodePath(treePathUri, function (node) {
                 if (node.parent) {
                     if (tree.rootNode != node.parent && tree.getState(node.parent.id) == dynamicTree.TreeNode.State.CLOSED) {
                         node.parent.handleNode();
                     }
-                    if (node.param.uri === uri) {
+                    if (node.param.uri === treePathUri) {
                         node.select();
                     }
                 }

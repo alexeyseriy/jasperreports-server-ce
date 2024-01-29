@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -43,10 +43,13 @@
                 <master.properties>${masterPropsSource}</master.properties>
                 <!-- workaround src w/o tibco drivers -->
                 <tibco.driver.available>${tibco.driver.available}</tibco.driver.available>
+                <deprecated.driver.available>${deprecated.driver.available}</deprecated.driver.available>
                 <SKIP_TEST_ARG>${SKIP_TEST_ARG}</SKIP_TEST_ARG>
                 <disable.fafj>${disable.fafj}</disable.fafj>
                 <buildArtifactVersionName>${buildArtifactVersionName}</buildArtifactVersionName>
                 <fafBuildArtifactVersionName>${fafBuildArtifactVersionName}</fafBuildArtifactVersionName>
+                <componentsArtifactName>${components.artifactId}</componentsArtifactName>
+                <componentsArtifactVersion>${components.version}</componentsArtifactVersion>
             </properties>
         </profile>
         <profile>

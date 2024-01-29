@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -41,8 +41,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.util.Arrays;
-import java.util.Map;
+import java.util.*;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -175,4 +174,39 @@ public class EngineServiceImplTest {
         return user;
     }
 
+    @Test
+    void getDefaultValuesFromJasperReport() throws Exception{
+        List<String> defValues = Arrays.asList("ABC\\, 123", "EDG", " HIG\\\\, 345", "XYZ");
+        Map map = new HashMap<String, Object>();
+        map.put("Name1", defValues);
+
+        List<String> defValues2 = Arrays.asList("123", "\\,456", "75\\,6");
+        map.put("Name2", defValues2);
+        map.put("Name3", "xxx");
+        Map<String, Object> result = service.getDefaultValuesFromJasperReport(map);
+        Collection collection1 = (Collection) map.get("Name1");
+        Assert.assertTrue(((Collection<?>) map.get("Name1")).contains("ABC, 123"));
+        Assert.assertTrue(((Collection<?>) map.get("Name1")).contains("HIG\\, 345"));
+        Assert.assertTrue(((Collection<?>) map.get("Name2")).contains(",456"));
+        Assert.assertTrue(map.get("Name3").equals("xxx"));
+
+    }
+
+
+    @Test
+    void getDefaultValuesFromJasperReport2() throws Exception {
+        List<String> defValues = Arrays.asList("ABC\\, 123");
+        Map map = new HashMap<String, Object>();
+        map.put("Name1", defValues);
+
+        List<String> defValues2 = Arrays.asList(null);
+        map.put("Name2", defValues2);
+        map.put("Name3", null);
+        Map<String, Object> result = service.getDefaultValuesFromJasperReport(map);
+        Collection collection1 = (Collection) map.get("Name1");
+        Assert.assertTrue(((Collection<?>) map.get("Name1")).contains("ABC, 123"));
+        Assert.assertTrue(((Collection<?>) map.get("Name2")).contains(null));
+        Assert.assertNull(map.get("Name3"));
+
+    }
 }

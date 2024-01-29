@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -28,7 +28,7 @@ import com.jaspersoft.jasperserver.common.actionModel.model.ActionModel;
 import com.jaspersoft.jasperserver.common.actionModel.service.impl.ActionModelServiceImpl;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jdom.Document;
+import org.jdom2.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.MessageSource;
@@ -56,6 +56,8 @@ public class NavigationActionModelSupport implements ActionModelSupport {
     private static final String ROLES_DELIMITER = ",";
     private static final String NO_TENANT_ID = "null";
     private static boolean isProVersion = false;
+    private static boolean isAvailableAdminConsole = true;
+
     private static Log log = LogFactory.getLog(NavigationActionModelSupport.class);
     private HttpServletRequest request;
 
@@ -161,6 +163,13 @@ public class NavigationActionModelSupport implements ActionModelSupport {
         //return false for CE. Overrides in Pro
         return false;
     }
+    /**
+     * Determines if madminConsole can be displayed
+     * @return boolean can be displayed
+     */
+    public boolean isAvailableAdminConsole() {
+        return isAvailableAdminConsole;
+    }
 
     /**
      * Helper method used to retrieve the logged in users roles
@@ -259,7 +268,9 @@ public class NavigationActionModelSupport implements ActionModelSupport {
     public static void setProVersion(boolean proVersion) {
         isProVersion = proVersion;
     }
-
+    public static void setAvailableAdminConsole(boolean availableAdminConsole) {
+        isAvailableAdminConsole = availableAdminConsole;
+    }
     public HttpServletRequest getRequest() {
         return request;
     }

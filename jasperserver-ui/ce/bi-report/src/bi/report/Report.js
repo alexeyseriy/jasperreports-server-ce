@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved. Confidentiality & Proprietary.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved. Confidentiality & Proprietary.
  * Licensed pursuant to commercial TIBCO End User License Agreement.
  */
 
@@ -442,12 +442,12 @@ function createSaveAction(controller) {
                     .done(function (actionResponse) {
                         dfd.resolve(actionResponse);
                     })
-                    .fail(function (error) {
-                        var responseJson = error && error.responseText ? JSON.parse(error.responseText) : null, err;
+                    .fail(function (failError) {
+                        var responseJson = failError && failError.responseText ? JSON.parse(failError.responseText) : null, err;
                         if (responseJson && responseJson.result && responseJson.result.code && responseJson.result.msg) {
                             err = biComponentErrorFactoryReportProxy.genericError(responseJson.result.code, responseJson.result.msg);
                         } else {
-                            err = biComponentErrorFactoryReportProxy.requestError(error);
+                            err = biComponentErrorFactoryReportProxy.requestError(failError);
                         }
                         localLogger.error(err.toString());
                         dfd.reject(err);
@@ -483,12 +483,12 @@ function createRunZoomAction(controller) {
             .done(function(actionResponse) {
                 dfd.resolve(actionResponse);
             })
-            .fail(function (error) {
-                var responseJson = error && error.responseText ? JSON.parse(error.responseText) : null, err;
+            .fail(function (failError) {
+                var responseJson = failError && failError.responseText ? JSON.parse(failError.responseText) : null, err;
                 if (responseJson && responseJson.result && responseJson.result.code && responseJson.result.msg) {
                     err = biComponentErrorFactoryReportProxy.genericError(responseJson.result.code, responseJson.result.msg);
                 } else {
-                    err = biComponentErrorFactoryReportProxy.requestError(error);
+                    err = biComponentErrorFactoryReportProxy.requestError(failError);
                 }
                 localLogger.error(err.toString());
                 dfd.reject(err);
@@ -918,7 +918,8 @@ _.extend(Report, {
         'docx',
         'pptx',
         'json',
-        'data_csv'
+        'data_csv',
+        'data_xlsx'
     ],
     chart: {
         componentTypes: ['chart'],

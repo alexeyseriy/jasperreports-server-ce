@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved. Confidentiality & Proprietary.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved. Confidentiality & Proprietary.
  * Licensed pursuant to commercial TIBCO End User License Agreement.
  */
 
@@ -37,11 +37,11 @@ export default BaseJiveComponentView.extend({
 
         var fragmentId = crosstab.getFragmentId();
 
-        this.crosstabElement.on('click touchend', 'td.jrxtcolheader[data-jrxtid=\'' +
+        this.crosstabElement.on('click touchend', '.jrxtcolheader[data-jrxtid=\'' +
             fragmentId + '\']', _.bind(this._onClick, this, crosstab));
-        this.crosstabElement.on('click touchend', 'td.jrxtdatacell[data-jrxtid=\'' +
+        this.crosstabElement.on('click touchend', '.jrxtdatacell[data-jrxtid=\'' +
             fragmentId + '\']', _.bind(this._onClick, this, crosstab));
-        this.crosstabElement.on('click touchend', 'td.jrxtrowheader[data-jrxtid=\'' +
+        this.crosstabElement.on('click touchend', '.jrxtrowheader[data-jrxtid=\'' +
             fragmentId + '\']', _.bind(this._onClick, this, crosstab));
 
         if (this.model.get("hasFloatingHeaders") && this.stateModel.isFloatingCrosstabHeaderEnabled()) {
@@ -102,8 +102,8 @@ export default BaseJiveComponentView.extend({
         var columnIdx = cell.data('jrxtcolidx');
         var fragmentId = cell.data('jrxtid');
         var parentTable = cell.parents("table:first");
-        var firstHeader = $('td.jrxtcolheader[data-jrxtid=\'' + fragmentId + '\'][data-jrxtcolidx=\'' + columnIdx + '\']:first', parentTable);
-        var lastCell = $('td.jrxtdatacell[data-jrxtid=\'' + fragmentId + '\'][data-jrxtcolidx=\'' + columnIdx + '\']:last', parentTable);
+        var firstHeader = $('.jrxtcolheader[data-jrxtid=\'' + fragmentId + '\'][data-jrxtcolidx=\'' + columnIdx + '\']:first', parentTable);
+        var lastCell = $('.jrxtdatacell[data-jrxtid=\'' + fragmentId + '\'][data-jrxtcolidx=\'' + columnIdx + '\']:last', parentTable);
 
         var selected = {crosstab: crosstab, header: firstHeader, cell:cell, isColumn: true};
         this.resetSelected(selected);
@@ -131,7 +131,7 @@ export default BaseJiveComponentView.extend({
     selectRowGroup: function(crosstab, cell) {
         var columnIdx = cell.data('jrxtcolidx');
         var fragmentId = cell.data('jrxtid');
-        var headers = $('td.jrxtrowheader[data-jrxtid=\'' + fragmentId + '\'][data-jrxtcolidx=\'' + columnIdx + '\']', cell.parents("table:first"));
+        var headers = $('.jrxtrowheader[data-jrxtid=\'' + fragmentId + '\'][data-jrxtcolidx=\'' + columnIdx + '\']', cell.parents("table:first"));
         var firstHeader = $(headers[0]);
         var lastHeader = $(headers[headers.length - 1]);
 
@@ -341,12 +341,12 @@ export default BaseJiveComponentView.extend({
             firstCol, lastCell, isNotVisible;
 
         if (!this.firstCol) {
-            this.firstCol = scrollContainer.find("td.jrxtcolfloating[data-jrxtid='" + crosstabId + "']").first();
+            this.firstCol = scrollContainer.find(".jrxtcolfloating[data-jrxtid='" + crosstabId + "']").first();
         }
         firstCol = this.firstCol;
 
         if (!this.lastCell) {
-            this.lastCell = firstCol.closest("table").find("td.jrxtdatacell[data-jrxtid='" + crosstabId + "']").last();
+            this.lastCell = firstCol.closest("table").find(".jrxtdatacell[data-jrxtid='" + crosstabId + "']").last();
         }
         lastCell = this.lastCell;
 
@@ -358,7 +358,7 @@ export default BaseJiveComponentView.extend({
         var scrollContainer = this.$scrollContainer,
             scrollData = this.scrollData,
             crosstabId = this.model.getFragmentId(),
-            firstHeader = scrollContainer.find("td.jrxtcolfloating[data-jrxtid='" + crosstabId + "']").first();
+            firstHeader = scrollContainer.find(".jrxtcolfloating[data-jrxtid='" + crosstabId + "']").first();
 
         if (!firstHeader.length) {
             return;
@@ -371,9 +371,9 @@ export default BaseJiveComponentView.extend({
         var floatingTbl = this.floatingColumnHeader,
             containerTop = scrollContainer.offset().top,
             headerTop = firstHeader.closest('tr').offset().top,
-            firstHeaderCel = scrollContainer.find("td.jrxtcolfloating[data-jrxtid='" + crosstabId + "']").first(),
-            firstRowHeaderCel = scrollContainer.find("td.jrxtrowheader[data-jrxtid='" + crosstabId + "']").first(),
-            lastTableCel = firstHeaderCel.closest("table").find("td.jrxtdatacell[data-jrxtid='" + crosstabId + "']").last(),
+            firstHeaderCel = scrollContainer.find(".jrxtcolfloating[data-jrxtid='" + crosstabId + "']").first(),
+            firstRowHeaderCel = scrollContainer.find(".jrxtrowheader[data-jrxtid='" + crosstabId + "']").first(),
+            lastTableCel = firstHeaderCel.closest("table").find(".jrxtdatacell[data-jrxtid='" + crosstabId + "']").last(),
             diff = lastTableCel.length ? lastTableCel.offset().top - floatingTbl.outerHeight() - containerTop: -1, // if last cell is not visible, hide the floating header
             scaleFactor = this.model.get("scaleFactor"),
             floatCondition = headerTop - containerTop < 0 && diff > 0;
@@ -404,7 +404,7 @@ export default BaseJiveComponentView.extend({
             scrollData = this.scrollData,
             crosstabId = this.model.getFragmentId();
 
-        var firstHeader = scrollContainer.find("td.jrxtrowfloating[data-jrxtid='" + crosstabId + "']").first();
+        var firstHeader = scrollContainer.find(".jrxtrowfloating[data-jrxtid='" + crosstabId + "']").first();
         if (!firstHeader.length) {
             return;
         }
@@ -416,7 +416,7 @@ export default BaseJiveComponentView.extend({
         var floatingTbl = this.floatingRowHeader,
             containerLeft = scrollContainer.offset().left,
             headerLeft = firstHeader.offset().left,
-            lastTableCel = scrollContainer.find("table.jrPage td.jrxtdatacell[data-jrxtid='" + crosstabId + "']").last(),
+            lastTableCel = scrollContainer.find("table.jrPage .jrxtdatacell[data-jrxtid='" + crosstabId + "']").last(),
             diff = lastTableCel.length ? lastTableCel.offset().left - floatingTbl.width() - containerLeft: -1, // if last cell is not visible, hide the floating header
             scaleFactor = this.model.get("scaleFactor"),
             floatCondition = headerLeft - containerLeft < 0 && diff > 0;
@@ -453,7 +453,7 @@ export default BaseJiveComponentView.extend({
             this._markCrossHeaderElements(crosstabId);
         }
 
-        var firstHeader = scrollContainer.find("td.jrxtcrossheader[data-jrxtid='" + crosstabId + "']").first();
+        var firstHeader = scrollContainer.find(".jrxtcrossheader[data-jrxtid='" + crosstabId + "']").first();
         if (!firstHeader.length) {
             return;
         }
@@ -503,8 +503,8 @@ export default BaseJiveComponentView.extend({
                             crosstabId = jo.attr("data-jrxtid"),
                             colIdx = jo.attr("data-jrxtcolidx"),
                             altJo = tbl.parent()
-                                .find("table.jrPage td.jrxtrowfloating[data-jrxtid='" + crosstabId + "']")
-                                .filter("td[data-jrxtcolidx='" + colIdx + "']").eq(0);
+                                .find("table.jrPage .jrxtrowfloating[data-jrxtid='" + crosstabId + "']")
+                                .filter("[data-jrxtcolidx='" + colIdx + "']").eq(0);
 
                         altJo.length && altJo.trigger("click");
                         return false;
@@ -520,8 +520,8 @@ export default BaseJiveComponentView.extend({
                             altJo;
 
                         altJo = tbl.parent()
-                            .find("table.jrPage td.jrxtrowfloating[data-jrxtid='" + crosstabId + "']")
-                            .filter("td[data-jrxtcolidx='" + colIdx + "']").eq(0);
+                            .find("table.jrPage .jrxtrowfloating[data-jrxtid='" + crosstabId + "']")
+                            .filter("[data-jrxtcolidx='" + colIdx + "']").eq(0);
 
                         altJo.length && altJo.trigger("click");
                         return false;
@@ -530,7 +530,7 @@ export default BaseJiveComponentView.extend({
             }
 
             var parentTable = firstHeader.closest("table"),
-                lastHeader = parentTable.find("td." + elementClass + "[data-jrxtid='" + crosstabId + "']").last(),
+                lastHeader = parentTable.find("." + elementClass + "[data-jrxtid='" + crosstabId + "']").last(),
                 rows = [], clone, cloneWidth = [],
                 row, $row, lastRow, cloneTD, rowTD, rowTDs, i, j, k,
                 tblJrPage, parentTableRows,
@@ -560,7 +560,7 @@ export default BaseJiveComponentView.extend({
                     lastRow = $(rows[rows.length - 1]);
 
                     var lastRowIndex = parentTableRows.index(lastRow),
-                        allRowSpans = $.map(lastRow.find("td.jrxtcrossheader"), function(td) {
+                        allRowSpans = $.map(lastRow.find(".jrxtcrossheader"), function(td) {
                             return $(td).prop("rowspan");
                         }),
                         maxSpan = Math.max.apply(Math, allRowSpans);
@@ -575,7 +575,7 @@ export default BaseJiveComponentView.extend({
 
                 $.each(rows, function(idx, row) {
                     $row = $(row);
-                    rowTDs = $row.find("td");
+                    rowTDs = $row.find("td,th");
                     clone = $("<tr></tr>");
                     cloneWidth[idx] = 0;
                     clone.attr("style", $row.attr("style"));
@@ -595,9 +595,13 @@ export default BaseJiveComponentView.extend({
                                 colSpanLength += rowTD.prop("colspan");
                             }
 
-                            // put empty TDs for the rowheader to prevent rowspans from interfering
+                            // put empty TDs/THs for the rowheader to prevent rowspans from interfering
                             if (elementClass == "jrxtrowfloating" && rowTD.is(".jrxtinteractive")) {
-                                cloneTD = $("<td class='jrxtrowfloating jrxtinteractive'></td>");
+                                if (rowTD.is("th")) {
+                                    cloneTD = $("<th class='jrxtrowfloating jrxtinteractive'></th>");
+                                } else {
+                                    cloneTD = $("<td class='jrxtrowfloating jrxtinteractive'></td>");
+                                }
                                 cloneTD.attr("data-jrxtid", rowTD.attr("data-jrxtid"));
                                 cloneTD.attr("data-jrxtcolidx", rowTD.attr("data-jrxtcolidx"));
                             } else {
@@ -664,8 +668,8 @@ export default BaseJiveComponentView.extend({
                         crosstabId = jo.attr("data-jrxtid"),
                         colIdx = jo.attr("data-jrxtcolidx"),
                         crosstabFloatingHeader = tbl.parent()
-                            .find("table.jrPage td.jrxtcolheader[data-jrxtid='" + crosstabId + "']")
-                            .filter("td[data-jrxtcolidx='" + colIdx + "']").eq(0);
+                            .find("table.jrPage .jrxtcolheader[data-jrxtid='" + crosstabId + "']")
+                            .filter("[data-jrxtcolidx='" + colIdx + "']").eq(0);
 
                     crosstabFloatingHeader.length && crosstabFloatingHeader.trigger("click");
                     return false;
@@ -673,8 +677,8 @@ export default BaseJiveComponentView.extend({
             });
 
             var parentTable = firstHeader.closest("table"),
-                lastHeader = parentTable.find("td." + elementClass + "[data-jrxtid='" + crosstabId + "']").last(),
-                lastInteractiveRowHeader = parentTable.find("td.jrxtrowheader.jrxtinteractive[data-jrxtid='" + crosstabId + "']").last(),
+                lastHeader = parentTable.find("." + elementClass + "[data-jrxtid='" + crosstabId + "']").last(),
+                lastInteractiveRowHeader = parentTable.find(".jrxtrowheader.jrxtinteractive[data-jrxtid='" + crosstabId + "']").last(),
                 rows = [], clone, cloneWidth = [],
                 row, $row, lastRow, lastInteractiveRowHeaderRow, cloneTD, rowTD, rowTDs, i, j, k,
                 tblJrPage, parentTableRows,
@@ -704,7 +708,7 @@ export default BaseJiveComponentView.extend({
 
                 $.each(rows, function(idx, row) {
                     $row = $(row);
-                    rowTDs = $row.find("td");
+                    rowTDs = $row.find("td,th");
                     clone = $("<tr></tr>");
                     cloneWidth[idx] = 0;
 
@@ -775,8 +779,8 @@ export default BaseJiveComponentView.extend({
     _markCrossHeaderElements: function(crosstabId) {
         var scrollContainer = this.$scrollContainer;
         // Prepare the crosssection in case it doesn't exist
-        if (!scrollContainer.find("td.jrxtcrossheader[data-jrxtid='" + crosstabId + "']").length) {
-            var firstColHeader = scrollContainer.find("td.jrxtcolfloating[data-jrxtid='" + crosstabId + "']").first(),
+        if (!scrollContainer.find(".jrxtcrossheader[data-jrxtid='" + crosstabId + "']").length) {
+            var firstColHeader = scrollContainer.find(".jrxtcolfloating[data-jrxtid='" + crosstabId + "']").first(),
                 firstRow, lastRow, parentTable, parentTableRows, i,
                 firstRowIndex, lastRowIndex, rows = [],
                 maxSpan = 1, row, currentRowMaxSpan, currentRowSpans,
@@ -787,10 +791,10 @@ export default BaseJiveComponentView.extend({
                 firstRow = firstColHeader.closest("tr");
                 parentTableRows = parentTable.find("tr");
 
-                lastRow = parentTable.find("td.jrxtrowheader.jrxtinteractive[data-jrxtid='" + crosstabId + "']").last().closest("tr");
+                lastRow = parentTable.find(".jrxtrowheader.jrxtinteractive[data-jrxtid='" + crosstabId + "']").last().closest("tr");
 
                 if (!lastRow.length) {
-                    lastRow = parentTable.find("td.jrxtcolfloating[data-jrxtid='" + crosstabId + "']").last().closest("tr");
+                    lastRow = parentTable.find(".jrxtcolfloating[data-jrxtid='" + crosstabId + "']").last().closest("tr");
                 }
 
                 firstRowIndex = parentTableRows.index(firstRow);
@@ -800,7 +804,7 @@ export default BaseJiveComponentView.extend({
                     rows.push(parentTableRows.get(i));
 
                     row = $(parentTableRows.get(i));
-                    currentRowSpans = $.map(row.find("td"), function(td) {
+                    currentRowSpans = $.map(row.find("td,th"), function(td) {
                         return $(td).prop("rowspan");
                     });
                     currentRowMaxSpan = Math.max.apply(Math, currentRowSpans);
@@ -822,7 +826,7 @@ export default BaseJiveComponentView.extend({
                 $.each(rows, function(idx, row) {
                     colSpanLength = 0;
 
-                    $(row).find("td").each(function(tdIdx, td) {
+                    $(row).find("td,th").each(function(tdIdx, td) {
                         var $td = $(td);
 
                         colSpanLength += $td.prop("colspan");
@@ -850,7 +854,7 @@ export default BaseJiveComponentView.extend({
             // data column is selected
             if (this.selected.isColumn) {
                 floatingTable = this.floatingColumnHeader;
-                floatingHeader = floatingTable.find("td.jrxtcolheader[data-jrxtcolidx='" + this.selected.header.data("jrxtcolidx") + "']").first();
+                floatingHeader = floatingTable.find(".jrxtcolheader[data-jrxtcolidx='" + this.selected.header.data("jrxtcolidx") + "']").first();
             }
             // row group column is selected
             else {
@@ -861,7 +865,7 @@ export default BaseJiveComponentView.extend({
                     floatingTable = this.floatingRowHeader;
                 }
 
-                floatingHeader = floatingTable.find("td.jrxtrowheader[data-jrxtcolidx='" + this.selected.header.data("jrxtcolidx") + "']").first();
+                floatingHeader = floatingTable.find(".jrxtrowheader[data-jrxtcolidx='" + this.selected.header.data("jrxtcolidx") + "']").first();
             }
 
             if (floatingHeader && floatingHeader.length) {
@@ -957,18 +961,18 @@ export default BaseJiveComponentView.extend({
             // data column is selected
             if (this.selected.isColumn) {
                 floatingTable = this.floatingColumnHeader || this._getFloatingTable(null, crosstabId, "jr_floating_column_header");
-                tableHeader = floatingTable.find("td.jrxtcolheader[data-jrxtcolidx='" + this.selected.header.data("jrxtcolidx") + "']").first();
+                tableHeader = floatingTable.find(".jrxtcolheader[data-jrxtcolidx='" + this.selected.header.data("jrxtcolidx") + "']").first();
             }
             // row group column is selected
             else {
                 floatingTable = this.floatingCrossHeader || this._getFloatingTable(null, crosstabId, "jr_floating_cross_header");
 
                 // the row header is floating and (no cross-header table present or present but with no row headers)
-                if (this.scrollData.bRowMoved && (!floatingTable.length || !floatingTable.find("td.jrxtrowheader").length)) {
+                if (this.scrollData.bRowMoved && (!floatingTable.length || !floatingTable.find(".jrxtrowheader").length)) {
                     floatingTable = this.floatingRowHeader || this._getFloatingTable(null, crosstabId, "jr_floating_row_header");
                 }
 
-                tableHeader = floatingTable.find("td.jrxtrowheader[data-jrxtcolidx='" + this.selected.header.data("jrxtcolidx") + "']").first();
+                tableHeader = floatingTable.find(".jrxtrowheader[data-jrxtcolidx='" + this.selected.header.data("jrxtcolidx") + "']").first();
             }
 
             if (tableHeader && tableHeader.length) {
@@ -1026,11 +1030,11 @@ export default BaseJiveComponentView.extend({
             if (!this.selected.isColumn) {
                 floatingTable = this.floatingCrossHeader || this._getFloatingTable(null, crosstabId, "jr_floating_cross_header");
 
-                if (!floatingTable.length || !floatingTable.find("td.jrxtrowheader").length) {
+                if (!floatingTable.length || !floatingTable.find(".jrxtrowheader").length) {
                     floatingTable = this.floatingRowHeader || this._getFloatingTable(null, crosstabId, "jr_floating_row_header");
                 }
 
-                tableHeader = floatingTable.find("td.jrxtrowheader[data-jrxtcolidx='" + this.selected.header.data("jrxtcolidx") + "']").first();
+                tableHeader = floatingTable.find(".jrxtrowheader[data-jrxtcolidx='" + this.selected.header.data("jrxtcolidx") + "']").first();
 
                 overlayOffset = this.overlay.$el.offset();
                 this.overlay.$el.offset({

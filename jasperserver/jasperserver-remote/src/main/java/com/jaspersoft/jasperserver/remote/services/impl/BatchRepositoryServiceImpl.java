@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -107,7 +107,7 @@ public class BatchRepositoryServiceImpl implements BatchRepositoryService {
 
 
     @Override
-    public RepositorySearchResult<ClientResourceLookup> getResourcesForLookupClass(String lookupClass, String q, String folderUri, List<String> type, List<String> excludeType, List<String> containerType, List<String> excludeFolders, Integer start, Integer limit, Boolean recursive, Boolean showHiddenItems, String sortBy, AccessType accessType, User user, Boolean forceFullPage) throws IllegalParameterValueException, ResourceNotFoundException {
+    public RepositorySearchResult<ClientResourceLookup> getResourcesForLookupClass(String lookupClass, String q, String folderUri, List<String> type, List<String> excludeType, List<String> containerType, List<String> excludeFolders, Integer start, Integer limit, Boolean recursive, Boolean showHiddenItems, String sortBy, AccessType accessType, Boolean favorites, User user, Boolean forceFullPage) throws IllegalParameterValueException, ResourceNotFoundException {
         SearchMode mode = (recursive == null || recursive) ? SearchMode.SEARCH : SearchMode.BROWSE;
         RepositorySearchConfiguration configuration = getConfiguration(mode);
 
@@ -121,6 +121,7 @@ public class BatchRepositoryServiceImpl implements BatchRepositoryService {
                 .setExcludeRelativePaths(excludeFolders)
                 .setShowHidden(showHiddenItems)
                 .setAccessType(accessType)
+                .setFavorites(favorites)
                 .setResourceTypes(type ==null? Collections.EMPTY_LIST:type)
                 .setExcludeResourceTypes(excludeType == null ? Collections.EMPTY_LIST : excludeType)
                 .setSearchMode(mode)
@@ -132,10 +133,10 @@ public class BatchRepositoryServiceImpl implements BatchRepositoryService {
     }
 
     @Override
-    public RepositorySearchResult<ClientResourceLookup> getResources(String q, String folderUri, List<String> type, List<String> excludeType, List<String> containerType, List<String> excludeFolders, Integer start, Integer limit, Boolean recursive, Boolean showHiddenItems, String sortBy, AccessType accessType, User user, Boolean forceFullPage) throws IllegalParameterValueException, ResourceNotFoundException {
+    public RepositorySearchResult<ClientResourceLookup> getResources(String q, String folderUri, List<String> type, List<String> excludeType, List<String> containerType, List<String> excludeFolders, Integer start, Integer limit, Boolean recursive, Boolean showHiddenItems, String sortBy, AccessType accessType, Boolean favorites, User user, Boolean forceFullPage) throws IllegalParameterValueException, ResourceNotFoundException {
     	return getResourcesForLookupClass(
     			(containerType==null || containerType.isEmpty()) && type!=null && type.size()==1 && type.get(0).equals("folder")?RepoFolder.class.getName():null,
-    			q, folderUri, type, excludeType, containerType, excludeFolders, start, limit, recursive, showHiddenItems, sortBy, accessType, user, forceFullPage);
+    			q, folderUri, type, excludeType, containerType, excludeFolders, start, limit, recursive, showHiddenItems, sortBy, accessType, favorites, user, forceFullPage);
     }
 
     public RepositorySearchResult<ClientResourceLookup> getResources(RepositorySearchCriteria criteria) throws IllegalParameterValueException, ResourceNotFoundException {

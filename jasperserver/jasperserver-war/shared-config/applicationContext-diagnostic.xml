@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -354,55 +354,59 @@
     <!--JMX can use JasperServer JMX Server on which provide Jasper Server Authorization and
         remote connections on 10990 port
         or can use available JMX Server (from Application server) but then it`s rely on AppServer JMX configuration
+
+        jMXAuthenticator - provides Authentication to JMX Server connection, can be disabled if not Using separate JMX Server
+            Property allowedRole is used for describing role in which user should be to Authorize default is ROLE_ADMINISTRATOR
+        jMXregistry - provides info about what port RMI should listen, can be disabled if not Using separate JMX Server
+        jasperJMXServerConnector - creates Connector to JMS Server can be disabled if not Using separate JMX Server
+        jasperJMXServer - JMX Server Bean, can automatically find already available JMX Server one and use it if property locateExistingServerIfPossible = "true"
+
         To use AppServer JMX Server instance then comment out these beans:
         JMXauthenticator, JMXregistry, JasperJMXServerConnector,
         and change property in JasperJMXServer:
             locateExistingServerIfPossible to true
             comment out: depends-on="JMXregistry"
 
-
         P.S. to use JConsole with JasperServer JMX Server from same host where JasperServer instance running use this settings:
-           Remote process: service:jmx:rmi://localhost/jndi/rmi://localhost:10990/(context path)
-           Username: admin
-           password: .....
+            Remote process: service:jmx:rmi://localhost/jndi/rmi://localhost:10990/(context path)
+            Username: admin
+            password: .....
 
         Beware if you running multiple instances of AppServers with deployed JasperServer on same host
         you must ensure that they use separate JMX port for every AppServer instance
     -->
+    <util:list id="diagnosticAllowedRolesCe" value-type="java.lang.String">
+        <value>ROLE_ADMINISTRATOR</value>
+    </util:list>
 
+    <!-- BEGIN Embedded JasperServer JMX Server
+    <bean id="jMXAuthenticator" class="com.jaspersoft.jasperserver.api.logging.diagnostic.jmx.JmxSecurityAuthenticator">
+        <property name="authenticationManager" ref="authenticationManager"/>
+        <property name="allowedRoles" ref="${bean.diagnosticAllowedRoles}"/>
+    </bean>
 
-        <!--Bean provide Authentication to JMX Server connection, can be disabled if not Using separate JMX Server
-            Property allowedRole is used for describing role in which user should be to Authorize default is ROLE_ADMINISTRATOR
-        -->
-        <bean id="jMXAuthenticator" class="com.jaspersoft.jasperserver.api.logging.diagnostic.jmx.JmxSecurityAuthenticator">
-            <property name="authenticationManager" ref="authenticationManager"/>
-            <property name="allowedRoles" ref="${bean.diagnosticAllowedRoles}"/>
-        </bean>
+    <bean id="jMXregistry" class="org.springframework.remoting.rmi.RmiRegistryFactoryBean">
+        <property name="port" value="${diagnostic.port}"/>
+    </bean>
 
-        <util:list id="diagnosticAllowedRolesCe" value-type="java.lang.String">
-            <value>ROLE_ADMINISTRATOR</value>
-        </util:list>
+    <bean id="jasperJMXServerConnector" class="org.springframework.jmx.support.ConnectorServerFactoryBean" lazy-init="false">
+        <property name="server" ref="jasperJMXServer"/>
+        <property name="objectName" value="connector:name=rmi"/>
+        <property name="serviceUrl" value="service:jmx:rmi:///jndi/rmi://${diagnostic.rmiHost}:${diagnostic.port}/${diagnostic.name}"/>
+        <property name="environmentMap">
+            <map>
+                <entry key="jmx.remote.authenticator" value-ref="jMXAuthenticator"/>
+            </map>
+        </property>
+    </bean>
 
-        <!--Bean provide info about what port RMI should listen, can be disabled if not Using separate JMX Server-->
-        <bean id="jMXregistry" class="org.springframework.remoting.rmi.RmiRegistryFactoryBean">
-            <property name="port" value="${diagnostic.port}"/>
-        </bean>
-
-        <!--Bean which create Connector to JMS Servercan be disabled if not Using separate JMX Server-->
-        <bean id="jasperJMXServerConnector" class="org.springframework.jmx.support.ConnectorServerFactoryBean" lazy-init="false">
-            <property name="server" ref="jasperJMXServer"/>
-            <property name="objectName" value="connector:name=rmi"/>
-            <property name="serviceUrl" value="service:jmx:rmi:///jndi/rmi://${diagnostic.rmiHost}:${diagnostic.port}/${diagnostic.name}"/>
-            <property name="environmentMap">
-                <map>
-                    <entry key="jmx.remote.authenticator" value-ref="jMXAuthenticator"/>
-                </map>
-            </property>
-        </bean>
-
-
-    <!--JMX Server Bean, can automaticaly find already available JMX Server one and use it if property locateExistingServerIfPossible = "true"-->
     <bean id="jasperJMXServer" class="org.springframework.jmx.support.MBeanServerFactoryBean" depends-on="jMXregistry">
+        <property name="locateExistingServerIfPossible" value="${diagnostic.usePlatformJMXServer}"/>
+    </bean>
+    END -->
+
+    <!--Comment this bean declaration out if Embedded JasperServer JMX Server is enabled-->
+    <bean id="jasperJMXServer" class="org.springframework.jmx.support.MBeanServerFactoryBean" >
         <property name="locateExistingServerIfPossible" value="${diagnostic.usePlatformJMXServer}"/>
     </bean>
 
@@ -424,7 +428,7 @@
     <bean id="repositoryDatabaseInfo" class="com.jaspersoft.jasperserver.api.logging.diagnostic.service.impl.RepositoryDiagnosticService">
         <property name="dataSource" ref="dataSource"/>
     </bean>
-    <bean id="hibernateStatistics" class="org.hibernate.stat.internal.ConcurrentStatisticsImpl">
+    <bean id="hibernateStatistics" class="org.hibernate.stat.internal.StatisticsImpl">
         <constructor-arg index="0">
             <ref bean="sessionFactory"/>
         </constructor-arg>
@@ -491,35 +495,6 @@
             </property>
         </bean>
     -->
-
-    <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean" depends-on="jasperJMXServer" lazy-init="false">
-        <property name="targetObject">
-            <bean factory-method="getRootLogger" class="org.apache.log4j.Logger" />
-        </property>
-        <property name="targetMethod">
-            <value>addAppender</value>
-        </property>
-        <property name="arguments">
-            <list>
-                <bean init-method="activateOptions"
-                      class="jmxlogger.integration.log4j.JmxLogAppender">
-                    <!--<property name="ObjectName" value="jasperserver:name=Logger" />-->
-                    <property name="MBeanServerValue" ref="jasperJMXServer" />
-                    <property name="Layout">
-                        <bean class="org.apache.log4j.PatternLayout">
-                            <constructor-arg>
-                                <value>%-5p %c[1] - %m%ex%n</value>
-                            </constructor-arg>
-                        </bean>
-                    </property>
-                    <property name="threshold">
-                        <bean class="org.springframework.beans.factory.config.FieldRetrievingFactoryBean"
-                              id="org.apache.log4j.Priority.DEBUG" />
-                    </property>
-                </bean>
-            </list>
-        </property>
-    </bean>
 
     <bean class="org.springframework.jmx.export.MBeanExporter" lazy-init="false">
         <property name="server" ref="jasperJMXServer"/>

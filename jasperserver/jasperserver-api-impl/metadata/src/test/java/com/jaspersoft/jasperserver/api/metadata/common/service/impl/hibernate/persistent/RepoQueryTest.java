@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -21,11 +21,10 @@
 
 package com.jaspersoft.jasperserver.api.metadata.common.service.impl.hibernate.persistent;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import com.jaspersoft.jasperserver.api.metadata.common.domain.Query;
@@ -51,7 +50,7 @@ public class RepoQueryTest {
         Query clientQuery = new QueryImpl();
         repoQuery.copyTo(clientQuery, null);
         String expectedQuery = readFileFromClasspath("js55928.expectedQuery.txt");
-        assertEquals(expectedQuery, clientQuery.getSql());
+        Assert.assertEquals(expectedQuery, clientQuery.getSql());
     }
     
     public String readFileFromClasspath(String fileName) {

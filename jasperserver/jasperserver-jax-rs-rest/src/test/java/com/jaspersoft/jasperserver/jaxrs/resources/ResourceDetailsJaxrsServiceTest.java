@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -297,6 +297,51 @@ public class ResourceDetailsJaxrsServiceTest {
         assertEquals(contentTypeHeaders.get(0).toString(), MediaType.APPLICATION_OCTET_STREAM);
         assertEquals(response.getStatus(), Response.Status.OK.getStatusCode());
     }
+
+    @Test(groups = "GET", expectedExceptions = ResourceNotFoundException.class)
+    public void getResourceDetails_uuid() throws Exception{
+        final ContentResource serverObject = new ContentResourceImpl();
+        final ClientFile clientFile = new ClientFile();
+        final String uri = "/uuid:abc";
+        final String clientResourceType = ResourceMediaType.FILE_CLIENT_TYPE;
+        when(repositoryService.getResource(eq(uri))).thenReturn(serverObject);
+        when(resourceConverterProvider.getToClientConverter(serverObject.getResourceType(), clientResourceType)).thenReturn((ToClientConverter)new ToClientConverter<Resource, ClientResource, ToClientConversionOptions>() {
+            @Override
+            public ClientResource toClient(Resource serverObject, ToClientConversionOptions options) {
+                return clientFile;
+            }
+
+            @Override
+            public String getClientResourceType() {
+                return clientResourceType;
+            }
+        });
+        final Response response = service.getResourceDetails(uri, ResourceMediaType.FILE_JSON, null, null, null, null);
+    }
+
+    @Test(groups = "GET", expectedExceptions = ResourceNotFoundException.class)
+    public void getResourceDetails_uuid2() throws Exception{
+        final ContentResource serverObject = new ContentResourceImpl();
+        final ClientFile clientFile = new ClientFile();
+        final String uri = "/uuid:0f85ea9b-63f0-4083-844d-ce2e4e1bc51c";
+        final String clientResourceType = ResourceMediaType.FILE_CLIENT_TYPE;
+        when(repositoryService.getResource(eq(uri))).thenReturn(serverObject);
+        when(resourceConverterProvider.getToClientConverter(serverObject.getResourceType(), clientResourceType)).thenReturn((ToClientConverter)new ToClientConverter<Resource, ClientResource, ToClientConversionOptions>() {
+            @Override
+            public ClientResource toClient(Resource serverObject, ToClientConversionOptions options) {
+
+                return clientFile;
+            }
+
+            @Override
+            public String getClientResourceType() {
+                return clientResourceType;
+            }
+        });
+        final Response response = service.getResourceDetails(uri, ResourceMediaType.FILE_JSON, null, null, null, null);
+    }
+
+
 
     @Test(groups = "DELETE")
     public void testDeleteResource_delegation() throws Exception{

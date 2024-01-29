@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -24,6 +24,7 @@ package com.jaspersoft.jasperserver.search.service.impl;
 import com.jaspersoft.jasperserver.api.JSException;
 import com.jaspersoft.jasperserver.api.common.domain.ExecutionContext;
 import com.jaspersoft.jasperserver.api.common.domain.impl.ExecutionContextImpl;
+import com.jaspersoft.jasperserver.api.metadata.common.domain.FileResource;
 import com.jaspersoft.jasperserver.api.metadata.common.domain.Folder;
 import com.jaspersoft.jasperserver.api.metadata.common.domain.Resource;
 import com.jaspersoft.jasperserver.api.metadata.common.domain.ResourceLookup;
@@ -34,6 +35,7 @@ import com.jaspersoft.jasperserver.api.metadata.view.domain.FilterElementDisjunc
 import com.jaspersoft.jasperserver.api.search.SearchCriteriaFactory;
 import com.jaspersoft.jasperserver.search.common.ResourceDetails;
 import com.jaspersoft.jasperserver.search.common.SchedulingChecker;
+import com.jaspersoft.jasperserver.search.model.FileResourceFileType;
 import com.jaspersoft.jasperserver.search.service.ChildrenLoaderService;
 import com.jaspersoft.jasperserver.search.service.ResourceService;
 import com.jaspersoft.jasperserver.search.service.ResourceTypeResolver;
@@ -365,6 +367,17 @@ public class ResourceServiceImpl extends BaseService implements ResourceService 
 
         if (typeResolver != null) {
             resourceDetails.setResourceType(typeResolver.getResourceType(resource));
+
+            if (resourceDetails.getResourceType().equals(FileResource.class.getCanonicalName())) {
+                if (resourceDetails.getAttributes() == null) {
+                    resourceDetails.setAttributes(new ArrayList<>());
+                }
+                List resourceAttributes = resourceDetails.getAttributes();
+                String fileType = typeResolver.getFileResourceFileType(resource);
+                if (fileType != null) {
+                    resourceAttributes.add(new FileResourceFileType(fileType));
+                }
+            }
         }
 
         return resourceDetails;

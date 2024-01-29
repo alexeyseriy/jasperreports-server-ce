@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved. Confidentiality & Proprietary.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved. Confidentiality & Proprietary.
  * Licensed pursuant to commercial TIBCO End User License Agreement.
  */
 
@@ -17,9 +17,9 @@ function processLinkOptions(collection, linkOptions) {
     if (linkOptions.events) {
         var newEvents = {};
         _.each(_.keys(linkOptions.events), function (key) {
-            newEvents[key] = function (handler, collection) {
+            newEvents[key] = function (handler, eventsCollection) {
                 return function (id, event) {
-                    handler.call(this, event, _.isObject(id) ? id : _.findWhere(collection.getLinks(), {id: id}));
+                    handler.call(this, event, _.isObject(id) ? id : _.findWhere(eventsCollection.getLinks(), {id: id}));
                 };
             }(linkOptions.events[key], collection);
         });
@@ -171,7 +171,7 @@ export default Backbone.Collection.extend({
     add: function (models, options) {
         var allowedModels = [];
         if (this.stateModel.get('isolateDom')) {
-            _.each(models, function (model, index, models) {
+            _.each(models, function (model, index, stateModels) {
                 if (model.get('type') && (model.get('type').indexOf('fusion') !== -1 || model.get('type').indexOf('tibco-maps') !== -1)) {
                     if (model.get('type').indexOf('fusion') !== -1) {
                         localLogger.info('Fusion components usage deprecated when isolateDom option enabled for report');
@@ -180,7 +180,7 @@ export default Backbone.Collection.extend({
                         localLogger.info('Tibco maps components usage deprecated when isolateDom option enabled for report');
                     }
                 } else {
-                    allowedModels.push(models[index]);
+                    allowedModels.push(stateModels[index]);
                 }
             });
             models = allowedModels;
@@ -248,9 +248,9 @@ export default Backbone.Collection.extend({
             }
             return newModel;
         }));
-        collection.forEach(function (model) {
-            _.each(model.actions, function (func, action) {
-                self.listenToOnce(model, action, function (model, property, obj) {
+        collection.forEach(function (collectionModel) {
+            _.each(collectionModel.actions, function (func, action) {
+                self.listenToOnce(collectionModel, action, function (model, property, obj) {
                     actions.push(model.actions[action].call(model, obj));
                 });
             });

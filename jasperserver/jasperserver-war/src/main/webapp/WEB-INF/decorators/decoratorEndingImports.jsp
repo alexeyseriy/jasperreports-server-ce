@@ -1,6 +1,6 @@
 <%@ page contentType="text/html; charset=utf-8" %>
 <%--
-  ~ Copyright © 2005 - 2018 TIBCO Software Inc.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc.
   ~ http://www.jaspersoft.com.
   ~
   ~ This program is free software: you can redistribute it and/or modify

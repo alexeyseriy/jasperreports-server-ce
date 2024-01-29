@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2021 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -34,20 +34,20 @@
  *   04. Add Folder
  *   05. Add Locale Bundle
  *   06. Add Organizations, Users, Roles
- *   07. Alert
- *   08. Calculated Fields and Measures
- *   09. Chart Format
- *   10. Confirmation
- *   11. Create Report
- *   12. Custom URL
- *   13. Dependencies
- *   14. Detail
- *   15. Edit Label
- *   16. Export
- *   17. File Chooser
- *   18. Heartbeat
- *   19. Input Controls
- *   20. JIVE
+ *   07. Add Resources
+ *   08. Alert
+ *   09. Calculated Fields and Measures
+ *   10. Chart Format
+ *   11. Confirmation
+ *   12. Create Report
+ *   13. Custom URL
+ *   14. Dependencies
+ *   15. Detail
+ *   16. Edit Label
+ *   17. Export
+ *   18. File Chooser
+ *   19. Heartbeat
+ *   20. Input Controls
  *   21. Loading
  *   22. Login Help
  *   23. Manage Data Source
@@ -56,34 +56,36 @@
  *   26. Remove Scheduler Job
  *   27. Resource Properties
  *   28. Save As
- *   29. Save Values
- *   30. Select
- *   31. Select Data
- *   32. Select Data, New
- *   33. Select File
- *   34. Select Folder
- *   35. Select From Repository
- *   36. Select Palette
- *   37. Sort & Select Fields
- *   38. Source Dialog
- *   39. Standard Confirm/Alert
- *   40. Combined old/new dialogs (always put last)
+ *   29. Save Data Source
+ *   30. Save Values
+ *   31. Select
+ *   32. Select Data
+ *   33. Select Data, New
+ *   34. Select File
+ *   35. Select Folder
+ *   36. Select From Repository
+ *   37. Select Palette
+ *   38. Sort & Select Fields
+ *   39. Source Dialog
+ *   40. Standard Confirm/Alert
+ *   41. Combined old/new dialogs (always put last)
  *   --------------------------------------
-     File last modified Jan 12, 2021
+     File last modified Oct 13, 2022
      --------------------------------------  */
 
-/* --------- */
-/*  DIALOGS  */
-/* --------- */
 
-/* 01. About JasperReports Server */
+/* --------------------------------- */
+/*  01. About JasperReports Server   */
+/* --------------------------------- */
 #aboutBox {
     width: 380px;
     z-index: 5000;
 }
 
 
-/* 02. Ad Hoc, Formatting  */
+/* ------------------------- */
+/*  02. Ad Hoc, Formatting   */
+/* ------------------------- */
 #chartFormatDialog #advancedSection {
     background-color: var(--background-grey-02);
     padding: 0;
@@ -190,7 +192,6 @@
 }
 
 .advancedSection a {
-    /* color: #195b8a; */
     color: var(--theme-medium-dark);
     float: right;
     margin: 12px 5px 5px 8px;
@@ -212,7 +213,9 @@
 }
 
 
-/*  03. Ad Hoc, Select Data Level  */
+/* -------------------------------- */
+/*  03. Ad Hoc, Select Data Level   */
+/* -------------------------------- */
 .dialog.data-level-selector {
     height: auto;
     min-width: 320px;
@@ -226,13 +229,17 @@
 }
 
 
-/* 04. Add Folder */
+/* --------------- */
+/* 04. Add Folder  */
+/* --------------- */
 .addFolder {
     width: 400px;
 }
 
 
-/* 05. Add Locale Bundle */
+/* ----------------------- */
+/*  05. Add Locale Bundle  */
+/* ----------------------- */
 #selectFile_bundle {
     width: 450px;
 }
@@ -243,7 +250,9 @@
 }
 
 
-/* 06. Add Organizations, Users, Roles */
+/* --------------------------------------- */
+/*  06. Add Organizations, Users, Roles    */
+/* --------------------------------------- */
 #addOrganization.dialog.overlay,
 #addUser.dialog.overlay,
 #addRole.dialog.overlay {
@@ -258,7 +267,27 @@
 }
 
 
-/* 07. Alert */
+/* -------------------- */
+/*  07. Add Resources   */
+/* -------------------- */
+#addNewDataSource #select.dialog {
+    min-height: auto;
+}
+
+#addNewDataSource #select.dialog .title {
+    font-family: source_sans_prosemibold, Franklin Gothic Medium, Verdana, Arial, sans-serif;
+    font-size: 14px;
+}
+
+#addNewDataSource #select.dialog .fsection {
+    font-family: source_sans_proregular, Franklin Gothic, Verdana, Arial, sans-serif;
+    font-size: 13px;
+}
+
+
+/* ------------- */
+/*  08. Alert    */
+/* ------------- */
 /* The following fix problems with old button in new jr-mDialog footer */
 .dialog.alertDialog {
     max-height: 600px;
@@ -284,7 +313,9 @@
 }
 
 
-/* 08. Calculated Fields and Measures */
+/* -------------------------------------- */
+/*  09. Calculated Fields and Measures    */
+/* -------------------------------------- */
 #calcFieldMeasure.dialog {
     width: 802px;
 }
@@ -502,7 +533,9 @@
 }
 
 
-/* 09. Chart Format */
+/* ------------------- */
+/*  10. Chart Format   */
+/* ------------------- */
 #chartFormatDialog {
     min-width: 420px;
     min-height: 250px;
@@ -590,7 +623,9 @@
 }
 
 
-/* 10. Confirmation */
+/* ------------------- */
+/*  11. Confirmation   */
+/* ------------------- */
 .dialog.confirmationDialog {
     width: 350px;
 }
@@ -605,7 +640,9 @@
 }
 
 
-/* 11. Create Report */
+/* --------------------- */
+/*  12. Create Report    */
+/* --------------------- */
 #generateResource .textArea textarea {
     min-height: 40px;
 }
@@ -691,7 +728,10 @@
 }
 
 
-/* 12. Custom URL */
+/* ----------------- */
+/*  13. Custom URL   */
+/* ----------------- */
+/* I can't find customURL anywhere in JRS. Can we remove all these styles? */
 .customURL {
     height: 300px;
     min-width: 450px;
@@ -734,13 +774,15 @@
 }
 
 
-/* 13. Dependencies */
+/* ----------------- */
+/* 14. Dependencies  */
+/* ----------------- */
 .dependencies {
     min-height: 420px !important;
     min-width: 560px !important;
 }
 
-.dependencies>.content>.body .groupBox {
+.dependencies > .content > .body .groupBox {
     height: auto;
     left: 0;
     min-height: 200px;
@@ -762,12 +804,14 @@
     margin-top: 12px;
 }
 
-#dependencies .groupBox>.content>.body {
+#dependencies .groupBox > .content > .body {
     padding: 0;
 }
 
 
-/* 14. Detail */
+/* -------------- */
+/*  15. Detail    */
+/* -------------- */
 .detail.sizeable {
     min-height: 350px;
     min-width: 450px
@@ -778,13 +822,17 @@
 }
 
 
-/* 15. Edit Label */
+/* ---------------- */
+/*  16. Edit Label  */
+/* ---------------- */
 .editLabel {
     width: 350px;
 }
 
 
-/* 16. Export */
+/* -------------- */
+/*  17. Export    */
+/* -------------- */
 /* this doesn't seem to be in use any more */
 #exportDialog {}
 #exportDialog #exportDataFile legend {}
@@ -799,8 +847,9 @@
 }
 
 
-/*  17. File Chooser   */
-/* ------------------------------- */
+/* --------------------- */
+/*  18. File Chooser     */
+/* --------------------- */
 /* Temporary set of rules to make File Chooser Dialog without list */
 .reportChooserDialog.sourceDialogNew.listDisabled > .sub.header.tabHeaderContainer {
     display: none;
@@ -826,12 +875,14 @@
 }
 
 
-/* 18. Heartbeat  */
+/* ----------------- */
+/*  19. Heartbeat    */
+/* ----------------- */
 .heartbeatOptin .message {
     margin: auto 5px 20px;
 }
 
-.heartbeatOptin > .content>.body {
+.heartbeatOptin > .content > .body {
     margin-bottom: 10px;
     padding: 20px 20px 10px;
 }
@@ -841,7 +892,9 @@
 }
 
 
-/* 19. Input Controls */
+/* -------------------- */
+/*  20. Input Controls  */
+/* -------------------- */
 .dialog.inputControls {
     height: 550px;
     min-height: 500px;
@@ -890,7 +943,7 @@
     padding-left: 15px;
 }
 
-.pane.inputControls .body>.list.inputControls>.leaf {
+.pane.inputControls .body > .list.inputControls > .leaf {
     clear: none;
     float: left;
     margin: 6px 5px;
@@ -901,55 +954,9 @@
 }
 
 
-/* 20. JIVE */
-/* NO LONGER IN USE or DEFINED ELSEWHERE
-.jive_chartTypeSelector .header > .title,
-.jive_dialog .dialogHeader .dialogTitle {
-    color: #333 !important;
-    font-weight: normal !important;
-    font-size: 14px !important;
-}
-
-#jive_dialog .applytoWrapper {
-    margin-top: 8px !important;
-}
-
-#jive_dialog .tabContainer {
-    top: 5px !important;
-}
-
-#jive_dialog .tab.dialog {
-    color: #666 !important;
-    top: 2px !important;
-}
-
-#jive_dialog .tab.dialog.active {
-    top: 1px !important;
-}
-
-#jive_dialog .tab.multisheet.active span,
-#jive_dialog .tab.dialog.active span {
-    height: 23px !important;
-    line-height: 21px !important;
-}
-
-.jive_chartTypeSelector div.body > .row > .cell {
-    height: 36px !important;
-    width: 53px !important;
-}
-
-.jive_chartTypeSelector div.body > .row > .cell.selected {
-    background-color: #1388d8 !important;
-    border: solid 1px #1388d8 !important;
-}
-
-.jive_chartTypeSelector div.body > .row {
-    min-width: 508px !important;
-}
-*/
-
-
-/* 21. Loading */
+/* --------------- */
+/*  21. Loading    */
+/* --------------- */
 .dialog.loading {
     min-height: 100px;
     min-width: 175px;
@@ -1028,13 +1035,17 @@
 }
 
 
-/* 22. Login Help */
+/* ----------------- */
+/*  22. Login Help   */
+/* ----------------- */
 #helpLoggingIn ul.decorated {
     margin-bottom: 22px;
 }
 
 
-/* 23. Manage Data Source */
+/* ------------------------- */
+/*  23. Manage Data Source   */
+/* ------------------------- */
 .manageDataSource {
     height: 500px;
     width: 400px;
@@ -1051,7 +1062,9 @@
 }
 
 
-/*  24. Managed Print Loader */
+/* --------------------------- */
+/*  24. Managed Print Loader   */
+/* --------------------------- */
 /*  can't find any usages of this element  */
 #managedPrintLoader {
 	border: 1px solid #D3D5D6;
@@ -1073,64 +1086,110 @@
 }
 
 
-/* 25. Permissions */
+/* ----------------- */
+/*  25. Permissions  */
+/* ----------------- */
 .dialog.permissions {
-    height: 300px;
-    width:600px;
-    min-width: 450px;
+    height: 360px;
+    width: 600px;
+    min-width: 550px;
+    top: 33vh;
+    left: 33vw;
 }
 
-.dialog.permissions .sub.header>.tabSet {
+.dialog.overlay.sizeable.permissions > .content > .body {
+    top: 28px;
+}
+
+.dialog.permissions .sub.header > .tabSet {
     margin-left: 20px;
 }
 
-.dialog.permissions .tabSet{
-    top: -10px;
-}
-
 .dialog.permissions .searchLockup {
-    top: 0;
-    left: 5px;
+    position: absolute;
+    top: 17px;
+    right: 20px;
     width: 250px;
 }
 
-.dialog.permissions .searchLockup input {
-    height: 100%;
-    left: 0;
-    position: absolute;
-    top: 0;
-    width: 200px;
-}
-
 .dialog.permissions .groupBox {
-    bottom: 25px;
+    bottom: 24px;
+    margin: 0;
     padding: 0;
-    top: 70px;
+    top: 74px;
 }
 
 .dialog.permissions .groupBox > .content > .body {
     padding: 0;
 }
 
-.dialog.permissions .message {
+.dialog.permissions .groupBox > .content > .body select {
+    margin-top: 8px;
+}
+
+.dialog.permissions .message.hint {
+    line-height: 1.6;
+    margin: 3px 0 0 0;
+    padding: 0 3px;
     position: absolute;
-    right: 25px;
-    top: 40px;
+    right: 24px;
 }
 
 .dialog.permissions .message.warning {
     bottom: 5px;
     left: 25px;
     margin: 0;
+    position: absolute;
     top: auto;
 }
 
-.dialog.permissions #permissionsViewBy > .label {
+.dialog.permissions .launcher:hover {
+    cursor: auto;
+    text-decoration: none;
+} /* this is not clickable in permissions dialog */
+
+.dialog.permissions .list.tabular > li > .wrap {
+    padding-left: 14px;
+}
+
+.dialog.permissions .list.tabular .column {
+    padding-left: 6px;
+}
+
+.dialog.permissions .list.tabular .column.two {
+    height: 32px;
+    padding-left:6px;
     padding-right: 6px;
 }
 
+/* Keyboard Focus */
+.dialog.permissions .list.tabular .selected.subfocus > .wrap {
+    background-color: var(--theme-medium-light);
+    outline: 2px solid var(--theme-dark);
+    outline-offset: -2px;
+}
 
-/* 26. Remove Scheduler Job */
+.dialog.permissions .list.tabular .wrap:focus-within {
+    background-color: transparent;
+}
+
+.dialog.permissions .list.tabular .focus-visible.subfocus:not(select) {
+    outline: 2px solid var(--theme-dark);
+    outline-offset: -2px;
+}
+
+.dialog.permissions .selected:not(.subfocus) > .wrap .launcher {
+    color: var(--theme-medium-dark);
+}
+
+.dialog.permissions .list.tabular:not(.superfocus) .selected:not(.subfocus) .wrap a {
+    color: #ffffff;
+}
+
+
+/* --------------------------- */
+/*  26. Remove Scheduler Job   */
+/* --------------------------- */
 .schedulerJobRemoveDialog .jr-mDialog-body.subcontainer.jr {
     min-height: 0;
     padding-top: 0;
@@ -1142,7 +1201,9 @@
 }
 
 
-/* 27. Resource Properties */
+/* --------------------------- */
+/*  27. Resource Properties    */
+/* --------------------------- */
 .properties.resource .control {
     width: 450px;
 }
@@ -1163,7 +1224,9 @@
 }
 
 
-/* 28. Save As */
+/* ------------- */
+/*  28. Save As  */
+/* ------------- */
 .saveAs {
     height: 500px;
     width: 440px;
@@ -1192,7 +1255,7 @@
     overflow: auto;
 }
 
-.saveAs>.content>.body .groupBox {
+.saveAs .content > .body .groupBox {
     top: 150px;
 }
 
@@ -1242,7 +1305,7 @@
     width: 100%;
 }
 
-.saveAs #saveAsInputDescription,  .saveAs textarea.resourceDescriptionInput{
+.saveAs #saveAsInputDescription,  .saveAs textarea.resourceDescriptionInput {
     min-height: 60px;
 }
 
@@ -1283,7 +1346,72 @@
 }
 
 
-/* 29. Save Values */
+/* ----------------------- */
+/*  29. Save Data Source   */
+/* ----------------------- */
+.dataSourceSaveDialog {
+    width: 440px;
+    height: auto;
+    min-height: 410px;
+    min-width: 440px;
+}
+
+.dataSourceSaveDialog > .content {
+    height: 100%;
+}
+
+.dataSourceSaveDialog.dialog > .content > .subcontainer {
+    padding: 16px;
+}
+
+.dataSourceSaveDialog .treeBox {
+    overflow: auto;
+    margin: 0;
+    float: none;
+}
+
+.dataSourceSaveDialog .j-view-port-chunk {
+    width: auto;
+}
+
+.dataSourceSaveDialog .list .leaf, .dataSourceSaveDialog .list .node {
+    overflow: visible;
+}
+
+.dataSourceSaveDialog .collapsible > li > .wrap {
+    overflow: visible;
+}
+
+.dataSourceSaveDialog .hideRoot > .node > .subcontainer > .j-view-port-chunk > .collapsible {
+    margin-left: 0;
+}
+
+.dataSourceSaveDialog .treeBox > .content > .body {
+    padding: 6px;
+}
+
+.dataSourceSaveDialog .treeBox .folders .folders {
+    margin-left: 5px;
+}
+
+.dataSourceSaveDialog.panel.dialog .content .subcontainer {
+    margin-bottom: 32px;
+    height: calc(100% - 95px);
+}
+
+.dataSourceSaveDialog.panel > div.content.hasFooter .footer {
+    position: absolute;
+    bottom: 0;
+}
+
+.dataSourceSaveDialog.no-minheight {
+    min-height: 0;
+}
+
+
+/* ------------------ */
+/*  30. Save Values   */
+/* ------------------ */
 .saveValues {
     width: 400px;
 }
@@ -1295,7 +1423,9 @@
 }
 
 
-/* 30. Select */
+/* ------------- */
+/*  31. Select   */
+/* ------------- */
 #select {
     height: auto;
     min-width: 460px;
@@ -1326,16 +1456,17 @@
 }
 
 
-/* 31. Select Data */
+/* ------------------ */
+/*  32. Select Data   */
+/* ------------------ */
 .sourceDialogNew .itemDescription {
-    /* background-color: #EEEEEE; */
     background-color: var(--background-grey-08);
     height: 50px;
     margin: 6px 0 0;
     padding: 8px;
 }
 
-.sourceDialogNew.overlay .control.searchLockup > .wrap > input[type=text]{
+.sourceDialogNew.overlay .control.searchLockup > .wrap > input[type=text] {
     box-sizing: border-box;
     height: 100%;
     margin-right: 0;
@@ -1344,7 +1475,9 @@
 }
 
 
-/* 32. Select Data, New  */
+/* ----------------------- */
+/*  33. Select Data, New   */
+/* ----------------------- */
 .sourceDialogNew.overlay > .content > .header.mover {
     border: none;
 }
@@ -1373,8 +1506,10 @@
 
 .sourceDialogNew > .sub.header.tabHeaderContainer {
     border: none;
-    height: 48px;
-    margin: 0;
+    height: 28px;
+    margin: 18px 24px 8px 24px;
+    display: flex;
+    flex-direction: row;
 }
 
 .sourceDialogNew .list.collapsible.folders.hideRoot {
@@ -1386,69 +1521,71 @@
 }
 
 .sourceDialogNew > .sub.header > .control {
-    float: right;
-    margin: 16px 24px 0 0;
-    padding-left: 118px;
-    width: 100%;
+    flex: 1 1 auto;
+    height: 28px;
+    margin: 0 0 0 4px;
+    order: 1;
 }
 
 .sourceDialogNew > .sub.header > .button {
     height: 28px;
-    position: absolute;
-    top: 16px;
-    left: 17px;
+    margin-right: 6px;
 }
 
 .sourceDialogNew > .sub.header > .button > .wrap {
     height: 100%;
 }
 
-.sourceDialogNew .header .button.over.subfocus {
-    background-color: var(--theme-medium-light);
-}
-
 .sourceDialogNew .header .button > .wrap > .icon {
     height: 100%;
 }
 
-.sourceDialogNew > .sub.header > .button.list {
-    left: 54px;
+.sourceDialogNew .hideRoot > .node > .subcontainer > .j-view-port-chunk > .collapsible{
+    margin-left: 2em !important;
 }
 
-.sourceDialogNew .control.searchLockup > .wrap,
-.sourceDialogNew .control.searchLockup > .wrap {
-    border-color: var(--border-grey-20);
-    height: 28px;
+.sourceDialogNew {
+    min-width: 450px;
+    min-height: 400px;
+    height: 525px;
 }
 
+.sourceDialogNew .treeBox {
+    float: none;
+    height: 100% !important;
+    margin: 0 8px;
+    user-select: none;
+    -webkit-touch-callout: none;
+}
+
+/* States */
 .sourceDialogNew .control.searchLockup .button.search.up,
 .sourceDialogNew .control.searchLockup .button.search.over,
 .sourceDialogNew .control.searchLockup .button.search.pressed,
 .sourceDialogNew .control.searchLockup .button.search.disabled {
-    background-position: -30px 5px;
-    height: 28px;
+    background-position: -26px -55px;
+    height: 26px;
 }
 
 .sourceDialogNew .control.searchLockup .button.searchClear.up,
 .sourceDialogNew .control.searchLockup .button.searchClear.over,
 .sourceDialogNew .control.searchLockup .button.searchClear.pressed {
-    background-color: var(--background-white);
-    background-position: -30px -30px;
-    right: 10px;
-}
-
-.sourceDialogNew .hideRoot > .node > .subcontainer > .j-view-port-chunk>.collapsible{
-    margin-left: 2em !important;
-}
-
-.sourceDialogNew.jr .control.searchLockup input {
+    background-position: -25px -83px;
     height: 26px;
-    padding: 3px 6px 2px 6px;
-    width: calc(100% - 46px);
+}
+
+/* Select Driver */
+.warningMessageContainer .message {
+    /* found in Create Data Source, JDBC, Select Driver
+       dialog. Moved rule here and changed selector to
+       eliminate dependence upon classname 'textAccent' */
+    color: #e2500f;
 }
 
 
-/* 33. Select File */
+/* ------------------ */
+/*  34. Select File   */
+/* ------------------ */
 .selectFile {
     height: 500px;
     min-height: 400px;
@@ -1479,7 +1616,9 @@
 }
 
 
-/* 34. Select Folder */
+/* -------------------- */
+/*  35. Select Folder   */
+/* -------------------- */
 .newResizeableDialog.jr .jr-mDialog-body .subcontainer {
     height: calc(100% - 76px);
     min-width: 0;
@@ -1518,7 +1657,9 @@
 }
 
 
-/* 35. Select From Repository */
+/* ----------------------------- */
+/*  36. Select From Repository   */
+/* ----------------------------- */
 .selectFromRepository {
     height: 400px;
     min-height: 400px;
@@ -1526,8 +1667,9 @@
     width: 400px;
 }
 
-
-/* 36. Select Palette */
+/* --------------------- */
+/*  37. Select Palette   */
+/* --------------------- */
 .selectPalette {
     height: 300px;
     min-height: 100px;
@@ -1536,7 +1678,9 @@
 }
 
 
-/* 37. Sort & Select Fields  */
+/* --------------------------- */
+/*  38. Sort & Select Fields   */
+/* --------------------------- */
 .sortDialog {
     height: 400px;
     min-height: 200px;
@@ -1588,9 +1732,9 @@
     padding-top: 5px;
 }
 
-.sortDialog .list.fields>li>.wrap,
-.sortDialog .list>li.fields>.wrap,
-.sortDialog .list.fields li>.wrap {
+.sortDialog .list.fields > li > .wrap,
+.sortDialog .list > li.fields > .wrap,
+.sortDialog .list.fields li > .wrap {
     border: none;
     border-radius: 0;
     margin: 0;
@@ -1615,13 +1759,6 @@ and (max-device-width : 1024px) {
         line-height: 2.5em;
     }
 }
-
-/* can't find this class path in select fields dialog
-#selectFields.dialog .moveButtons > .primary.column,
-#selectFields.dialog .moveButtons > .secondary.column {
-    border: 1px solid #c5c5c5;
-}
-*/
 
 #selectFields.dialog .list.type_sets .wrap.button {
     height: 24px;
@@ -1690,7 +1827,6 @@ and (max-device-width : 1024px) {
     background-position: -27px -167px;
 }
 
-
 /* leaf*/
 #selectFields.dialog .type_sets .set.leaf > .wrap >  .button.icon {
     background-position: 16px -191px;
@@ -1718,7 +1854,9 @@ and (max-device-width : 1024px) {
 }
 
 
-/* 38. Source Dialog */
+/* --------------------- */
+/*  39. Source Dialog    */
+/* --------------------- */
 .sourceDialog #cancel {
     position: absolute;
     top: 5px;
@@ -1727,14 +1865,16 @@ and (max-device-width : 1024px) {
 }
 
 
-/* 39. Standard Confirm/Alert */
+/* ----------------------------- */
+/*  40. Standard Confirm/Alert   */
+/* ----------------------------- */
 .standardConfirm .message,
 .standardAlert .message {
 	margin: auto 5px 20px;
 }
 
-.standardConfirm > .content>.body,
-.standardAlert > .content>.body {
+.standardConfirm > .content > .body,
+.standardAlert > .content > .body {
 	padding: 20px;
 	white-space: normal;
 	word-wrap: break-word;
@@ -1742,12 +1882,7 @@ and (max-device-width : 1024px) {
 
 .standardConfirm {
 	min-width: 300px;
-}
-
-@media screen and (-webkit-min-device-pixel-ratio:0) {
-	.standardConfirm {
-		max-width: 550px;
-	}
+    max-width: 550px;
 }
 
 .standardConfirm.noMaxWidth {
@@ -1777,7 +1912,9 @@ and (max-device-width : 1024px) {
 }
 
 
-/*  40. Combined old/new dialogs */
+/* ------------------------------- */
+/*  41. Combined old/new dialogs   */
+/* ------------------------------- */
 /*  for new jr-mDialog components that contain legacy elements */
 .jr-mDialog.confirmationDialog.jr .confirmationText,
 .jr-mDialog.jr .confirmationText {
@@ -1789,6 +1926,10 @@ and (max-device-width : 1024px) {
 .jr-mDialog.jr .subcontainer .control.textArea {
     font-family: Verdana, Arial, Helvetica, sans-serif;
     line-height: 1.182;
+}
+
+.jr-mDialog-footer.jr > .button.action {
+    margin-top: 1px;
 }
 
 .jr.schedulerSaveDialog .jr-mDialog-body-wrapper.jr {

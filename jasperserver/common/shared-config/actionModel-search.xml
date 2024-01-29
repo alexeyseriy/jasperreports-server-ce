@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -217,6 +217,10 @@
             <simpleAction labelKey="RM_BUTTON_WIZARD" action="invokeRedirectAction" actionArgs="EditResourceAction"
                           clientTest="canResourceBeEdited" className="up"/>
         </condition>
+        <condition test="checkOpenInEditor" testArgs="browse,search">
+            <simpleAction labelKey="RM_BUTTON_WIZARD_IN_EDITOR" action="invokeOpenInEditorAction" actionArgs="EditResourceInEditorAction"
+                          clientTest="canResourceBeOpenedInEditor" className="up"/>
+        </condition>
         <condition test="checkMode" testArgs="browse,search,library">
             <simpleAction labelKey="RM_BUTTON_DESIGN" action="invokeRedirectAction" actionArgs="OpenResourceAction"
                           clientTest="canBeOpenedInDesigner" className="up"/>
@@ -231,6 +235,19 @@
                           clientTest="canBeGenerated" className="up"/>
         </condition>
 
+        <separator/>
+
+        <condition test="checkMode" testArgs="browse,search,library">
+            <simpleAction labelKey="RM_BUTTON_ADD_FAVORITE" action="invokeResourceAction" actionArgs="ResourceFavoriteAction"
+                          clientTest="canBeAddedToFavorites" className="up"/>
+        </condition>
+
+        <condition test="checkMode" testArgs="browse,search,library">
+            <simpleAction labelKey="RM_BUTTON_REMOVE_FAVORITE" action="invokeResourceAction" actionArgs="ResourceFavoriteAction"
+                          clientTest="canBeRemovedFromFavorites" className="up"/>
+
+        </condition>
+        
         <separator/>
 
         <condition test="checkMode" testArgs="browse">
@@ -281,6 +298,18 @@
                           clientTest="canAllBeEdited" className="up"/>
             <simpleAction labelKey="RM_BUTTON_OPEN" action="invokeBulkAction" actionArgs="Open"
                           clientTest="canAllBeOpened" className="up"/>
+        </condition>
+
+        <separator/>
+        <condition test="checkMode" testArgs="browse,search,library">
+            <simpleAction labelKey="RM_BUTTON_ADD_FAVORITE" action="invokeResourceAction" actionArgs="ResourceFavoriteAction"
+                          clientTest="canBeAddedToFavorites" className="up"/>
+        </condition>
+
+        <condition test="checkMode" testArgs="browse,search,library">
+            <simpleAction labelKey="RM_BUTTON_REMOVE_FAVORITE" action="invokeResourceAction" actionArgs="ResourceFavoriteAction"
+                          clientTest="canBeRemovedFromFavorites" className="up"/>
+
         </condition>
 
         <separator/>

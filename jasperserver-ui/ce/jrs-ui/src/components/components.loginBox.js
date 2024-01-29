@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -104,7 +104,7 @@ var loginBox = {
 
         this._customError = jQuery("#customError")[0];
 
-        this._loginForm = jQuery( this._dom).parent('form');;
+        this._loginForm = jQuery( this._dom).parent('form');
 
         this.documentationButton = jQuery('#' + this.DOCUMENTATION_BUTTON_ID)[0];
         this.gotoJasperForge = jQuery('#' + this.GOTO_JASPERFORGE_BUTTON_ID)[0];

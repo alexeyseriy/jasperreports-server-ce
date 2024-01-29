@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -229,23 +229,9 @@ public class AccessServiceImpl extends HibernateDaoImpl implements AccessService
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.DATE, -maxAccessEventAge);
         Date last = cal.getTime();
-        getHibernateTemplate().bulkUpdate(
-                "delete RepoAccessEvent e " +
-                "  where e.eventDate < ? ", last);
-        // added this on 2019-9-23 to manually clean up orphans
-        // disabled cascade delete to improve performance on mass delete operations 
-        // this includes import (JS-34322) and delete organization (JS-35283)
-/*
-        getHibernateTemplate().bulkUpdate(
-                "delete from RepoAccessEvent " +
-                "  where id in (" +
-                "    select e.id from RepoAccessEvent e " +
-                "    left join RepoResource r on (r.id = e.resourceId) " +
-                "    left join RepoUser u on (u.id = e.user) " +
-                "    where r is null " +
-                "    or u is null" +
-                "  )");
- */
+        getHibernateTemplate().execute((s)-> s.createQuery("delete from RepoAccessEvent e where e.eventDate < ?1")
+                .setParameter(1, last)
+                .executeUpdate());
     }
     @Transactional(value="auditTransactionManager", propagation = Propagation.REQUIRED, readOnly = false)
     @Qualifier("auditTransactionManager")

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -67,18 +67,18 @@ const getTextRect = function (text, fontOptions) {
     }
 
     if (!internalCache.element) {
-        let span = document.createElement("span");
-        span.innerText = 'some text';
-        span.style.fontFamily = '"Lucida Grande", "Lucida Sans Unicode", Arial, Helvetica, sans-serif';
-        span.style.fontSize = '12px';
-        span.style.fontWeight = 'normal';
-        span.style.lineHeight = 'normal';
-        span.style.opacity = '0';
-        span.style.position = 'absolute';
-        span.style.top = '-9999px';
-        span.style.left = '-9999px';
-        document.body.appendChild(span);
-        internalCache.element = span;
+        let internalCacheSpan = document.createElement("span");
+        internalCacheSpan.innerText = 'some text';
+        internalCacheSpan.style.fontFamily = '"Lucida Grande", "Lucida Sans Unicode", Arial, Helvetica, sans-serif';
+        internalCacheSpan.style.fontSize = '12px';
+        internalCacheSpan.style.fontWeight = 'normal';
+        internalCacheSpan.style.lineHeight = 'normal';
+        internalCacheSpan.style.opacity = '0';
+        internalCacheSpan.style.position = 'absolute';
+        internalCacheSpan.style.top = '-9999px';
+        internalCacheSpan.style.left = '-9999px';
+        document.body.appendChild(internalCacheSpan);
+        internalCache.element = internalCacheSpan;
     }
 
     let span = internalCache.element;
@@ -101,30 +101,30 @@ const getTextRect = function (text, fontOptions) {
 const getSVGTextRect = function (linesInTextNode) {
 
     if (!internalCache.svgElement) {
-        let svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        svg.setAttribute('version', '1.1');
-        svg.setAttribute('xlink', 'http://www.w3.org/1999/xlink');
-        svg.setAttribute('width', '600');
-        svg.setAttribute('height', '600');
-        svg.setAttribute('viewBox', '0 0 600 600');
-        svg.style.opacity = '0';
-        svg.style.position = 'absolute';
-        svg.style.top = '-99999px';
-        svg.style.left = '-99999px';
-        svg.style.fontFamily = '"Lucida Grande", "Lucida Sans Unicode", Arial, Helvetica, sans-serif';
-        svg.style.fontSize = '12px';
-        svg.style.fontWeight = 'normal';
-        svg.style.lineHeight = 'normal';
+        let internalCacheSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        internalCacheSvg.setAttribute('version', '1.1');
+        internalCacheSvg.setAttribute('xlink', 'http://www.w3.org/1999/xlink');
+        internalCacheSvg.setAttribute('width', '600');
+        internalCacheSvg.setAttribute('height', '600');
+        internalCacheSvg.setAttribute('viewBox', '0 0 600 600');
+        internalCacheSvg.style.opacity = '0';
+        internalCacheSvg.style.position = 'absolute';
+        internalCacheSvg.style.top = '-99999px';
+        internalCacheSvg.style.left = '-99999px';
+        internalCacheSvg.style.fontFamily = '"Lucida Grande", "Lucida Sans Unicode", Arial, Helvetica, sans-serif';
+        internalCacheSvg.style.fontSize = '12px';
+        internalCacheSvg.style.fontWeight = 'normal';
+        internalCacheSvg.style.lineHeight = 'normal';
 
         let text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
         text.setAttribute('x', '0');
         text.setAttribute('y', '0');
 
-        svg.appendChild(text);
+        internalCacheSvg.appendChild(text);
 
-        document.body.appendChild(svg);
+        document.body.appendChild(internalCacheSvg);
 
-        internalCache.svgElement = svg;
+        internalCache.svgElement = internalCacheSvg;
     }
 
     let svg = internalCache.svgElement;
@@ -285,7 +285,7 @@ const findFontSize = function(options) {
 
     debug('findFontSize: calculating for key:', cacheKey);
 
-    const testIfFontFits = (text, fontOptions) => {
+    const testIfFontFits = (txt, fontOpts) => {
         let
             fits = true,
             textRect = {
@@ -300,11 +300,11 @@ const findFontSize = function(options) {
         // let's see if we need to get actual size for case 1 OR do we need to know the width
         // for case 2 (widthAvailable !== -1 means we need to check width)
         if (fontCheckingStrategy === 'basedOnActualSize' || widthAvailable !== -1) {
-            textRect = getTextRect(text, fontOptions);
+            textRect = getTextRect(txt, fontOpts);
         }
 
         if (fontCheckingStrategy === 'basedOnFontHeight') {
-            if (getFontHeight(fontOptions.fontSize) > heightAvailable) {
+            if (getFontHeight(fontOpts.fontSize) > heightAvailable) {
                 fits = false;
             }
             if (textRect.width > widthAvailable) {
@@ -419,7 +419,7 @@ const findFontSize = function(options) {
 
 const getFontHeight = function (fontSize) {
     // took from Highcharts library
-    return fontSize < 24 ? fontSize + 3 : fontSize * 1.2;
+    return fontSize < 24 ? fontSize + 3 : Math.round(fontSize * 1.2);
 };
 
 const getFontBaseline = function (fontSize) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -42,17 +43,12 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.stream.StreamResult;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.apache.fop.apps.FopFactory;
-import org.apache.fop.apps.Fop;
-import org.apache.fop.apps.FOUserAgent;
-import org.apache.fop.apps.MimeConstants;
+import org.apache.fop.apps.*;
 
 import org.w3c.dom.Document;
-import org.xml.sax.InputSource;
 
 import com.tonbeller.jpivot.chart.ChartComponent;
 import com.tonbeller.jpivot.print.PrintComponent;
@@ -88,9 +84,9 @@ public class OlapPrint extends HttpServlet {
         super();
     }
 
-      /** Initializes the servlet.
-       */
-      public void init(ServletConfig config) throws ServletException {
+    /** Initializes the servlet.
+     */
+    public void init(ServletConfig config) throws ServletException {
         super.init(config);
         /*
          * TODO Add init parameters for:
@@ -113,40 +109,45 @@ public class OlapPrint extends HttpServlet {
             driver.setLogger(new NullLogger());
             */
 
-            fopFactory = FopFactory.newInstance();
             String fopConfigPath = config.getServletContext().getRealPath("/WEB-INF/jpivot/print/userconfig-0.95.xml");
-            fopFactory.setUserConfig(new File(fopConfigPath));
-
             String fontBaseDir = config.getServletContext().getRealPath("/WEB-INF/jpivot/print/");
 
-            fopFactory.setFontBaseURL("file:///" + fontBaseDir);
+            File xconf = new File(fopConfigPath);
+            FopConfParser parser = new FopConfParser(xconf); //parsing configuration
+            FopFactoryBuilder builder = parser.getFopFactoryBuilder(); //building the factory with the user options
+            builder.setBaseURI(new URI("file:///" + fontBaseDir));
+            builder.setStrictFOValidation(false);
+            FopFactory fopFactory = builder.build();
 
-            fopFactory.setStrictValidation(false);
+
+//            fopFactory = FopFactory.newInstance(new File(fopConfigPath));
+            //fopFactory.setUserConfig(new File(fopConfigPath));
+//            fopFactory.setFontBaseURL("file:///" + fontBaseDir);
+//            fopFactory.setStrictValidation(false);
 
             /*
             logger.debug("Setup Renderer (output format)");
             driver.setRenderer(Driver.RENDER_PDF);
             logger.debug("FOP renderer set to PDF");
             */
-          } catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             logger.info("FOP user config file not loaded");
-          }
-      }
+        }
+    }
 
-      /** Destroys the servlet.
-       */
-      public void destroy() {
+    /** Destroys the servlet.
+     */
+    public void destroy() {
 
-      }
+    }
 
-      /** Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
-       *
-       * @param request servlet request
-       * @param response servlet response
-       */
+    /** Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
+     *
+     * @param context servlet
+     */
 
-      protected void processRequest(RequestContext context) throws ServletException, IOException {
+    protected void processRequest(RequestContext context) throws ServletException, IOException {
         HttpServletRequest request = context.getRequest();
         HttpServletResponse response = context.getResponse();
         HttpSession session = request.getSession();
@@ -168,17 +169,17 @@ public class OlapPrint extends HttpServlet {
         try {
             String xslUri = null;
             if (type.equalsIgnoreCase("XLS")) {
-              xslUri = "/WEB-INF/jpivot/table/xls_mdxtable.xsl";
-              RendererParameters.setParameter(context.getRequest(), "mode", "excel", "request");
-              response.setContentType("application/vnd.ms-excel");
-              filename = "xls_export.xls";
-              identifiedType = XLS;
+                xslUri = "/WEB-INF/jpivot/table/xls_mdxtable.xsl";
+                RendererParameters.setParameter(context.getRequest(), "mode", "excel", "request");
+                response.setContentType("application/vnd.ms-excel");
+                filename = "xls_export.xls";
+                identifiedType = XLS;
             } else if (type.equalsIgnoreCase("PDF")) {
-              xslUri = "/WEB-INF/jpivot/table/fo_mdxtable.xsl";
-              RendererParameters.setParameter(context.getRequest(), "mode", "print", "request");
-              response.setContentType("application/pdf");
-              filename = "xls_export.pdf";
-              identifiedType = PDF;
+                xslUri = "/WEB-INF/jpivot/table/fo_mdxtable.xsl";
+                RendererParameters.setParameter(context.getRequest(), "mode", "print", "request");
+                response.setContentType("application/pdf");
+                filename = "xls_export.pdf";
+                identifiedType = PDF;
             } else {
                 throw new ServletException("Unknown file type: " + type);
             }
@@ -248,7 +249,7 @@ public class OlapPrint extends HttpServlet {
                 logger.debug("Creating PDF");
 
                 logger.debug(
-                    resources.getString("jpivot.PrintServlet.message.encoding", new Object[]{resources.getCharacterEncoding()}));
+                        resources.getString("jpivot.PrintServlet.message.encoding", new Object[]{resources.getCharacterEncoding()}));
 
                 FOUserAgent foUserAgent = fopFactory.newFOUserAgent();
                 // configure foUserAgent as desired
@@ -295,7 +296,7 @@ public class OlapPrint extends HttpServlet {
                 } catch (Exception ex) {}
             }
         }
-      }
+    }
 
     /**
      * Set parameters for printing based on defaults + settings through the
@@ -315,7 +316,7 @@ public class OlapPrint extends HttpServlet {
         }
         if (printConfig.isSetTableWidth()) {
             parameters.put(printConfig.PRINT_TABLE_WIDTH, new Double(printConfig
-                  .getTableWidth()));
+                    .getTableWidth()));
         }
         if (printConfig.getReportTitle().trim().length() != 0) {
             parameters.put(printConfig.PRINT_TITLE, printConfig.getReportTitle().trim());
@@ -323,17 +324,17 @@ public class OlapPrint extends HttpServlet {
         parameters.put(printConfig.PRINT_PAGE_ORIENTATION, printConfig.getPageOrientation());
         parameters.put(printConfig.PRINT_PAPER_TYPE, printConfig.getPaperType());
         if (printConfig.getPaperType().equals(
-              resources.getString("jsp.wcf.print.custom"))) {
+                resources.getString("jsp.wcf.print.custom"))) {
             parameters
-                  .put(printConfig.PRINT_PAGE_WIDTH, new Double(printConfig.getPageWidth()));
+                    .put(printConfig.PRINT_PAGE_WIDTH, new Double(printConfig.getPageWidth()));
             parameters.put(printConfig.PRINT_PAGE_HEIGHT, new Double(printConfig
-                  .getPageHeight()));
+                    .getPageHeight()));
         }
         parameters.put(printConfig.PRINT_CHART_PAGEBREAK, new Boolean(printConfig
-                  .isChartPageBreak()));
+                .isChartPageBreak()));
 
         return parameters;
-      }
+    }
 
     /**
      * Set parameters to include the chart in the printed Excel or PDF
@@ -343,53 +344,53 @@ public class OlapPrint extends HttpServlet {
      * @return
      */
     private Map getChartParameters(String chartRef, HttpServletRequest request) {
-          Map parameters = new HashMap();
+        Map parameters = new HashMap();
 
-          // add parameters and image from chart if visible
-          ChartComponent chart = (ChartComponent) request.getSession().getAttribute(chartRef);
-          if (chart == null || !chart.isVisible()) {
-              return parameters;
-          }
+        // add parameters and image from chart if visible
+        ChartComponent chart = (ChartComponent) request.getSession().getAttribute(chartRef);
+        if (chart == null || !chart.isVisible()) {
+            return parameters;
+        }
 
-          String host = request.getServerName();
-          int port = request.getServerPort();
-          String location = request.getContextPath();
-          String scheme = request.getScheme();
+        String host = request.getServerName();
+        int port = request.getServerPort();
+        String location = request.getContextPath();
+        String scheme = request.getScheme();
 
-          String chartServlet = scheme + "://" + host + ":" + port + location + "/GetChart";
-          parameters.put("chartimage", chartServlet + "?filename=" + chart.getFilename());
-          parameters.put("chartheight", new Integer(chart.getChartHeight()));
-          parameters.put("chartwidth", new Integer(chart.getChartWidth()));
-          return parameters;
+        String chartServlet = scheme + "://" + host + ":" + port + location + "/GetChart";
+        parameters.put("chartimage", chartServlet + "?filename=" + chart.getFilename());
+        parameters.put("chartheight", new Integer(chart.getChartHeight()));
+        parameters.put("chartwidth", new Integer(chart.getChartWidth()));
+        return parameters;
     }
 
-      /** Handles the HTTP <code>GET</code> method.
-       * @param request servlet request
-       * @param response servlet response
-       */
-      protected void doGet(HttpServletRequest request, HttpServletResponse response)
-          throws ServletException, IOException {
+    /** Handles the HTTP <code>GET</code> method.
+     * @param request servlet request
+     * @param response servlet response
+     */
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
         doPost(request, response);
-      }
+    }
 
-      /** Handles the HTTP <code>POST</code> method.
-       * @param request servlet request
-       * @param response servlet response
-       */
-      protected void doPost(HttpServletRequest request, HttpServletResponse response)
-          throws ServletException, IOException {
+    /** Handles the HTTP <code>POST</code> method.
+     * @param request servlet request
+     * @param response servlet response
+     */
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
         RequestContext context = RequestContextFactoryFinder.createContext(request, response, true);
         try {
-          processRequest(context);
+            processRequest(context);
         } finally {
-          context.invalidate();
+            context.invalidate();
         }
-      }
+    }
 
-      /** Returns a short description of the servlet.
-       */
-      public String getServletInfo() {
+    /** Returns a short description of the servlet.
+     */
+    public String getServletInfo() {
         return "Export OLAP table to Excel or PDF";
-      }
+    }
 
 }

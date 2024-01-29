@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -30,6 +30,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Searching report jobs by runtime information
@@ -46,6 +47,10 @@ public class ReportJobRuntimeInformationModel extends ReportJobRuntimeInformatio
     private boolean isNextFireTimeModified = false;
     private boolean isPreviousFireTimeModified = false;
     private boolean isStateModified = false;
+	private boolean isPreviousFireTimeFromModified = false;
+	private boolean isPreviousFireTimeToModified = false;
+	private boolean isNextFireTimeFromModified = false;
+	private boolean isNextFireTimeToModified = false;
 
 	/**
 	 * Creates an empty object.
@@ -105,4 +110,45 @@ public class ReportJobRuntimeInformationModel extends ReportJobRuntimeInformatio
      * @return true if the attribute has been modified
      */
     public boolean isStateModified() { return isStateModified; }
+
+	public boolean isPreviousFireTimeFromModified() {
+		return isPreviousFireTimeFromModified;
+	}
+
+	public void setPreviousFireTimeFrom(Date previousFireTimeFrom) {
+		isPreviousFireTimeFromModified = true;
+    	super.setPreviousFireTimeFrom(previousFireTimeFrom);
+	}
+
+	public boolean isPreviousFireTimeToModified() {
+		return isPreviousFireTimeToModified;
+	}
+
+	public void setPreviousFireTimeTo(Date previousFireTimeTo) {
+    	isPreviousFireTimeToModified = true;
+		super.setPreviousFireTimeTo(previousFireTimeTo);
+	}
+
+	public boolean isNextFireTimeFromModified() {
+		return isNextFireTimeFromModified;
+	}
+
+	public void setNextFireTimeFrom(Date nextFireTimeFrom) {
+    	this.isNextFireTimeFromModified = true;
+		super.setNextFireTimeFrom(nextFireTimeFrom);
+	}
+
+	public boolean isNextFireTimeToModified() {
+		return isNextFireTimeToModified;
+	}
+
+	public void setNextFireTimeTo(Date nextFireTimeTo) {
+    	isNextFireTimeToModified = true;
+		super.setNextFireTimeTo(nextFireTimeTo);
+	}
+
+	public void setStateCodes(List<Byte> states) {
+    	this.isStateModified = true;
+		super.setStateCodes(states);
+	}
 }

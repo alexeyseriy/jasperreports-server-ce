@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -101,8 +101,8 @@
                 <simpleAction selectionConstraint="singleSelect" clientTest="AdHocCrosstab.selectedGroupCanShowSummary" labelKey="ADH_242_ADD_ROW_SUMMARY" action="AdHocCrosstab.addRowGroupSummary"/>
                 <simpleAction selectionConstraint="singleSelect" clientTest="AdHocCrosstab.selectedRowGroupCanHideSummary" labelKey="ADH_240_DELETE_ROW_SUMMARY" action="AdHocCrosstab.deleteRowGroupSummary"/>
                 <separator clientTest="AdHocCrosstab.selectedRowGroupIsCollapsible"/>
-                <simpleAction selectionConstraint="singleSelect" clientTest="AdHocCrosstab.selectedRowGroupIsCollapsible" labelKey="ADH_270a_EXPAND_ALL_FOR_GROUP" action="AdHocCrosstab.expandLevel"/>
-                <simpleAction selectionConstraint="singleSelect" clientTest="AdHocCrosstab.selectedRowGroupIsCollapsible" labelKey="ADH_270b_COLLAPSE_ALL_FOR_GROUP" action="AdHocCrosstab.collapseLevel"/>
+                <simpleAction selectionConstraint="singleSelect" clientTest="AdHocCrosstab.selectedRowGroupIsActuallyExpandable" labelKey="ADH_270a_EXPAND_ALL_FOR_GROUP" action="AdHocCrosstab.expandLevel"/>
+                <simpleAction selectionConstraint="singleSelect" clientTest="AdHocCrosstab.selectedRowGroupIsActuallyCollapsible" labelKey="ADH_270b_COLLAPSE_ALL_FOR_GROUP" action="AdHocCrosstab.collapseLevel"/>
             </condition>
             <separator/>
             <simpleAction labelKey="ADH_220_MENU_REMOVE_FROM_CROSSTAB" action="AdHocCrosstab.removeLevelFromRow"/>
@@ -141,8 +141,8 @@
                 <simpleAction selectionConstraint="singleSelect" clientTest="AdHocCrosstab.selectedGroupCanShowSummary" labelKey="ADH_243_ADD_COLUMN_SUMMARY" action="AdHocCrosstab.addColumnGroupSummary"/>
                 <simpleAction selectionConstraint="singleSelect" clientTest="AdHocCrosstab.selectedColumnGroupCanHideSummary" labelKey="ADH_241_DELETE_COLUMN_SUMMARY" action="AdHocCrosstab.deleteColumnGroupSummary"/>
                 <separator clientTest="AdHocCrosstab.selectedColumnGroupIsCollapsible"/>
-                <simpleAction selectionConstraint="singleSelect" clientTest="AdHocCrosstab.selectedColumnGroupIsCollapsible" labelKey="ADH_270a_EXPAND_ALL_FOR_GROUP" action="AdHocCrosstab.expandLevel"/>
-                <simpleAction selectionConstraint="singleSelect" clientTest="AdHocCrosstab.selectedColumnGroupIsCollapsible" labelKey="ADH_270b_COLLAPSE_ALL_FOR_GROUP" action="AdHocCrosstab.collapseLevel"/>
+                <simpleAction selectionConstraint="singleSelect" clientTest="AdHocCrosstab.selectedColumnGroupIsActuallyExpandable" labelKey="ADH_270a_EXPAND_ALL_FOR_GROUP" action="AdHocCrosstab.expandLevel"/>
+                <simpleAction selectionConstraint="singleSelect" clientTest="AdHocCrosstab.selectedColumnGroupIsActuallyCollapsible" labelKey="ADH_270b_COLLAPSE_ALL_FOR_GROUP" action="AdHocCrosstab.collapseLevel"/>
             </condition>
             <separator className="separator"/>
             <simpleAction labelKey="ADH_220_MENU_REMOVE_FROM_CROSSTAB" action="AdHocCrosstab.removeLevelFromColumn"/>

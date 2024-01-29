@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -611,9 +611,12 @@ public class ObjectPermissionServiceImpl extends HibernateDaoImpl implements
 		    try{
 		            final String queryString = "from " + objPermissionClassName + " as objPermission " +
 		            "where objPermission.URI in (:path)";
-		            HibernateTemplate template = getHibernateTemplate();
-		            objList = template.findByNamedParam(queryString,"path",path);
-		            return useBulk ?parseList(objList):objList; //objList;
+				objList = (List)getHibernateTemplate().execute((HibernateCallback) session -> session
+						.createQuery(queryString)
+						.setParameter("path", path)
+						.list());
+
+				return useBulk ?parseList(objList):objList; //objList;
 		    } catch(DataAccessException e){
 		            log.error("Exception getting permission for uri ("+uri+") and path ("+path+"). returning empty list");
 		            // clean up all the parts we have changed and return empty collection
@@ -637,13 +640,13 @@ public class ObjectPermissionServiceImpl extends HibernateDaoImpl implements
 		final String objPermissionClassName = getPersistentClassFactory().getImplementationClassName(ObjectPermission.class);
 
 		final String queryString = "from " + objPermissionClassName + " as objPermission " +
-			"where objPermission.permissionRecipient.id = ? and objPermission.permissionRecipient.class = ?";
+			"where objPermission.permissionRecipient.id = ?1 and objPermission.permissionRecipient.class = ?2";
 
 		List objList = (List)getHibernateTemplate().execute(new HibernateCallback() {
 		    public Object doInHibernate(Session session) throws HibernateException {
 		        return session.createQuery(queryString)
-		        	.setParameter(0, new Long(recipientIdentity.getId()), LongType.INSTANCE)
-		        	.setParameter(1, recipientIdentity.getRecipientClass(), ClassType.INSTANCE)
+		        	.setParameter(1, new Long(recipientIdentity.getId()), LongType.INSTANCE)
+		        	.setParameter(2, recipientIdentity.getRecipientClass(), ClassType.INSTANCE)
 		        	.setCacheable(true)
 		        	.list();
 		    }
@@ -1004,14 +1007,14 @@ public class ObjectPermissionServiceImpl extends HibernateDaoImpl implements
 		final String objPermissionClassName = getPersistentClassFactory().getImplementationClassName(ObjectPermission.class);
 		// Select on identity
 		final String queryString = "from " + objPermissionClassName + " as objPermission " +
-		"where objPermission.URI like ?";
+		"where objPermission.URI like ?1";
 
 		@SuppressWarnings("deprecation")
 		List<ObjectPermission>objList = (List<ObjectPermission>) getHibernateTemplate()
 			.execute(new HibernateCallback() {
 				public Object doInHibernate(Session session) throws HibernateException {
 					return session.createQuery(queryString)
-						.setParameter(0, uri+'%', StringType.INSTANCE)
+						.setParameter(1, uri+'%', StringType.INSTANCE)
 						.setCacheable(true)
 						.list();
 				}

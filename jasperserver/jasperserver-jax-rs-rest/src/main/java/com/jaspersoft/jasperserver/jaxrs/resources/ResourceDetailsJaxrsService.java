@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -41,6 +41,7 @@ import com.jaspersoft.jasperserver.dto.resources.ClientProperty;
 import com.jaspersoft.jasperserver.dto.resources.ClientResource;
 import com.jaspersoft.jasperserver.dto.resources.ResourceMediaType;
 import com.jaspersoft.jasperserver.dto.resources.ResourceMultipartConstants;
+import com.jaspersoft.jasperserver.remote.connection.ContextsManager;
 import com.jaspersoft.jasperserver.remote.exception.IllegalParameterValueException;
 import com.jaspersoft.jasperserver.remote.exception.MandatoryParameterNotFoundException;
 import com.jaspersoft.jasperserver.remote.exception.ModificationNotAllowedException;
@@ -91,11 +92,27 @@ public class ResourceDetailsJaxrsService {
     @Value("${enable.secretData.forProducts:scalable-query-engine}")
     private  String[] allowSecretDataForProducts;
 
+
+    @javax.annotation.Resource
+    private ContextsManager contextsManager;
+
     public Response getResourceDetails(String uri, String accept, Boolean _expanded, Set<String> expandTypes, List<String> includes,
                                        Map<String, String[]> additionalProperties, HttpServletRequest request) throws ErrorDescriptorException {
         final String effectiveAccept = accept != null ? accept.split(";")[0].split(",")[0] : null;
         boolean expanded = _expanded != null ? _expanded : false;
-        Resource resource = singleRepositoryService.getResource(uri, request.getHeader(HttpHeaders.FROM));
+        UUID uuid = null;
+        Resource resource = null;
+        if (uri != null && uri.toLowerCase().startsWith("/uuid:")) {
+            try {
+                uuid = UUID.fromString(uri.substring(6));
+                if (uuid != null) resource = (Resource) contextsManager.getRawContext(uuid);
+            } catch (Exception ex) {
+                throw new ResourceNotFoundException(uri.substring(1));
+            }
+
+        } else {
+            resource = singleRepositoryService.getResource(uri, request.getHeader(HttpHeaders.FROM));
+        }
         if (resource == null) {
             throw new ResourceNotFoundException(uri);
         }

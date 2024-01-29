@@ -1,6 +1,6 @@
 <%@ page contentType="text/html; charset=utf-8" %>
 <%--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -110,6 +110,9 @@
     Report.parametersWithoutDefaultValues = JSON.parse('${parametersWithoutDefaultValues}');
     Report.tempFolderUri = '${tempFolderUri}';
     Report.hasInvisibleICValidationErrors = ${hasInvisibleICValidationErrors};
+    Report.reportExecutionId = '${reportExecutionId}';
+    Report.reportViewerTabsMaxCount = ${reportViewerTabsMaxCount};
+    Report.reportViewerTabsLabelsMaxLength = ${reportViewerTabsLabelsMaxLength};
     </js:out>
 
     if (typeof __jrsConfigs__.reportViewer === "undefined") {

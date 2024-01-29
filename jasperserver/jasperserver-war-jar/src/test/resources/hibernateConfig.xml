@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -106,7 +106,7 @@
 			<props>
 				<prop key="hibernate.dialect">${metadata.hibernate.dialect}</prop>
 				<prop key="hibernate.show_sql">false</prop>
-				<prop key="hibernate.generate_statistics">true</prop>
+				<prop key="hibernate.generate_statistics">false</prop>
 			</props>
 		</property>
 	</bean>

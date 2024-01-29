@@ -34,7 +34,7 @@
 
      3. MISCELLANEOUS/UNKNOWN
   -----------------------------------
-    File last modified Jan 12, 2021
+    File last modified Nov 2, 2021
   -----------------------------------  */
 
 
@@ -124,11 +124,19 @@
     display: none;
 }
 
-.baseTableContainer .addNewItem {
-    background-image: url(images/disclosure_indicators_icons_sprite@1x.png);
-    background-repeat: no-repeat;
+.baseTableContainer .addNewItem:before {
+    background-image: url(images/disclosure_indicators_icons_sprite.svg);
     background-position: -31px -449px;
-    background-size: 80px;
+    background-repeat: no-repeat;
+    background-size: 170px;
+    content: "";
+    height: 13px;
+    left: 0;
+    position: absolute;
+    width: 13px;
+}
+
+.baseTableContainer .addNewItem {
     color: var(--theme-medium-dark);
     font-family: source_sans_prosemibold, Franklin Gothic, Verdana, Arial, sans-serif;
     font-size: 13px;
@@ -136,13 +144,6 @@
     margin: 13px;
     padding-left: 18px;
     position: absolute;
-}
-
-/* 2x icons */
-@media (-webkit-min-device-pixel-ratio: 2),(min-resolution: 192dpi) {
-    .baseTableContainer .addNewItem {
-        background-image: url("images/disclosure_indicators_icons_sprite@2x.png");
-    }
 }
 
 /*  ---------------------------  */

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -47,6 +47,11 @@ $.extend(stdnavPluginList.prototype, {
             'ariarefresh': [
                 this,
                 this._ariaRefresh,
+                null
+            ],
+            'click': [
+                this,
+                this._onClick,
                 null
             ],
             'down': [
@@ -106,36 +111,13 @@ $.extend(stdnavPluginList.prototype, {
     },
     _ariaRefresh: function (el) {
         var $list = $(el);
-        $list.attr('role', 'application');
-        var label = $list.attr('aria-label');
-        var labelledBy = $list.attr('aria-labelledby');
         var $items = $list.children('li');
-        var itemPlural = $list.attr('js-itemplural');
-        if (itemPlural === '' || !itemPlural) {
-            itemPlural = 'items';
-        }
-        var allItemsAreLinks = false;
-        if (stdnav.nullOrUndefined(label) && stdnav.nullOrUndefined(labelledBy)) {
-            var allLinks = $items.find('a');
-            if (allLinks.length === $items.length) {
-                $list.attr('aria-label', 'List of ' + $items.length + ' links.');
-                allItemsAreLinks = true;
-            } else {
-                $list.attr('aria-label', 'List of ' + $items.length + itemPlural);
-            }
-        }
         $.each($items, function (index, item) {
             var $item = $(item);
-            var $itemLinks = $item.find('a');
-            if ($itemLinks.length > 0) {
-                $item.attr('role', 'link');
-                var itemLabel = $item.attr('aria-label');
-                var itemLabelledBy = $item.attr('aria-labelledby');
-                if (stdnav.nullOrUndefined(itemLabel) && stdnav.nullOrUndefined(itemLabelledBy)) {
-                    var itemText = $item.text();
-                    var itemLinkText = $($itemLinks[0]).text();
-                    itemLabel = itemText + '. ' + (index + 1) + ' of ' + $items.length + ' ' + itemPlural + '.';
-                    $item.attr('aria-label', itemLabel);
+            if (typeof $item.attr('role') === "undefined") {
+                var $itemLinks = $item.find('a');
+                if ($itemLinks.length > 0) {
+                    $item.attr('role', 'link');
                 }
             }
         });
@@ -189,9 +171,18 @@ $.extend(stdnavPluginList.prototype, {
         }
         return newSuperfocus;
     },
+    // Some screen readers have their own shortcuts to activate element.
+    // in case of role=link such activation will trigger 'click' event
+    // on the item, so we have to re-trigger this event on an underlying link
     _onClick: function (element) {
-        $(element).closest('ul, ol').focus();
-        stdnav.setSubfocus(this._fixSubfocus(element));
+        let $el = $(element);
+        if (element.nodeName === 'LI' && $el.attr('role') === 'link') {
+            var firstLink = $el.find('a')[0];
+            if (typeof firstLink !== "undefined") {
+                stdnav.runAction('enter', firstLink);
+            }
+        }
+        return element;
     },
     _onSuperfocusIn: function (element) {
         var newFocus;
@@ -217,11 +208,13 @@ $.extend(stdnavPluginList.prototype, {
         if ($list.hasClass('horizontal')) {
             var $newFocus = $(element).prev('li');
             if ($newFocus.length === 0) {
-                if ($list.attr('js-stdnav-wrap') == 'wrap') {
+                if ($list.attr('js-stdnav-wrap') === 'wrap') {
                     var $items = $list.children('li');
                     if ($items.length > 0) {
                         newFocus = $items[$items.length - 1];
                     }
+                } else {
+                    newFocus = $list.find('li').last()[0];
                 }
             } else {
                 newFocus = $newFocus[0];
@@ -235,11 +228,13 @@ $.extend(stdnavPluginList.prototype, {
         if ($list.hasClass('horizontal')) {
             var $newFocus = $(element).next('li');
             if ($newFocus.length === 0) {
-                if ($list.attr('js-stdnav-wrap') == 'wrap') {
+                if ($list.attr('js-stdnav-wrap') === 'wrap') {
                     var $items = $list.children('li');
                     if ($items.length > 0) {
                         newFocus = $items[0];
                     }
+                } else {
+                    newFocus = $list.find('li').first()[0];
                 }
             } else {
                 newFocus = $newFocus[0];

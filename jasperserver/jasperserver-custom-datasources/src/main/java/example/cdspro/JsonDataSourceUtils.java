@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -146,13 +146,13 @@ public final class JsonDataSourceUtils {
         public RowExtractor(String fileName, String selectExpression) throws JRException {
             super(fileName, selectExpression);
             // at this point the resource is fully read and can be released.
-            close();
+            //close(); // no longer required
         }
 
         public RowExtractor(InputStream is, String selectExpression) throws JRException {
             super(is, selectExpression);
             // at this point the resource is fully read and can be released.
-            close();
+            //close(); // no longer required
         }
 
         @Override

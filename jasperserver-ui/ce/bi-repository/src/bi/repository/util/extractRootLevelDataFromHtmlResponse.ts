@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -20,6 +20,17 @@
  */
 
 export default (html: string) => {
-    const match = html.trim().match(/^<div\s?(?:(?:.*)=(?:['"]).*(?:['"]))*>(.*)<\/div>/);
-    return JSON.parse(match ? match[1] : '{}');
+    // The length for '<div id='treeNodeText'>' is 23:
+    const START_DIV_LENGTH = 23;
+    // The length for '</div>' is 6:
+    const END_DIV_LENGTH = 6;
+    // Length for start + end is 29:
+    const WRAPPING_DIV_LENGTH = 29;
+
+    const htmlTrimmed = html.trim();
+    if (htmlTrimmed.length <= WRAPPING_DIV_LENGTH) {
+        return {};
+    }
+    const jsonAsText = htmlTrimmed.substring(START_DIV_LENGTH, htmlTrimmed.length - END_DIV_LENGTH);
+    return JSON.parse(jsonAsText);
 };

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -22,6 +22,7 @@ package com.jaspersoft.jasperserver.inputcontrols.cascade.token;
 
 import com.jaspersoft.jasperserver.api.JSException;
 import com.jaspersoft.jasperserver.api.engine.common.service.BuiltInParameterProvider;
+import com.jaspersoft.jasperserver.api.metadata.common.domain.InputControl;
 import com.jaspersoft.jasperserver.api.metadata.jasperreports.domain.ReportDataSource;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -385,7 +386,7 @@ public class FilterCore implements FilterResolver, Serializable {
     }
 
     @Override
-    public String updateQueryWithNewSearchCriteria(String query, Map<String, Object> providedParameters, String queryValueColumn, String criteria)
+    public String updateQueryWithNewSearchCriteria(String query, Map<String, Object> providedParameters, InputControl inputControl, String criteria)
         throws JSException {
 	    return null;
     }

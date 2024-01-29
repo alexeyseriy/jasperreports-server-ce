@@ -21,14 +21,14 @@
 
 /* ==============================================
     DROP ZONE MODULE
-	Last modified date:     May 22, 2020
+	Last modified date:     Oct 26, 2021
 	Last modified by:       Anna Leeg
  * ============================================== */
 
 /* DROP ZONE */
 // base drop zone, same height as standard inputs at 28px
 .jr-mDropzone.jr {
-  background-color: #f7f7f7;
+  background-color: #fafafa;
   border-color: #cccccc;
   border-width: 1px;
   border-style: dashed;
@@ -117,7 +117,7 @@
 }
 
 .jr-mDropzone.jr-isDropped.jr .jr-mDropzone-remover.jr {
-  background-color: #f7f7f7;
+  background-color: #fafafa;
   display: block;
   margin-left: em(24px, 12px);
 }

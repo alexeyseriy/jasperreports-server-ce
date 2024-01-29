@@ -1,6 +1,6 @@
 <%@ page contentType="text/html; charset=utf-8" %>
 <%--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -26,6 +26,7 @@
 
 
 <t:insertTemplate template="/WEB-INF/jsp/templates/page.jsp">
+    <t:putAttribute name="showServerSettingsHeader" value="true"/>
     <t:putAttribute name="pageTitle"><spring:message code="menu.mondrian.properties"/></t:putAttribute>
     <t:putAttribute name="bodyID" value="analysisOptions"/>
     <t:putAttribute name="bodyClass" value="twoColumn"/>
@@ -35,6 +36,7 @@
     </t:putAttribute>
     <t:putAttribute name="bodyContent" >
 		<t:insertTemplate template="/WEB-INF/jsp/templates/container.jsp">
+		    <t:putAttribute name="containerID" value="settings"/>
             <t:putAttribute name="containerClass" value="column decorated primary"/>
             <t:putAttribute name="containerTitle"><spring:message code="menu.mondrian.properties"/></t:putAttribute>
             <t:putAttribute name="headerContent">
@@ -42,6 +44,7 @@
             </t:putAttribute>
             <t:putAttribute name="bodyClass" value=""/>
             <t:putAttribute name="bodyContent">
+            <div class="title"><spring:message code="menu.mondrian.properties"/></div>
                 <ul class="list setLeft tabular twoColumn">
                   <c:forEach items='<%= mondrian.olap.MondrianProperties.instance().getPropertyList() %>' var="property" varStatus="status" >
                     <c:if test="${not empty property.string}">

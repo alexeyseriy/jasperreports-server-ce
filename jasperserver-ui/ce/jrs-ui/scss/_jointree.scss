@@ -21,7 +21,7 @@
 
 /* ==================================================
     JOIN TREE MODULE
-    Last modified date:     May 22, 2020
+    Last modified date:     Oct 26, 2021
     Last modified by:       Anna Leeg
  * ================================================== */
 
@@ -167,7 +167,7 @@
 
 .jr-mJointree-join-table.jr {
   align-self: center;
-  color: $grey-textLighter;
+  color: $grey-textMedium;
   font-family: $font-family-semibold;
   font-size: 13px;
   font-weight: normal;
@@ -208,7 +208,7 @@
 }
 
 .jr-mJointree-join-tables-table.jr {
-  color: $grey-textLighter;
+  color: $grey-textMedium;
   display: inline-block;
   font-weight: bold;
   height: 16px;
@@ -280,7 +280,7 @@
 }
 
 .jr-mJointree-expression-field-table.jr {
-  color: $grey-textSuperlight;
+  color: $grey-textLight;
 }
 
 .jr-mJointree-expression-operator.jr {
@@ -373,7 +373,7 @@
 }
 
 .jr-mJointree-join.jr-isCollapsed.jr .jr-mJointree-join-table-toggle.jr {
-  border-left: 5px solid $grey-textLighter; /* text variable is ok, this is icon inline with text */
+  border-left: 5px solid $grey-textMedium; /* text variable is ok, this is icon inline with text */
   border-bottom: 4px solid transparent;
   border-top: 4px solid transparent;
   margin-top: 6px;
@@ -383,7 +383,7 @@
 .jr-mJointree-join.jr-isExpanded.jr .jr-mJointree-join-table-toggle.jr {
   border-left: 4px solid transparent;
   border-right: 4px solid transparent;
-  border-top: 5px solid $grey-textLighter; /* text variable is ok, this is icon inline with text */
+  border-top: 5px solid $grey-textMedium; /* text variable is ok, this is icon inline with text */
   margin-top: 9px;
   margin-right: 7px;
   margin-left: -2px;

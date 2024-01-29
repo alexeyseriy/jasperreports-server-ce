@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -66,6 +66,18 @@ public interface UserAuthorityService {
      * @return a list of users.
      */
 	public List getUsers(ExecutionContext context, FilterCriteria filterCriteria);
+
+	/**
+     * Returns a list of {@link User} object with resolved profile attributes that match filter criteria.
+     * This method retrieves profile attributes that belongs only to a corresponding user, they are not resolved
+     * hierarchically.
+     *
+     * @param context the execution context.
+     * @param filterCriteria the filter criteria.
+     *
+     * @return a list of users.
+     */
+	public List<User> getUsersWithProfileAttributes(ExecutionContext context, FilterCriteria filterCriteria);
 
     /**
      * Returns a list of {@link User} object that match detached criteria.
@@ -318,6 +330,19 @@ public interface UserAuthorityService {
      * @return a list of users for the specified set of tenant identifiers and with the specified name.
      */
     public List getTenantUsers(ExecutionContext context, Set tenantIds, String name);
+
+    /**
+     * Returns a list of {@link User} object with resolved profile attributes for the specified set of tenant identifiers.
+     * Also the username or full name of the user should match <code>name</code> parameter.
+     * This method retrieves profile attributes that belongs only to a corresponding user, they are not resolved hierarchically.
+     *
+     * @param context the execution context.
+     * @param tenantIds the set of tenant identifier.
+     * @param name the name of user.
+     *
+     * @return a list of users for the specified set of tenant identifiers and with the specified name.
+     */
+    public List<User> getTenantUsersWithProfileAttributes(ExecutionContext context, Set<?> tenantIds, String name);
 
     /**
      * The same as

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -22,7 +22,6 @@
 import $ from 'jquery';
 import Backbone from 'backbone';
 import _ from 'underscore';
-import SearcheableDataProvider from '../../singleSelect/dataprovider/SearcheableDataProvider';
 import NumberUtils from '../../../common/util/parse/NumberUtils';
 import doCalcOnVisibleNodeClone from '../../scalableList/util/domAndCssUtil';
 import browserDetection from '../../../common/util/browserDetection';
@@ -37,7 +36,7 @@ import Sizer from '../../sizer/Sizer';
 let doCalcOnVisibleNodeCloneObj = doCalcOnVisibleNodeClone.doCalcOnVisibleNodeClone;
 
 var numberUtils = new NumberUtils();
-var SELECTION_CHANGE_TIMEOUT = 100;
+var SELECTION_CHANGE_TIMEOUT = 300;
 var DEFAULT_VISIBLE_ITEMS_COUNT = 10;
 var DEFAULT_MIN_ITEMS_COUNT = 3;
 export default Backbone.View.extend({
@@ -58,6 +57,7 @@ export default Backbone.View.extend({
         this.selectedItemsList = this._createSelectedItemsList(options);
         this.height = options.height;
         this.resizable = options && options.resizable;
+        this.caseSensitiveSelection = options.caseSensitiveSelection;
         this.initListeners();
         if (typeof options.value !== 'undefined') {
             this.silent = true;
@@ -84,7 +84,8 @@ export default Backbone.View.extend({
             loadFactor: options.loadFactor,
             chunksTemplate: options.chunksTemplate,
             scrollTimeout: options.scrollTimeout,
-            keydownTimeout: options.keydownTimeout
+            keydownTimeout: options.keydownTimeout,
+            caseSensitiveSelection: options.caseSensitiveSelection
         });
     },
     _createSelectedItemsListDataProvider: function (options) {
@@ -180,11 +181,26 @@ export default Backbone.View.extend({
         this.selectionChangeTimeout = setTimeout(_.bind(this.selectionChangeInternal, this, selection), SELECTION_CHANGE_TIMEOUT);
     },
     selectionRemoved: function (selection) {
-        var currentRawSelection = this.availableItemsList.model.get('value'), seletedIndex, selectedLength = selection.length;
-        for (seletedIndex = 0; seletedIndex < selectedLength; seletedIndex += 1) {
-            delete currentRawSelection[selection[seletedIndex]];
+        const currentAvailableValues = this.availableItemsList.model.get('value');
+
+        for (let i = 0; i < selection.length; i += 1) {
+            let value = selection[i];
+            if (!value) {
+                continue;
+            }
+            if (!this.caseSensitiveSelection) {
+                value = value.toLowerCase();
+            }
+            delete currentAvailableValues[value];
         }
-        this.availableItemsList.setValue(_.keys(currentRawSelection));
+
+        let newValues;
+        if (this.caseSensitiveSelection) {
+            newValues = Object.keys(currentAvailableValues);
+        } else {
+            newValues = Object.values(currentAvailableValues);
+        }
+        this.availableItemsList.setValue(newValues);
     },
     selectionChangeInternal: function (selection) {
         var self = this, activeValue = this.selectedItemsList.listView.getActiveValue(), scrollTop = this.selectedItemsList.listView.$el.scrollTop();

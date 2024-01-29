@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -73,7 +73,6 @@ $.extend(stdnavPluginButton.prototype, {
         this.behavior = {
             'enter': [this, this._onEnterOrEntered, null],
             'entered': [this, this._onEnterOrEntered, null],
-            'exit': [this, this._onExit, null],
             'toggle': [this, this._onEnterOrEntered, null],
             'inherit': false,
             'inheritable': true
@@ -90,7 +89,6 @@ $.extend(stdnavPluginButton.prototype, {
     // Utility function: given a list, ensure the most appropriate element
     // available (in this case, the top-level link node, only) has focus.
     _fixSubfocus: function (element) {
-        var ghosts;
         var newSubfocus;
         var $el = $(element);
 
@@ -161,10 +159,6 @@ $.extend(stdnavPluginButton.prototype, {
             eventAutomation.simulateClickSequence(element);
         }
         return element;
-    },
-
-    _onExit: function(){
-        return $('#searchInput')[0]; // re-use the common exit handler (stdnav.basicExit())
     }
 });
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -24,8 +24,7 @@ import ListWithNavigation from '../../scalableList/view/ListWithNavigation';
 var ListViewForSelectedItemsList = ListWithNavigation.extend({
     _multiSelect: function (event, value, index) {
         if ($(event.target).hasClass('jr-mSelectlist-item-delete')) {
-            if (this.model.selectionContains(value, index)) {
-            } else {
+            if (!this.model.selectionContains(value, index)) {
                 this._singleSelect(event, value, index);
             }
         } else {

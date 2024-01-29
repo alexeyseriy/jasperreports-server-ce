@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -344,14 +344,14 @@ JRS.Controls = (function (jQuery, _, Controls) {
         }),
 
         SingleSelect: Controls.BaseControl.extend({
-            initialize(controlStructure, options = {}) {
+            initialize(controlStructure, initialOptions = {}) {
                 const {
                     initialSelectedValues
-                } = options;
+                } = initialOptions;
 
-                this.dataUri = options.dataUri;
-                this.inputControlsService = options.inputControlsService;
-                this.paginatedValuesOptions = options.paginatedValuesOptions
+                this.dataUri = initialOptions.dataUri;
+                this.inputControlsService = initialOptions.inputControlsService;
+                this.paginatedValuesOptions = initialOptions.paginatedValuesOptions
 
                 if (!this.singleSelect) {
                     this.inputControlsDataProviderWithDataLabelHash = new InputControlsDataProviderWithDataLabelHash({
@@ -458,14 +458,14 @@ JRS.Controls = (function (jQuery, _, Controls) {
         }),
 
         MultiSelect: Controls.BaseControl.extend({
-            initialize(controlStructure, options = {}) {
+            initialize(controlStructure, initialOptions = {}) {
                 const {
                     initialSelectedValues
-                } = options;
+                } = initialOptions;
 
-                this.dataUri = options.dataUri;
-                this.inputControlsService = options.inputControlsService;
-                this.paginatedValuesOptions = options.paginatedValuesOptions;
+                this.dataUri = initialOptions.dataUri;
+                this.inputControlsService = initialOptions.inputControlsService;
+                this.paginatedValuesOptions = initialOptions.paginatedValuesOptions;
 
                 if (!this.multiSelect) {
                     this.inputControlsDataProviderWithDataLabelHash = new InputControlsDataProviderWithDataLabelHash({

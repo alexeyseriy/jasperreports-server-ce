@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -26,7 +26,6 @@ import java.io.OutputStream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.quartz.JobExecutionException;
 
 import com.jaspersoft.jasperserver.api.JSExceptionWrapper;
 import com.jaspersoft.jasperserver.api.metadata.common.domain.ContentResource;
@@ -52,16 +51,14 @@ public class JsonReportOutput extends AbstractReportOutput
 	{
 	}
 
-	/** 
-	 * @see com.jaspersoft.jasperserver.api.engine.scheduling.quartz.Output#getOutput()
-	 */
-	public ReportOutput getOutput(
-			ReportJobContext jobContext,
-			JasperPrint jasperPrint) throws JobExecutionException
-	{
+	@Override
+	protected DataContainer export(ReportJobContext jobContext, 
+			JasperPrint jasperPrint, Integer startPageIndex, Integer endPageIndex) {
 		try {
 			JsonMetadataExporter exporter = new JsonMetadataExporter(getJasperReportsContext());
 			exporter.setParameter(JRExporterParameter.JASPER_PRINT, jasperPrint);
+			exporter.setParameter(JRExporterParameter.START_PAGE_INDEX, startPageIndex);
+			exporter.setParameter(JRExporterParameter.END_PAGE_INDEX, endPageIndex);
 			
 			boolean close = false;
 			DataContainer dataContainer = jobContext.createDataContainer(this);
@@ -74,9 +71,7 @@ public class JsonReportOutput extends AbstractReportOutput
 				
 				close = false;
 				dataOut.close();
-
-				String fileName = jobContext.getBaseFilename() + "." + getFileExtension();
-				return new ReportOutput(dataContainer, getFileType(), fileName);
+				return dataContainer;
 			} catch (IOException e) {
 				throw new JSExceptionWrapper(e);
 			} finally {

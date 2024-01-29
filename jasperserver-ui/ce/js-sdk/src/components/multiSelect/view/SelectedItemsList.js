@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -32,7 +32,7 @@ import scalableListItemHeightCalculationTrait from '../mixin/scalableListItemHei
 import selectedItemsListTemplate from '../templates/selectedItemsTemplate.htm';
 import itemsTemplate from '../templates/selectedItemsListTemplate.htm';
 import listTemplate from '../templates/listTemplate.htm';
-import ListWithNavigation from '../view/ListViewForSelectedItemsList';
+import ListViewForSelectedItemsList from '../view/ListViewForSelectedItemsList';
 
 var SelectedItemsList = Backbone.View.extend({
     className: 'jr-mMultiselect-listContainer jr-isInactive jr',
@@ -72,7 +72,7 @@ var SelectedItemsList = Backbone.View.extend({
             bufferSize: options.bufferSize,
             loadFactor: options.loadFactor
         });
-        this.listView = options.listView || _.extend(new ListWithNavigation({
+        this.listView = options.listView || _.extend(new ListViewForSelectedItemsList({
             el: options.listElement || $(listTemplate),
             model: this.listViewModel,
             chunksTemplate: options.chunksTemplate,
@@ -196,18 +196,19 @@ var SelectedItemsList = Backbone.View.extend({
     onAKey: function (event) {
     },
     onDeleteKey: function (event) {
-        var value = this.listView.getValue();
-        if (value && value.length > 0) {
-            var emptySelection = true;
-            for (var index in value) {
-                if (value.hasOwnProperty(index) && value[index] !== undefined) {
-                    emptySelection = false;
-                    break;
-                }
+        const selectedValues = this.listViewModel.getSelection();
+        if (!selectedValues || selectedValues.length === 0) {
+            return;
+        }
+        let emptySelection = true;
+        for (let index in selectedValues) {
+            if (selectedValues.hasOwnProperty(index) && selectedValues[index] !== undefined) {
+                emptySelection = false;
+                break;
             }
-            if (!emptySelection) {
-                this.trigger('selection:remove', value);
-            }
+        }
+        if (!emptySelection) {
+            this.trigger('selection:remove', selectedValues);
         }
     },
     fetch: function (callback, options) {

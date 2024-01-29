@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -322,8 +322,7 @@ public class BasicInputControlHandlerTest extends InputControlHandlerBaseTest {
         Map<String, Object> parameters = new HashMap<>();
 
         handler.fillStateValue(state, inputControl, null, parameters, null, null);
-        assertEquals(1, parameters.size());
-        assertEquals(null, parameters.get("Country"));
+        assertEquals(0, parameters.size());
     }
 
     @Test

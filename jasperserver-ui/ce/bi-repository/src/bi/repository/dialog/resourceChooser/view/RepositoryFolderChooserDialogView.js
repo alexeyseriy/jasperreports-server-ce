@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -143,8 +143,7 @@ export default Dialog.extend({
         var selectionKeys = Object.keys(selection);
         var itemSelected = selection && (_.isArray(selection) || _.isObject(selection)) && selection[selectionKeys[0]];
         var resourceUri = itemSelected ? itemSelected.uri : undefined;
-        var resourceType = itemSelected ? itemSelected.resourceType : undefined;
-        if (!(itemSelected || resourceUri || resourceType)) {
+        if (!itemSelected) {
             this.disableButton('select');
             return;
         }    // save selected resource information.

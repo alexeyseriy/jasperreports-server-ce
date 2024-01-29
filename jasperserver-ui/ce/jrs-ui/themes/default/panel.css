@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2021 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2023 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -35,7 +35,7 @@
     6. MISC PANEL CONTENT
 
   -----------------------------------
-    File last modified Jan 13, 2021
+    File last modified Jan 30, 2023
   ----------------------------------- */
 
 
@@ -51,7 +51,6 @@
 .panel > .header {
     background-color: #e0e0e0; /* will eventually need to change this */
     border: 0;
-    /* border-bottom: 1px solid #B7B7B7; changed to #b5b5b5 below */
     border-bottom: 1px solid var(--border-grey-29);
     height: 28px;
     line-height: 28px;
@@ -62,7 +61,6 @@
 .panel > .header > .title {
     display: inline;
     float: left;
-    /* font-weight: bold; */ /* DELETE IF NO PROBLEMS */
     line-height: inherit;
     margin: 0;
     max-width: 100%;
@@ -90,8 +88,6 @@
 .panel.showingSubHeader > .content > .body {
     margin-top: 29px;
 }
-
-
 
 /* inlay */
 .panel.inlay .column.primary,
@@ -122,7 +118,6 @@
     margin-right: 4px;
 }
 
-
 /* tabbed */
 .tabbedPanel > .subcontainer > .tabContainer {
     display: none;
@@ -138,7 +133,6 @@
     width: 22px;
     height: 16px;
     margin: 3px;
-    /* background-color: #f5f5f5; changed to #f4f4f4 below */
     background-color: var(--background-grey-04);
 }
 
@@ -147,13 +141,11 @@
 }
 
 
-
 /* ------------------ */
 /*  2. TOOLTIP PANEL  */
 /* ------------------ */
 .panel.tooltip {
     background-color: var(--background-white);
-    /* border: 1px solid #d3d5d6; changed to #d6d6d6 below */
     border: 1px solid var(--border-grey-16);
     border-radius: 4px;
     box-shadow: 0 0 5px rgba(34, 25, 25, 0.4);
@@ -162,6 +154,18 @@
     max-width: 500px;
     z-index: 1000;
 }
+
+.panel.tooltip .body {
+    position: relative;
+    overflow: hidden;
+}
+
+.panel.tooltip .title {
+    font-family: source_sans_prosemibold, Franklin Gothic Medium, Verdana, Arial, sans-serif;
+    font-size: 14px;
+}
+
+.panel.tooltip .subtitle {}
 
 .panel.tooltip > .content {
     left: 0;
@@ -200,6 +204,39 @@
     display: none;
 }
 
+/* variation: calc fields and measures */
+.tooltip.calcfield {
+    position: fixed; 
+    z-index: 1001; 
+    margin: 8px;
+}
+
+.tooltip.calcfield .field {
+    color: #0295bd;
+}
+
+.tooltip.calcfield .measure {
+    color: #5e8c08;
+}
+
+.tooltip.calcfield .title {
+    margin-bottom: 0;
+}
+
+.tooltip.calcfield .subtitle {
+    font-family: source_sans_proregular, Franklin Gothic, Verdana, Arial, sans-serif;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.tooltip.calcfield .message.label {
+    color: #444444;
+    font-size: 12px;
+}
+
+.tooltip.calcfield .message {
+    font-size: 12px;
+}
 
 
 /* ----------------- */
@@ -207,7 +244,6 @@
 /* ----------------- */
 .info {
     clear: both;
-    /* border: 1px solid #d3d2d2; changed to #d6d6d6 below */
     border: 1px solid var(--border-grey-16);
     float: left;
     margin: 2px 5px 20px 2px; /* moves visual top and left to actual */
@@ -269,7 +305,6 @@
 .panel.info.noDataModeDisplay {}
 
 
-
 /* ----------------------- */
 /*  4. INFO, SYSTEM PANEL  */
 /* ----------------------- */
@@ -298,7 +333,7 @@
 }
 
 .info.system .message {
-    font-weight: bold; /* moved from theme.css */
+    font-weight: bold;
     line-height: 32px;
     margin: auto 10px;
     overflow: hidden;
@@ -334,10 +369,8 @@
 }
 
 #systemMessage .warning {
-    /* color: #ff0000; */
     color: #d81e29; /* TODO: define new color and variable */
 }
-
 
 
 /* ----------------------- */
@@ -355,7 +388,6 @@
     display: none !important;
 }
 
-/* #nothingToDisplay.info > .content > .body > .message, using class instead */
 .panel.nothingToDisplay.info > .content > .body > .message {
     background-color: #fff;
     border: 1px solid #D3D2D2;
@@ -363,7 +395,6 @@
     padding: 28px 8px;
     text-align: center;
 } /* only usage left is settings > adhoc cache */
-
 
 
 /* ------------------------ */

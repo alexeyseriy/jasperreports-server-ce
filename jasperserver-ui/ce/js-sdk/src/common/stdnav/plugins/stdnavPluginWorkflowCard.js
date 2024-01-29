@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -45,9 +45,16 @@ $.extend(StdnavPluginWorkflowCard.prototype, {
             'ariarefresh': [this, this._ariaRefresh, null],
             'right': [this, this._onRight, null],
             'left': [this, this._onLeft, null],
+            'up': [this, this._onUp, null],
+            'down': [this, this._onDown, null],
+            'home': [this, this._onHome, null],
+            'end': [this, this._onEnd, null],
+            'toggle': [this, this._onEnterOrToggle, null],
+            'enter': [this, this._onEnterOrToggle, null],
+            'exit': [this, this._onExit, null],
             'fixfocus': [this, this._fixFocus, null],
             'fixsuperfocus': [this, this._fixSuperfocus, null],
-            'focusin': [this, this._onFocusIn, null],
+            'click': [this, this._onClick, null],
             'inherit': true,
             'inheritable': true
         };
@@ -59,97 +66,163 @@ $.extend(StdnavPluginWorkflowCard.prototype, {
     _ariaPrep: function _ariaPrep(el) {
         this._ariaRefresh(el);
     },
-    _ariaRefresh: function _ariaRefresh(el) {
-        let $list = $(el);
-        $list.attr('role', 'application');
-        let label = $list.attr('aria-label');
-        let labelledBy = $list.attr('aria-labelledby');
-        let $items = $list.children('li');
-        let itemPlural = $list.attr('js-itemplural');
-
-        if (itemPlural === '' || !itemPlural) {
-            itemPlural = 'items';
-        }
-
-        let allItemsAreLinks = false;
-
-        if (stdnav.nullOrUndefined(label) && stdnav.nullOrUndefined(labelledBy)) {
-            let allLinks = $items.find('a');
-
-            if (allLinks.length === $items.length) {
-                $list.attr('aria-label', 'List of ' + $items.length + ' links.');
-                allItemsAreLinks = true;
-            } else {
-                $list.attr('aria-label', 'List of ' + $items.length + itemPlural);
-            }
-        }
-
-        $.each($items, function (index, item) {
-            let $item = $(item);
-            let $itemLinks = $item.find('a');
-
-            if ($itemLinks.length > 0) {
-                $item.attr('role', 'link');
-                let itemLabel = $item.attr('aria-label');
-                let itemLabelledBy = $item.attr('aria-labelledby');
-
-                if (stdnav.nullOrUndefined(itemLabel) && stdnav.nullOrUndefined(itemLabelledBy)) {
-                    let itemText = $item.text();
-                    let itemLinkText = $($itemLinks[0]).text();
-                    itemLabel = itemText + '. ' + (index + 1) + ' of ' + $items.length + ' ' + itemPlural + '.';
-                    $item.attr('aria-label', itemLabel);
-                }
-            }
-        });
+    _ariaRefresh: function _ariaRefresh() {
         return null;
     },
     _fixFocus: function _fixFocus(element) {
         let $el = $(element);
 
-        if ($el.is("li")) {
-            element = $el.find("button").eq(0)[0];
+        if ($el.is("ul")) {
+            element = $el.find("li").eq(0)[0];
         }
 
         return element;
     },
     _fixSuperfocus: function _fixSuperfocus(element) {
         let newSuperfocus;
-        let $closestList = $(element).closest('li');
+        let $closestList = $(element).parents('ul').last();
 
         if ($closestList.length > 0) {
             newSuperfocus = $closestList[0];
         } else {
             newSuperfocus = null;
         }
-
         return newSuperfocus;
     },
-
     _onClick: function _onClick(element) {
-        $(element).closest('li').focus();
-        stdnav.setSubfocus(this._fixSubfocus(element));
-    },
+        const $el = $(element);
+        const isButtonOrChild = $el.closest('button').length > 0;
+        const isMainUl = $el.prop('nodeName') === 'UL' && $el.attr('role') === 'menubar';
+        const isLiMenuItem = $el.prop('nodeName') === 'LI' && $el.attr('role') === 'menuitem';
 
-    _onFocusIn: function _onFocusIn(element) {
-        let $el = $(element);
-
-        if (!$el.is("li>div button")) {
-            element = $el.closest("li>div").find("button")[0];
+        if (isLiMenuItem) {
+            stdnav.forceFocus($el);
+        } else if (!(isButtonOrChild || isMainUl)) {
+            stdnav.forceFocus($el.parents('li').last());
         }
-
-        return element;
     },
-    _onLeft: function _onLeft() {
-        let currentPosition = $("li.superfocus button").index($("button.subfocus"));
-        let newPosition = currentPosition - 1;
-        let newSelectedButton = $("li.superfocus button").eq(newPosition);
+    _navigationCallbackHandler: function _navigationCallbackHandler(element, listCallback, buttonCallback) {
+        const currentFocus = $(element).closest('li,button');
+
+        if (currentFocus.prop('nodeName') === 'LI') {
+            return listCallback();
+        } else if (currentFocus.prop('nodeName') === 'BUTTON') {
+            return buttonCallback();
+        }
+        return null;
+    },
+    _onLeft: function _onLeft(element) {
+        let currentPosition, newPosition, newSelectedButton;
+        const visibleButtonList = $(element).closest('ul').find('button:visible');
+
+        if (visibleButtonList.first().hasClass('subfocus')) {
+            return visibleButtonList.last();
+        }
+        currentPosition = $('li button').index($('button.subfocus'));
+        newPosition = currentPosition - 1;
+        newSelectedButton = $('li button').eq(newPosition);
         return newPosition >= 0 && newSelectedButton[0];
     },
-    _onRight: function _onRight() {
-        let currentPosition = $("li.superfocus button").index($("button.subfocus"));
-        let newPosition = currentPosition + 1;
-        let newSelectedButton = $("li.superfocus button").eq(newPosition);
-        return newSelectedButton.length && newSelectedButton[0];
+    _onRight: function _onRight(element) {
+        const listCallback = () => {
+            const visibleButtonList = $(element).closest('li').find('button:visible');
+            return visibleButtonList.first();
+        }
+        const buttonCallback = () => {
+            let currentPosition, newPosition, newSelectedButton;
+            const visibleButtonList = $(element).closest('ul').find('button:visible');
+
+            if (visibleButtonList.last().hasClass('subfocus')) {
+                return visibleButtonList.first();
+            }
+            currentPosition = $('li button').index($('button.subfocus'));
+            newPosition = currentPosition + 1;
+            newSelectedButton = $('li button').eq(newPosition);
+            return newSelectedButton.length && newSelectedButton[0];
+        }
+        return this._navigationCallbackHandler(element, listCallback, buttonCallback);
+    },
+    _onUp: function _onUp(element) {
+        const listCallback = () => {
+            const closestLi = $(element).closest('li');
+            const liList = closestLi.parent().children('li');
+            const previousItem = closestLi.prev();
+
+            if (liList.length <= 1) {
+                return null;
+            }
+            return previousItem.length ? previousItem : liList.last();
+        }
+        const buttonCallback = () => {
+            const closestLiParent = $(element).closest('ul').parent();
+            const liParentList = closestLiParent.parent().children('li');
+            const previousItem = closestLiParent.prev();
+
+            if (liParentList.length <= 1) {
+                return null;
+            }
+            return previousItem.length ? previousItem : liParentList.last();
+        }
+        return this._navigationCallbackHandler(element, listCallback, buttonCallback);
+    },
+    _onDown: function _onDown(element) {
+        const listCallback = () => {
+            const closestLi = $(element).closest('li');
+            const liList = closestLi.parent().children('li');
+            const nextItem = closestLi.next();
+
+            if (liList.length <= 1) {
+                return null;
+            }
+            return nextItem.length ? nextItem : liList.first();
+        }
+        const buttonCallback = () => {
+            const closestLiParent = $(element).closest('ul').parent();
+            const liParentList = closestLiParent.parent().children('li');
+            const nextItem = closestLiParent.next();
+
+            if (liParentList.length <= 1) {
+                return null;
+            }
+            return nextItem.length ? nextItem : liParentList.first();
+        }
+        return this._navigationCallbackHandler(element, listCallback, buttonCallback);
+    },
+    _onHome: function _onHome(element) {
+        const listCallback = () => {
+            const liList = $(element).closest('li').parent().children('li');
+            return liList.first();
+        }
+        const buttonCallback = () => {
+            const visibleButtonList = $(element).closest('ul').find('button:visible');
+            return visibleButtonList.first();
+        }
+        return this._navigationCallbackHandler(element, listCallback, buttonCallback);
+    },
+    _onEnd: function _onEnd(element) {
+        const listCallback = () => {
+            const liList = $(element).closest('li').parent().children('li');
+            return liList.last();
+        }
+        const buttonCallback = () => {
+            const visibleButtonList = $(element).closest('ul').find('button:visible');
+            return visibleButtonList.last();
+        }
+        return this._navigationCallbackHandler(element, listCallback, buttonCallback);
+    },
+    _onEnterOrToggle: function _onEnterOrToggle(element) {
+        const $el = $(element);
+        if ($el.prop('nodeName') === 'LI' && $el.attr('role') === 'menuitem') {
+            return $el.find('button:visible').first();
+        }
+        return null;
+    },
+    _onExit: function _onExit(element) {
+        const $el = $(element);
+        if ($el.prop('nodeName') === 'BUTTON') {
+            return $el.closest('ul').parent();
+        }
+        return null;
     }
 });
 $.extend(StdnavPluginWorkflowCard.prototype, {

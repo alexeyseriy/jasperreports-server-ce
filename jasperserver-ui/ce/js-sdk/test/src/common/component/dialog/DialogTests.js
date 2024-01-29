@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -24,6 +24,7 @@ import Backbone from 'backbone';
 import $ from 'jquery';
 import Dialog from 'src/common/component/dialog/Dialog';
 import OptionContainer from 'src/common/component/base/OptionContainer';
+import stdnav from 'src/common/stdnav/stdnav';
 
 var positionStub = function(coordinates){
     var top, left;
@@ -242,9 +243,13 @@ describe('Dialog component', function(){
 
     it('it should trigger "open" event on open', function() {
         var triggerSpy = sinon.spy(dialog, "trigger");
+        var getFirstFocusableElementSpy = sinon.spy(stdnav, "getFirstFocusableElement");
+        var beginModalFocusSpy = sinon.spy(stdnav, "beginModalFocus");
 
         dialog.open();
 
+        expect(getFirstFocusableElementSpy).toHaveBeenCalledWith(dialog.$el[0]);
+        expect(beginModalFocusSpy).toHaveBeenCalledWith(dialog.$el[0]);
         sinon.assert.calledWith(triggerSpy, "open", dialog);
 
         triggerSpy.restore();
@@ -333,10 +338,13 @@ describe('Dialog component', function(){
 
     it('it should trigger "close" event on close', function() {
         var triggerSpy = sinon.spy(dialog, "trigger");
+        var endModalFocusSpy = sinon.spy(stdnav, "endModalFocus");
 
         dialog.open();
 
         dialog.close();
+
+        expect(endModalFocusSpy).toHaveBeenCalledWith(dialog.$el[0]);
 
         sinon.assert.calledWith(triggerSpy, "close", dialog);
 
@@ -394,16 +402,6 @@ describe('Dialog component', function(){
         sinon.assert.calledWith(removeSpy);
 
         removeSpy.restore();
-    });
-
-    it("shouldn't increase z-index when clicked/touched dialog is modal", function() {
-        dialog.open();
-
-        var index = Dialog.highestIndex;
-
-        dialog.$el.trigger("mousedown");
-
-        expect(Dialog.highestIndex).toEqual(index);
     });
 
     it("should increase z-index when clicked/touched", function() {
@@ -519,4 +517,59 @@ describe('Dialog component', function(){
 
         onKeyDownSpy.restore();
     });
+
+    it("should store focus of the previously held element after opening", function() {
+        var previousElement = document.activeElement;
+        dialog.open();
+        expect(dialog.lastFocusedElement).toBe(previousElement);
+    });
+
+    it("should return focus to prior element on close", function () {
+        var focusSpy = {
+            focus: sinon.spy()
+        };
+
+        dialog.open();
+        dialog.lastFocusedElement = focusSpy;
+        dialog.close();
+        expect(focusSpy.focus).toHaveBeenCalled();
+    });
+
+    it("should close dialog when Escape key is pressed", function () {
+        let escapeKeydown = new KeyboardEvent("keydown", {
+            "key": "Escape",
+            "keyCode": 27
+        });
+
+        dialog.open();
+        expect(dialog.isVisible()).toBe(true);
+
+        dialog.$el[0].dispatchEvent(escapeKeydown);
+        expect(dialog.isVisible()).toBe(false);
+
+        dialog.close() && dialog.remove();
+    });
+
+    it("should not close dialog when Escape key is pressed, if dialog has no buttons", function () {
+        let noButtonDialog = new Dialog({
+                title: "Loading...",
+                additionalCssClasses: "loading",
+                modal: true,
+                resizable: false,
+                content: "Please wait."
+            }),
+            escapeKeydown = new KeyboardEvent("keydown", {
+                "key": "Escape",
+                "keyCode": 27
+            });
+
+        noButtonDialog.open();
+        expect(noButtonDialog.isVisible()).toBe(true);
+
+        noButtonDialog.$el[0].dispatchEvent(escapeKeydown);
+        expect(noButtonDialog.isVisible()).toBe(true);
+
+        noButtonDialog.close() && noButtonDialog.remove();
+    });
+
 });

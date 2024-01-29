@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -26,6 +26,8 @@
  * Asynchronous action class.
  */
 
+import {Dialog} from 'js-sdk/src/common/component/dialog/Dialog';
+import {LoadingDialog} from 'js-sdk/src/common/component/dialog/LoadingDialog'
 import dialogs from '../components/components.dialogs';
 import _ from 'underscore';
 import {repositorySearch, ResourcesUtils, invokeResourceAction, isPropertiesChanged, isPermissionsChanged} from './repository.search.main';
@@ -36,6 +38,7 @@ import {baseErrorHandler} from "../core/core.ajax.utils";
 import {ajaxIframeDownload, doNothing, redirectToUrl, downloadFileByUrl} from "../util/utils.common";
 import jQuery from 'jquery';
 import layoutModule from '../core/core.layout';
+import request from 'js-sdk/src/common/transport/request';
 
 repositorySearch.Action = function (invokeFn) {
     if (Object.isFunction(invokeFn)) {
@@ -62,9 +65,11 @@ repositorySearch.folderActionFactory = {
     },
     'PasteFolder': function (folder) {
         return new repositorySearch.Action(function () {
-            var actionName;
-            var toFolder = folder ? folder : repositorySearch.model.getContextFolder();
-            var object = repositorySearch.CopyMoveController.object;
+            let actionName,
+                toFolder = folder ? folder : repositorySearch.model.getContextFolder();
+            if (!toFolder) {
+                toFolder = repositorySearch.model.getSelectedFolder();
+            }
             if (repositorySearch.CopyMoveController.isCopyFolder()) {
                 actionName = repositorySearch.FolderAction.COPY;
             } else if (repositorySearch.CopyMoveController.isMoveFolder()) {
@@ -81,10 +86,10 @@ repositorySearch.folderActionFactory = {
     },
     'PasteResources': function (folder) {
         return new repositorySearch.Action(function () {
-            var actionName;
-            var toFolder = folder ? folder : repositorySearch.model.getContextFolder();
+            let actionName,
+                toFolder = repositorySearch.model.getSelectedFolder() ? repositorySearch.model.getSelectedFolder() : folder;
             if (!toFolder) {
-                toFolder = repositorySearch.model.getSelectedFolder();
+                toFolder = repositorySearch.model.getContextFolder();
             }
             var object = repositorySearch.CopyMoveController.object;
             var resources = repositorySearch.CopyMoveController.isBulkAction() ? [].concat(object) : [object];
@@ -111,10 +116,10 @@ repositorySearch.folderActionFactory = {
             action.invokeAction();
         });
     },
-    'DeleteFolder': function (folder) {
+    'DeleteFolder': function (folder, event) {
         return new repositorySearch.Action(function () {
             actionModel.hideMenu();
-            repositorySearch.showDeleteFolderConfirm(folder);
+            repositorySearch.showDeleteFolderConfirm(folder, event);
         });
     },
     'ShowFolderProperties': function (folder) {
@@ -127,9 +132,9 @@ repositorySearch.folderActionFactory = {
             repositorySearch.editFolderProperties(folder);
         });
     },
-    'AssignPermissions': function (folder) {
+    'AssignPermissions': function (folder, event) {
         return new repositorySearch.Action(function () {
-            repositorySearch.editFolderPermissions(folder);
+            repositorySearch.editFolderPermissions(folder, event);
         });
     },
     'SetActiveThemeFolder': function (folder) {
@@ -154,9 +159,9 @@ repositorySearch.folderActionFactory = {
             repositorySearch.showUploadThemeConfirm(folder, true);
         });
     },
-    'Export': function (folder) {
+    'Export': function (folder, options) {
         return new repositorySearch.Action(function () {
-            repositorySearch.exportDialog.openRepoDialog(folder);
+            repositorySearch.exportDialog.openRepoDialog(folder, options);
         });
     }
 };
@@ -168,6 +173,13 @@ function parseRepoData(data) {
     }
 }
 repositorySearch.resourceActionFactory = {
+    'ResourceFavoriteAction': function () {
+        return new repositorySearch.Action((function () {
+            const resources = repositorySearch.model._uiState.selectedResources;
+            repositorySearch.addToFavorite(resources);
+        }));
+    },
+
     'Copy': function (resource) {
         return new repositorySearch.Action(function () {
             repositorySearch.CopyMoveController.copy(resource);
@@ -178,15 +190,15 @@ repositorySearch.resourceActionFactory = {
             repositorySearch.CopyMoveController.move(resource);
         });
     },
-    'Delete': function (resource) {
+    'Delete': function (resource, event) {
         return new repositorySearch.Action(function () {
             actionModel.hideMenu();
-            repositorySearch.showDeleteResourceConfirm(resource);
+            repositorySearch.showDeleteResourceConfirm(resource, event);
         });
     },
     'Export': function (resource, options) {
         return new repositorySearch.Action(function () {
-            repositorySearch.exportDialog.openRepoDialog(resource);
+            repositorySearch.exportDialog.openRepoDialog(resource, options);
         });
     },
     'ShowProperties': function (resource, options) {
@@ -199,14 +211,14 @@ repositorySearch.resourceActionFactory = {
             repositorySearch.editResourceProperties(resource, options);
         });
     },
-    'AssignPermissionsToResourceAction': function (resource) {
+    'AssignPermissionsToResourceAction': function (resource, event) {
         return new repositorySearch.Action(function () {
-            repositorySearch.editResourcePermissions(resource);
+            repositorySearch.editResourcePermissions(resource, event);
         });
     },
     'GenerateResourceAction': function (resource, options) {
         return new repositorySearch.Action(function () {
-            JRS.CreateReport.selectGenerator(resource.URIString);
+            JRS.CreateReport.selectGenerator(resource.URIString, options);
         });
     },
     'ConvertResourceAction': function (resource, options) {
@@ -251,10 +263,10 @@ repositorySearch.bulkActionFactory = {
             repositorySearch.CopyMoveController.move(resources);
         });
     },
-    'Delete': function (resources) {
+    'Delete': function (resources, event) {
         return new repositorySearch.Action(function () {
             actionModel.hideMenu();
-            resources.length == 1 ? repositorySearch.showDeleteResourceConfirm(resources[0]) : repositorySearch.showBulkDeleteResourcesConfirm(resources);
+            resources.length == 1 ? repositorySearch.showDeleteResourceConfirm(resources[0], event) : repositorySearch.showBulkDeleteResourcesConfirm(resources, event);
         });
     },
     'ShowProperties': function (resources) {
@@ -279,9 +291,9 @@ repositorySearch.bulkActionFactory = {
             });
         });
     },
-    'Export': function (resources) {
+    'Export': function (resources, options) {
         return new repositorySearch.Action(function () {
-            repositorySearch.exportDialog.openRepoDialog(resources);
+            repositorySearch.exportDialog.openRepoDialog(resources, options);
         });
     }
 };    /**
@@ -313,6 +325,17 @@ repositorySearch.ServerAction.addMethod('invokeAction', function () {
         mode: AjaxRequester.prototype.EVAL_JSON
     });
 });
+repositorySearch.onFavoriteItem = function(url, favoriteList){
+    return request({
+        url: url,
+        type: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'content-type': 'application/json',
+        },
+        data: Object.toJSON({ favorites: favoriteList})
+    });
+};
 repositorySearch.ServerAction.addMethod('initDownload', function () {
     var url = this.actionURL + '&' + this.data;
     ajaxIframeDownload(url, {
@@ -491,12 +514,14 @@ repositorySearch.ServerAction.createFolderAction = function (actionName, options
             responseData: data,
             inputData: options
         });
+        dialogs.popup.hide(options.dialog);
     };
     action.onError = function (data) {
         repositorySearch.fire(errorEventName, {
             responseData: data,
             inputData: options
         });
+        dialogs.popup.hide(options.dialog);
     };
     return action;
 };    /*
@@ -559,11 +584,11 @@ repositorySearch.ServerAction.createResourceAction = function (actionName, optio
     function promptFilteredRetry(existingLabels, filteredResources) {
         dialogs.dependentResources.show(existingLabels, {
             dependenciesBtnOk: function () {
-                var action = new repositorySearch.ServerAction.createResourceAction(actionName, {
+                var resourceAction = new repositorySearch.ServerAction.createResourceAction(actionName, {
                     resources: filteredResources,
                     folder: options.folder
                 });
-                action.invokeAction();
+                resourceAction.invokeAction();
             }
         }, {
             buttons: [
@@ -1132,6 +1157,7 @@ repositorySearch.RedirectAction.createEditResourceAction = function (resource, i
         return repositorySearch.editActionFactory[repositorySearch.Action.DEFAULT](resource, type);
     }
 };
+
 repositorySearch.openActionFactory = {
     'ContentResource': function (resource, actionType) {
         if (actionType === repositorySearch.RedirectType.FLOW_REDIRECT) {

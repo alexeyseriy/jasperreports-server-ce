@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -150,8 +150,14 @@ public class RunReportsJaxrsService extends RemoteServiceWrapper<RunReportServic
     @Path("/{executionId}/status")
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     public Response cancelReportExecution(@PathParam("executionId") final String executionId, ReportExecutionStatusEntity statusEntity) {
-        return reportExecutionsJaxrsService.cancelReportExecution(executionId, statusEntity);
+        return reportExecutionsJaxrsService.cancelReportExecution(getExecutionId(executionId), statusEntity);
     }
 
+    private String getExecutionId(String executionID) {
+        if (executionID != null && executionID.toLowerCase().startsWith("uuid:")) {
+            return executionID.substring(5);
+        }
+        return executionID;
+    }
 
 }

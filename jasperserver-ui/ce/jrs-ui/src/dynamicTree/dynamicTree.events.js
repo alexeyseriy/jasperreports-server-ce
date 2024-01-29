@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -57,9 +57,8 @@ dynamicTree.Tree.
     addVar('LEAF_ICON_PATTERN', ".leaf > .wrap .icon").
     addVar('LEAF_CUSTOM_PATTERNS', []);
 
-dynamicTree.Tree.addVar('EXPANDING_TIME', 1000);
-
 dynamicTree.Tree.addVar('draggables', []);
+dynamicTree.Tree.addVar('isMouseClick', false);
 /**
  *
  */
@@ -155,19 +154,18 @@ dynamicTree.Tree.addMethod('_registerClickEvents', function() {
         var node = matchMeOrUp(event.element(), layoutModule.BUTTON_PATTERN) && this.getTreeNodeByEvent(event);
         if (!node) {return;}
 
-        var isIcon = this.isIconEvent(event);
         var isNode = this.isNodeEvent(event);
         var isLeaf = this.isLeafEvent(event);
 
         if (isNode) {
-            isIcon && treeContainer.fire('nodeIcon:click', {targetEvent: event, node: node});
+            treeContainer.fire('nodeIcon:click', {targetEvent: event, node: node});
             treeContainer.fire('node:click', {targetEvent: event, node: node});
         } else if (isLeaf) {
-            isIcon && treeContainer.fire('nodeIcon:click', {targetEvent: event, node: node});
+            treeContainer.fire('nodeIcon:click', {targetEvent: event, node: node});
             treeContainer.fire('leaf:click', {targetEvent: event, node: node});
         }
 
-        if (!isIPad() && isNode && isIcon) {
+        if (!isIPad() && isNode) {
             node.handleNode(event);
         }
 
@@ -215,7 +213,7 @@ dynamicTree.Tree.addMethod('_registerMouseEvents', function() {
 	            this.twofingers = false;
 	            if(event.touches.length == 2) {
 	            	this.twofingers = true;
-	            	this._selectOrEditNode(event, node, isMetaHeld(event), isShiftHeld(event), isRightClick(event));
+	            	this._selectOrEditNode(event, node, isMetaHeld(event), isShiftHeld(event), isRightClick(event), { shouldFocus: true});
 	            	if(node.isSelected() || (designerBase && designerBase.isInSelection(node))){
 		            	var li = jQuery(element).parents('li:first');
                         jQuery(li).hasClass('selected') && document.fire(layoutModule.ELEMENT_CONTEXTMENU, {targetEvent: event, node: element});
@@ -229,7 +227,7 @@ dynamicTree.Tree.addMethod('_registerMouseEvents', function() {
 
         if(!isSupportsTouch() || !JRS.vars.ajax_in_progress) {
             if (this.selectOnMousedown && (!isSupportsTouch() || event.touches.length == 1)) {
-                this._selectOrEditNode(event, node, isMetaHeld(event), isShiftHeld(event), isRightClick(event));
+                this._selectOrEditNode(event, node, isMetaHeld(event), isShiftHeld(event), isRightClick(event), { shouldFocus: true });
             }
 
             if (isNode) {
@@ -245,6 +243,7 @@ dynamicTree.Tree.addMethod('_registerMouseEvents', function() {
 
     //scriptaculous stopped mousedown event but we made it throw this instead
     treeContainer.observe(isSupportsTouch() ? 'drag:touchstart' :'drag:mousedown', function(e) {
+        this.isMouseClick = true;
         var event = e.memo.targetEvent;
 
         var node = matchMeOrUp(event.element(), layoutModule.BUTTON_PATTERN) && this.getTreeNodeByEvent(event);
@@ -255,7 +254,7 @@ dynamicTree.Tree.addMethod('_registerMouseEvents', function() {
         var isIcon = this.isIconEvent(event), isNode = this.isNodeEvent(event), isLeaf = this.isLeafEvent(event);
 
         if (this.selectOnMousedown && !isRightClick(event)) {
-            this._selectOrEditNode(event, node, isMetaHeld(event), isShiftHeld(event), isRightClick(event));
+            this._selectOrEditNode(event, node, isMetaHeld(event), isShiftHeld(event), isRightClick(event), { shouldFocus: true});
         }
 
         //var eventNames = [];
@@ -271,6 +270,7 @@ dynamicTree.Tree.addMethod('_registerMouseEvents', function() {
     }.bindAsEventListener(this));
 
     treeContainer.observe(isSupportsTouch() ? 'touchend' : 'mouseup', function(event) {
+        this.isMouseClick = true;
         var node = matchMeOrUp(event.element(), layoutModule.BUTTON_PATTERN) && this.getTreeNodeByEvent(event);
         if (!node) {return;}
 
@@ -302,11 +302,9 @@ dynamicTree.Tree.addMethod('_registerMouseEvents', function() {
     	}
         if(!isSupportsTouch() || !JRS.vars.ajax_in_progress) {
         	if (!this.selectOnMousedown && !TouchController.element_scrolled && (!isSupportsTouch() || event.changedTouches.length == 1)) {
-                this._selectOrEditNode(event, node, isMetaHeld(event), isShiftHeld(event), isRightClick(event));
+                this._selectOrEditNode(event, node, isMetaHeld(event), isShiftHeld(event), isRightClick(event), { shouldFocus: true });
             }
             this._deselectOthers(event, node, isMetaHeld(event), isShiftHeld(event), isRightClick(event));
-
-            var eventNames = [];
 
             if (isNode) {
                 isIcon && treeContainer.fire('nodeIcon:mouseup', {targetEvent: event, node: node});
@@ -348,11 +346,6 @@ dynamicTree.Tree.addMethod('_registerMouseEvents', function() {
 
             if (!node) {return;}
 
-            if (Draggables.dragging){
-                clearTimeout(this.timeout_id);
-                this.timeout_id = setTimeout(function (event) { node.openNode(event) }, this.EXPANDING_TIME);
-            }
-
             this.createDraggableIfNeeded(event, node);
             !isIE7() && treeContainer.fire('tree:mouseover', {targetEvent: event, node: node});
         }.bindAsEventListener(this));
@@ -381,8 +374,42 @@ dynamicTree.Tree.addMethod('_registerMouseEvents', function() {
 dynamicTree.Tree.addMethod('_registerKeyEvents', function() {
     var treeContainer = this._getElement();
 
-    treeContainer.observe('key:down', function(event) {
+    let enterOrSpaceHandler = () => {
+        return (event) => {
+            const $el = jQuery('#resultsList').find('.selected')[0];
+            const isElFoldersTree = jQuery(event.target).closest('.list.collapsible.folders').attr('id') === 'foldersTree';
+            this.isMouseClick = false;
+            if (isElFoldersTree) {
+                document.body.style.cursor !== 'wait' && $el && $el.focus();
+            } else {
+                const node = this.getTreeNodeByEvent(event);
+                if (dynamicTree.treeNodeEdited === node) {
+                    return;
+                }
+                node && this._expandOrCollapse(node, event.memo.targetEvent);
+            }
+        }
+    }
+
+    treeContainer.observe('key:enter', enterOrSpaceHandler().bindAsEventListener(this));
+    treeContainer.observe('key:space', enterOrSpaceHandler().bindAsEventListener(this));
+
+    treeContainer.observe('key:home', function(event) {
         var node = this.getTreeNodeByEvent(event);
+        this.isMouseClick = false;
+        node && this._selectFirstVisibleNode(node, event.memo.targetEvent);
+    }.bindAsEventListener(this));
+
+    treeContainer.observe('key:end', function(event) {
+        var node = this.getTreeNodeByEvent(event);
+        this.isMouseClick = false;
+        node && this._selectLastVisibleNode(node, event.memo.targetEvent);
+    }.bindAsEventListener(this));
+
+    treeContainer.observe('key:down', function(event) {
+        event.memo.targetEvent.preventDefault();
+        var node = this.getTreeNodeByEvent(event);
+        this.isMouseClick = false;
         if (dynamicTree.treeNodeEdited === node) {
             return;
         }
@@ -390,7 +417,9 @@ dynamicTree.Tree.addMethod('_registerKeyEvents', function() {
     }.bindAsEventListener(this));
 
     treeContainer.observe('key:up', function(event) {
+        event.memo.targetEvent.preventDefault();
         var node = this.getTreeNodeByEvent(event);
+        this.isMouseClick = false;
         if (dynamicTree.treeNodeEdited === node) {
             return;
         }
@@ -399,6 +428,7 @@ dynamicTree.Tree.addMethod('_registerKeyEvents', function() {
 
     treeContainer.observe('key:right', function(event) {
         var node = this.getTreeNodeByEvent(event);
+        this.isMouseClick = false;
         if (dynamicTree.treeNodeEdited === node) {
             return;
         }
@@ -407,13 +437,22 @@ dynamicTree.Tree.addMethod('_registerKeyEvents', function() {
 
     treeContainer.observe('key:left', function(event) {
         var node = this.getTreeNodeByEvent(event);
+        this.isMouseClick = false;
         if (dynamicTree.treeNodeEdited === node) {
             return;
         }
         node && this._selectOutwards(node, event.memo.targetEvent);
     }.bindAsEventListener(this));
-});
 
+    treeContainer.observe('key:contextMenu', function(event) {
+        this.isMouseClick = false;
+        var node = this.getTreeNodeByEvent(event);
+        if (!node) {return;}
+        event.treeEvent = true;
+
+        treeContainer.fire('tree:contextMenu', {targetEvent: event, node: node, focused: event.memo.node});
+    }.bindAsEventListener(this));
+});
 
 dynamicTree.Tree.addMethod('_registerCustomEvents', function() {
     var treeContainer = this._getElement();
@@ -441,6 +480,42 @@ dynamicTree.Tree.addMethod('_registerCustomEvents', function() {
         if (!node) {
             treeContainer.fire('tree:mouseout', {targetEvent: event, tree: this});
         }
+    }.bindAsEventListener(this));
+
+    treeContainer.observe('focusin', function(event) {
+        const $el = jQuery(event.target).closest('.list.collapsible.folders');
+        $el.attr('tabindex', -1);
+        $el.find("[tabindex='0']").attr('tabindex', -1);
+        $el.find('.selected').attr('tabindex', 0);
+        var node = this.getTreeNodeByEvent(event);
+        if (node) {
+            if (!this.isMouseClick) {
+                node.keydownSubFocus = true;
+            }
+            node.focus();
+            node.refreshStyle();
+        } else {
+            $el.find('.selected').focus();
+        }
+
+        if ($el.find("[tabindex='0']").length === 0){
+            $el.attr('tabindex', 0);
+        }
+    }.bindAsEventListener(this));
+
+    treeContainer.observe('focus', function(event) {
+        this.isMouseClick = false;
+    }.bindAsEventListener(this));
+
+    treeContainer.observe('focusout', function(event) {
+        var node = this.getTreeNodeByEvent(event);
+        if (node) {
+            node.keydownSubFocus = false;
+            node.refreshStyle();
+        }
+        const $el = jQuery(event.target).closest('.list.collapsible.folders');
+        $el.find("[tabindex='0']").attr('tabindex', -1);
+        $el.attr('tabindex', 0);
     }.bindAsEventListener(this));
 });
 

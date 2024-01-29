@@ -12,6 +12,14 @@
 --Delete Access events for deleted resources
 DELETE FROM JIAccessEvent j
     WHERE j.resource_id NOT IN (SELECT j2.id FROM JIResource j2);
+	
+ALTER TABLE JIAccessEvent DROP CONSTRAINT if exists FK7caj87u72rymu6805gtek03y8;
+
+ALTER TABLE JIAccessEvent DROP CONSTRAINT if exists FK8lqavxfshc29dnw97io0t6wbf;
+
+ALTER TABLE JIAccessEvent DROP CONSTRAINT if exists FK47FB3CD732282198;
+
+ALTER TABLE JIAccessEvent DROP CONSTRAINT if exists FK47FB3CD7F254B53E;
 
 ALTER TABLE JIAccessEvent
     ADD COLUMN userid varchar(255);

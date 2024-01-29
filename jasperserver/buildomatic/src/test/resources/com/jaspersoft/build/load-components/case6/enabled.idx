@@ -1,0 +1,8 @@
+mongodb-connector/bson-3.10.2.jar
+mongodb-connector/mongodb-driver-3.10.2.jar
+mongodb-connector/mongodb-driver-core-3.10.2.jar
+postgresql-connector/postgresql-42.2.20.jar
+sqlite-connector/sqlite-jdbc-3.40.0.0.jar
+ti-mongodb-connector/TImongodb-6.0.2.000510.jar
+javamelody-observability/javamelody-core-1.91.0.jar
+javamelody-observability/jrobin-1.5.9.jar

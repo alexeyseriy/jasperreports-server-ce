@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -23,10 +23,6 @@
  * @version: $Id$
  */
 /* global alert*/
-/**
- * ActionModel Object Originally written by Angus Croll.
- * Refactored for VFR project by Papanii Okai (a.k.a The Code Pimp)
- */
 
 import _ from 'underscore';
 import {
@@ -53,7 +49,7 @@ actionModel.INPUT_ACTION = 'inputAction';
 actionModel.OPTION_ACTION = 'optionAction';
 actionModel.SEPARATOR = 'separator';
 actionModel.SINGLE_SELECT_CONSTRAINT = 'singleSelect';
-actionModel.HIGH_Z_INDEX = 99999;    //reserved variables
+actionModel.HIGH_Z_INDEX = 99999;
 //reserved variables
 actionModel.RES_LABEL = '$label';
 actionModel.RES_ID = '$id';
@@ -74,8 +70,7 @@ actionModel.SEPARATOR_DOM_ID = 'menuList_separator';
 actionModel.FLYOUT_PARENT_DOM_ID = 'menuList_flyout';
 actionModel.EXTRA_INPUT_DOM_ID = 'menuList_extraInput';
 actionModel.LIST_ITEM_DOM_ID = 'menuList_listItem';
-actionModel.DISPLAY_STYLE = 'inline';    //patterns
-//patterns
+actionModel.DISPLAY_STYLE = 'inline';
 actionModel.DROP_DOWN_MENU_CLASS = 'dropDown';
 actionModel.MOUSE_OUT_PATTERNS = [
     '#' + layoutModule.MENU_ID,
@@ -84,18 +79,7 @@ actionModel.MOUSE_OUT_PATTERNS = [
     '.header > .button.mutton',
     '#' + layoutModule.MENU_ID + ' *',
     layoutModule.MENU_ROOT_CLASS + ' *'
-];    ////////////////////////////////////////////////////////////////////
-// Menu building
-////////////////////////////////////////////////////////////////////
-/*
- * Used to present the context menu to the user.
- * @param menuContext
- * @param event the event tied to the menu.
- * @param className class name a caller may wish to use instead of the default.
- * @param coordinates used for menu positioning.
- * @actionModelScriptTag
- * @updateContextActionModel - optional method which can update context action model
- */
+];
 ////////////////////////////////////////////////////////////////////
 // Menu building
 ////////////////////////////////////////////////////////////////////
@@ -108,7 +92,7 @@ actionModel.MOUSE_OUT_PATTERNS = [
  * @actionModelScriptTag
  * @updateContextActionModel - optional method which can update context action model
  */
-actionModel.showDynamicMenu = function (menuContext, event, className, coordinates, actionModelScriptTag, updateContextActionModel) {
+actionModel.showDynamicMenu = function (menuContext, event, className, coordinates, actionModelScriptTag, updateContextActionModel, label) {
     if (menuContext == null) {
         if (isProVersion()) {
             var selectionObj = window.designerBase.getSelectedObject();
@@ -122,7 +106,7 @@ actionModel.showDynamicMenu = function (menuContext, event, className, coordinat
         }
     }
 
-    actionModel.resetMenu(menuContext);
+    actionModel.resetMenu(menuContext, label);
     actionModel.updateCSSClass(className);
     actionModel.initActionModelData(actionModelScriptTag);
     actionModel.assembleMenuFromActionModel(menuContext, event, actionModel.menuListDom, updateContextActionModel);
@@ -140,56 +124,57 @@ actionModel.showDynamicMenu = function (menuContext, event, className, coordinat
 };
 actionModel.closeHandler = function (event) {
     var target = jQuery(event.relatedTarget);
-    if ((jQuery(target).hasClass('mutton') || target.parents('.mutton').length) && event.relatedTarget || (target.attr('id') === 'menu' || target.parents('#menu').length)) {
-    }    //|| actionModel.lastInput=="key"
-    //event.stopPropagation();
-    else {
+    if (!((jQuery(target).hasClass('mutton') || target.parents('.mutton').length) && event.relatedTarget || (target.attr('id') === 'menu' || target.parents('#menu').length))) {
         jQuery('body').trigger('actionmodel-mouseout');
         actionModel.hideMenu();
     }
-};    /*
- * Hide any menus created by the action model.
- * This means removing all child nodes and setting it back to default state.
- */
+};
+
+actionModel._getNavType = function (menuContext) {
+    if (menuContext.indexOf('toolbar') > -1) {
+        return {navtype: 'toolbar', orientation: 'horizontal'}
+    } else if (menuContext.indexOf('main_') === 0) {
+        return {navtype: 'mainmenu', orientation: 'vertical'}
+    } else {
+        return {navtype: 'actionmenu', orientation: 'vertical'}
+    }
+}
+
 /*
  * Hide any menus created by the action model.
  * This means removing all child nodes and setting it back to default state.
  */
-actionModel.resetMenu = function (menuContext) {
-    var navtype = menuContext.indexOf("toolbar")>-1 ? "toolbar" : "actionmenu";
+actionModel.resetMenu = function (menuContext, label) {
+    var {navtype, orientation} = actionModel._getNavType(menuContext);
     var dom = jQuery('#menu')[0];
     dom.parentId = undefined;
-    dom.setAttribute('tabIndex', -1);
-    dom.setAttribute("js-navtype",navtype);
     dom.childElements().each(function (child) {
         Element.remove(child);
-    });    //add common template
+    });
     //add common template
     jQuery(dom).html(jQuery(jQuery('#commonMenu').clone(true)).html());
     var menuList = dom.down('ul');
     var menuListId = menuList.readAttribute('id');
-    menuList.writeAttribute('id', actionModel.updateTemplateId(menuListId));    //remove any generated styles.
-    menuList.writeAttribute("js-navtype", dom.getAttribute("js-navtype"));
+    menuList.writeAttribute('id', actionModel.updateTemplateId(menuListId));
+    menuList.writeAttribute("js-navtype", navtype);
+    menuList.writeAttribute("aria-orientation", orientation);
+    label && menuList.setAttribute('aria-label', label);
+    menuList.setAttribute('tabindex', "-1");
     //remove any generated styles.
     dom.className = actionModel.PARENT_MENU_STYLE;
     dom.writeAttribute('style', '');
     actionModel.menuDom = dom;
-    actionModel.menuListDom = menuList;    // One of: ["none","keyboard","mouse","touch","automation"].
+    actionModel.menuListDom = menuList;
     // One of: ["none","keyboard","mouse","touch","automation"].
     actionModel.lastInputSrc = 'none';
-};    /**
- * Used to update a template's id
- */
+};
 /**
  * Used to update a template's id
  */
 actionModel.updateTemplateId = function (templateId) {
     var re = new RegExp('_template');
     return templateId.replace(re, '');
-};    /*
- * Method used to update the menu's css className
- * @param className
- */
+};
 /*
  * Method used to update the menu's css className
  * @param className
@@ -198,10 +183,7 @@ actionModel.updateCSSClass = function (className) {
     if (isNotNullORUndefined(className)) {
         jQuery(actionModel.menuDom)[0].className = className + ' hidden';
     }
-};    /*
- *  Determine position of menu based on mouse position..
- * @param event
- */
+};
 /*
  *  Determine position of menu based on mouse position..
  * @param event
@@ -227,7 +209,7 @@ actionModel.setMenuPosition = function (menuObj, event, coordinates) {
         };
     }
     var leftOffset;
-    var topOffset;    //if coordinates are provided, override.
+    var topOffset;
     //if coordinates are provided, override.
     if (isNotNullORUndefined(coordinates)) {
         if (isNotNullORUndefined(coordinates.menuLeft)) {
@@ -243,7 +225,7 @@ actionModel.setMenuPosition = function (menuObj, event, coordinates) {
     } else {
         leftOffset = location.x;
         topOffset = location.y;
-    }    //set top left to the mouse click
+    }
     //set top left to the mouse click
     menuObj.setStyle({
         'left': leftOffset + 'px',
@@ -254,12 +236,7 @@ actionModel.adjustMenuPosition = function (menu, left, top, width, height) {
     if (!jQuery(menu).hasClass(this.DROP_DOWN_MENU_CLASS) || jQuery(menu).hasClass('fitable')) {
         fitObjectIntoScreen(menu, null, top, null, height);
     }
-};    /*
- * construct the menu dynamically based on the client side action model
- * @param menuContext
- * @param event
- * @updateContextActionModel - optional method which can update context action model
- */
+};
 /*
  * construct the menu dynamically based on the client side action model
  * @param menuContext
@@ -268,9 +245,7 @@ actionModel.adjustMenuPosition = function (menu, left, top, width, height) {
  */
 actionModel.assembleMenuFromActionModel = function (menuContext, event, contentParent, updateContextActionModel) {
     actionModel.noItemsYet = true;
-    var contextActionModel = actionModel.data && actionModel.data[menuContext];    //In this place we can update action model for specified context on the fly.
-    //This is necessary to have ability to construct fully dynamic menus which items can be calculated only
-    //right before showing menu
+    var contextActionModel = actionModel.data && actionModel.data[menuContext];
     //In this place we can update action model for specified context on the fly.
     //This is necessary to have ability to construct fully dynamic menus which items can be calculated only
     //right before showing menu
@@ -281,11 +256,7 @@ actionModel.assembleMenuFromActionModel = function (menuContext, event, contentP
         actionModel.appendToMenu(thisAction, event, contentParent);
     });
     actionModel.removeTrailingSeparator();
-};    /*
- * Initialize Action Model data with the JSON evaluated from the given element or directly from object.
- *
- * @param scriptTag Script holder identifier or simple object representing data.
- */
+};
 /*
  * Initialize Action Model data with the JSON evaluated from the given element or directly from object.
  *
@@ -297,11 +268,7 @@ actionModel.initActionModelData = function (scriptTag) {
     } else {
         actionModel.data = _.isString(scriptTag) ? jQuery.parseJSON(jQuery('#' + scriptTag).html()) : scriptTag;
     }
-};    /*
- * Helper method used in the construction of the menu
- * @param thisAction
- * @param event
- */
+};
 /*
  * Helper method used in the construction of the menu
  * @param thisAction
@@ -313,13 +280,7 @@ actionModel.appendToMenu = function (thisAction, event, contentParent) {
     }
     var mouseUpFunction = getMenuMouseupFunction(getAsFunction(thisAction.action), thisAction.actionArgs, thisAction.text, thisAction.id, event);
     actionModel.appendDesiredRowType(thisAction, event, mouseUpFunction, contentParent);
-};    /*
- * Append desired row type to menu
- * @param thisAction
- * @param mouseUpFunction
- * @param contentParent
- * @param event
- */
+};
 /*
  * Append desired row type to menu
  * @param thisAction
@@ -333,29 +294,24 @@ actionModel.appendDesiredRowType = function (thisAction, event, mouseUpFunction,
             actionModel.hideMenu();
         }
         mouseUpFunction && mouseUpFunction();
-    };    //add new <li> element
+    };
     //add new <li> element
-    if (thisAction.type == actionModel.SIMPLE_ACTION) {
+    if (thisAction.type === actionModel.SIMPLE_ACTION) {
         actionModel.addSimpleActionRow(thisAction, mouseUpFunctionWithMenuHiding, contentParent);
-    }    //add new <li> separator
+    }
     //add new <li> separator
-    if (thisAction.type == actionModel.SEPARATOR && !actionModel.lastItemWasSeparator) {
+    if (thisAction.type === actionModel.SEPARATOR && !actionModel.lastItemWasSeparator) {
         actionModel.addSeparatorRows(thisAction, contentParent);
-    }    //add new <li> flyout or new window?
+    }
     //add new <li> flyout or new window?
-    if (thisAction.type == actionModel.SELECT_ACTION) {
+    if (thisAction.type === actionModel.SELECT_ACTION) {
         actionModel.addSelector(thisAction, contentParent, event);
-    }    //add new <li> option
+    }
     //add new <li> option
-    if (thisAction.type == actionModel.OPTION_ACTION) {
+    if (thisAction.type === actionModel.OPTION_ACTION) {
         actionModel.addOption(thisAction, mouseUpFunctionWithMenuHiding, contentParent);
     }
-};    /*
- * Add a simple action row to the menu
- * @param thisAction
- * @param mouseUpFunction
- * @param contentParent
- */
+};
 /*
  * Add a simple action row to the menu
  * @param thisAction
@@ -380,14 +336,11 @@ actionModel.addSimpleActionRow = function (thisAction, mouseUpFunction, contentP
     newText.nodeValue = replaceNbsps(newText.nodeValue);
     textPlacement.appendChild(newText);    //set new id to make it unique.
     //set new id to make it unique.
-    var menuId = newMenuRow.readAttribute('id') + getRandomId();
+    var menuId = _.uniqueId(newMenuRow.readAttribute('id'));
     newMenuRow.writeAttribute('id', menuId);
+    jQuery(newMenuRow).find('> p').attr('id', menuId + '_label')
     actionModel.insertMenuRow(contentParent, newMenuRow, false, thisAction.isDisabled, thisAction.id, null);
-};    /*
- * Add a separator row to the menu
- * @param thisAction
- * @param contentParent
- */
+};
 /*
  * Add a separator row to the menu
  * @param thisAction
@@ -399,18 +352,13 @@ actionModel.addSeparatorRows = function (thisAction, contentParent) {
         return;    //don't need separator at very top;
     }
     var separator = jQuery('#' + actionModel.SEPARATOR_DOM_ID)[0].clone(true);
-    var separatorId = separator.readAttribute('id') + getRandomId();
+    var separatorId = _.uniqueId(separator.readAttribute('id'));
     separator.writeAttribute('id', separatorId);
     if (thisAction.className) {
         cssOverride = thisAction.className;
     }
     actionModel.insertMenuRow(contentParent, separator, true, thisAction.isDisabled, null, cssOverride);
-};    /*
- * Used to add a option
- * @param thisAction
- * @param mouseUpFunction
- * @param contentParent
- */
+};
 /*
  * Used to add a option
  * @param thisAction
@@ -434,9 +382,9 @@ actionModel.addOption = function (thisAction, mouseUpFunction, contentParent) {
     var newText = document.createTextNode(thisAction.text);
     newText.nodeValue = replaceNbsps(newText.nodeValue);
     textPlacement.appendChild(newText);
-    var newOptionRowId = newOptionRow.readAttribute('id') + getRandomId();
+    var newOptionRowId = _.uniqueId(newOptionRow.readAttribute('id'));
     newOptionRow.writeAttribute('id', newOptionRowId);    //update dom id
-    //update dom id
+    jQuery(newOptionRow).find('> p').attr('id', newOptionRowId + '_label')
     if (thisAction.className) {
         cssOverride = thisAction.className;
     }
@@ -444,12 +392,7 @@ actionModel.addOption = function (thisAction, mouseUpFunction, contentParent) {
         jQuery(textPlacement).addClass('down');
     }
     actionModel.insertMenuRow(contentParent, newOptionRow, false, thisAction.isDisabled, thisAction.id, cssOverride);
-};    /*
- * Creates selector row and all sub menus related to that row
- * @param thisAction
- * @param contentParent
- * @param event
- */
+};
 /*
  * Creates selector row and all sub menus related to that row
  * @param thisAction
@@ -461,7 +404,7 @@ actionModel.addSelector = function (thisAction, contentParent, event) {
     //type of selector we want by simply checking the class in the action object
     var parentSelector;
     var className = thisAction.className;
-    if (className == 'flyout') {
+    if (className === 'flyout') {
         //do not render flyout list item if no submenu items exist
         if (thisAction && thisAction.children.length > 0) {
             parentSelector =  jQuery('#' + actionModel.FLYOUT_PARENT_DOM_ID).clone(true);
@@ -469,22 +412,27 @@ actionModel.addSelector = function (thisAction, contentParent, event) {
             var newText = document.createTextNode(thisAction.text);
             newText.nodeValue = replaceNbsps(newText.nodeValue);
             textPlacement.appendChild(newText);
-            var parentSelectorId = parentSelector.attr('id') + getRandomId();
+            var parentSelectorId = _.uniqueId(parentSelector.attr('id'));
             parentSelector.attr('id', parentSelectorId);
-            actionModel.insertMenuRow(contentParent, parentSelector[0], false, thisAction.isDisabled, thisAction.id, null);    //now create submenu
+            parentSelector.attr('js-navtype', contentParent.getAttribute('js-navtype'));
+            parentSelector.find('> p').attr('id', parentSelectorId + '_label');
+            actionModel.insertMenuRow(contentParent, parentSelector[0], false, thisAction.isDisabled, thisAction.id, null);
             //now create submenu
             var submenu = actionModel.menuDom.clone(false);
-            submenu.writeAttribute('id', parentSelector.attr('id') + '_subMenu');    //add common template
+            submenu.writeAttribute('id', parentSelector.attr('id') + '_subMenuWrapper');
+            submenu.setAttribute('js-navtype', contentParent.getAttribute('js-navtype'));
             //add common template
             jQuery(submenu).html(jQuery(jQuery('#commonMenu')[0].clone(true)).html());
             var submenuList = submenu.down('ul');
-            var submenuListId = submenuList.readAttribute('id');
-            submenuList.writeAttribute('id', actionModel.updateTemplateId(submenuListId));    //get containers width.
-            //get containers width.
+            const parentMenuItem = parentSelector.find('[role=menuitem]');
+            const subMenuAriaLabel = parentMenuItem.attr('aria-label') ?? parentMenuItem.text().trim();
+            submenuList.writeAttribute('id', parentSelectorId + "_subMenu");
+            submenuList.setAttribute('js-navtype', contentParent.getAttribute('js-navtype'));
+            submenuList.setAttribute('aria-orientation', 'vertical');
+            submenuList.setAttribute('aria-label', subMenuAriaLabel);
             parentSelector[0].appendChild(submenu);
             var subMenuContainer = submenu.select('ul')[0];
-            var subMenuContainerId = subMenuContainer.writeAttribute('id', subMenuContainer.readAttribute('id') + '_subMenu');
-            actionModel.buildSubMenu(thisAction, subMenuContainerId, event);
+            actionModel.buildSubMenu(thisAction, subMenuContainer, event);
         }
     } else {
         thisAction.children.each(function (childAction) {
@@ -492,11 +440,7 @@ actionModel.addSelector = function (thisAction, contentParent, event) {
             actionModel.appendDesiredRowType(childAction, event, mouseUpFunction, contentParent);
         });
     }
-};    /*
- * This method gets the left value for a submenu. It calculates if by getting the with of the parents content and adds
- * the parents left value to it since all menu objects are absolute.
- * @param selectorObj
- */
+};
 /*
  * This method gets the left value for a submenu. It calculates if by getting the with of the parents content and adds
  * the parents left value to it since all menu objects are absolute.
@@ -512,18 +456,13 @@ actionModel.getSubMenuLeft = function (selectorObj) {
 };
 actionModel.getSubMenuTop = function (selectorObj) {
     return Math.abs(parseInt(jQuery('#' + selectorObj)[0].offsetTop));    //offset
-};    /*
- * Used to position the submenu with respect to its parent.
- * @param parent
- */
+};
 /*
  * Used to position the submenu with respect to its parent.
  * @param parent
  */
 actionModel.showChildSubmenu = function (parent) {
-    var pid = parent.parentNode.parentNode.parentNode.id;    /*
-     * Hides submenus previously open
-     */
+    var pid = parent.parentNode.parentNode.parentNode.id;
     /*
      * Hides submenus previously open
      */
@@ -548,16 +487,15 @@ actionModel.showChildSubmenu = function (parent) {
     var submenuTop = null;
     var submenuHeight = null;
     var submenuWidth = null;
-    var bottomPadding = 20;    //hack to prevent  bug20863
+    var bottomPadding = 20;
     //hack to prevent  bug20863
-    var submenu = parent.childElements()[1];    //applying style for flyout submenu....
+    var submenu = parent.childElements()[1];
     //applying style for flyout submenu....
     if(submenu) {
         submenu.setStyle({display: actionModel.DISPLAY_STYLE});
         submenu.setStyle({position: 'absolute'});
         var leftValue = actionModel.getSubMenuLeft(parent);
-        var topValue = 0;    //    var topValue = actionModel.getSubMenuTop(parent) + "px";
-        //set top left to the mouse click
+        var topValue = 0;
         //    var topValue = actionModel.getSubMenuTop(parent) + "px";
         //set top left to the mouse click
         submenu.setStyle({
@@ -569,7 +507,7 @@ actionModel.showChildSubmenu = function (parent) {
         }
         actionModel.makeMenuVisible(submenu);
         submenuTop = jQuery(submenu)[0].cumulativeOffset()[1];
-        submenuHeight = jQuery(submenu)[0].getHeight();    //hack to prevent  bug20863  (Due to Tim's markup change)
+        submenuHeight = jQuery(submenu)[0].getHeight();
         //hack to prevent  bug20863  (Due to Tim's markup change)
         var windowHeight = getWindowHeight();
         var submenuBottom = submenuTop + submenuHeight;
@@ -584,10 +522,7 @@ actionModel.showChildSubmenu = function (parent) {
         }
         actionModel.openedSubMenus.push(pid);
     }
-};    /*
- * Used to hide submenu
- * @param parent
- */
+};
 /*
  * Used to hide submenu
  * @param parent
@@ -598,10 +533,7 @@ actionModel.hideChildSubmenu = function (parent) {
     submenu.setStyle({ position: 'absolute' });
     submenu.setStyle({ left: 0 });
     actionModel.makeMenuInVisible(jQuery(submenu)[0]);
-};    /*
- * Used to change the css display value to make it visible.
- * @param menu object we changing the display style for.
- */
+};
 /*
  * Used to change the css display value to make it visible.
  * @param menu object we changing the display style for.
@@ -613,22 +545,14 @@ actionModel.makeMenuVisible = function (menu) {
         menu.setStyle({ zIndex: actionModel.HIGH_Z_INDEX });
         jQuery(menu).removeClass('hidden');
     }
-};    /*
- * Used to change the css display value to make it invisible
- * @param menu object we changing the display style f   or.
- */
+};
 /*
  * Used to change the css display value to make it invisible
  * @param menu object we changing the display style for.
  */
 actionModel.makeMenuInVisible = function (menu) {
     jQuery(menu).addClass('hidden');
-};    /*
- * Used to build a the logical structure for a flyout menu
- * @param thisAction
- * @param parentId
- * @param event
- */
+};
 /*
  * Used to build a the logical structure for a flyout menu
  * @param thisAction
@@ -640,13 +564,9 @@ actionModel.buildSubMenu = function (thisAction, parentId, event) {
         actionModel.appendToMenu(childAction, event, jQuery(parentId)[0]);
     });
 };
-actionModel.isMenuShowing = function () {
-    return !(jQuery('#menu')[0].getStyle('display') == 'none' || jQuery('#menu').hasClass('hidden'));
-};    /*
- * Helper method to update row object
- * @param domObject
- * @param actionText
- */
+actionModel.isMenuShowing = function (menu) {
+    return !(jQuery(menu ?? '#menu')[0].getStyle('display') == 'none' || jQuery(menu ?? '#menu').hasClass('hidden'));
+};
 /*
  * Helper method to update row object
  * @param domObject
@@ -655,7 +575,7 @@ actionModel.isMenuShowing = function () {
 actionModel.updateRowDom = function (domObject, actionText) {
     if (domObject) {
         jQuery(domObject).html(actionText);
-        var domObjectId = domObject.readAttribute('id') + getRandomId();
+        var domObjectId = _.uniqueId(domObject.readAttribute('id'));
         domObject.writeAttribute('id', domObjectId);
     }
     return domObject;
@@ -668,14 +588,7 @@ actionModel.updateRowDom = function (domObject, actionText) {
 actionModel.launchNewMenu = function () {
     actionModel.hideMenu();
     alert('action not implemented...');
-};    /*
- * Helper to insert row in to menu
- * @param container
- * @param newMenuRow
- * @param isSeparator
- * @param isDisabled
- * @param userId
- */
+};
 /*
  * Helper to insert row in to menu
  * @param container
@@ -709,18 +622,14 @@ actionModel.insertMenuRow = function (container, newMenuRow, isSeparator, isDisa
 actionModel.disableMenuOption = function (menuOption) {
     buttonManager.disable(menuOption);
     _.isEmpty(menuOption.childNodes) && buttonManager.disable(menuOption.childNodes[0]);
-};    /*
- * Checking success of test.
- * @param action
- */
+};
 /*
  * Checking success of test.
  * @param action
  */
 actionModel.passesClientTest = function (action) {
     var clientTestFunction;
-    var result = true;    //default to true because if there are no tests, we passed by default!
-    //passes explicit test?
+    var result = true;
     //default to true because if there are no tests, we passed by default!
     //passes explicit test?
     if (action.clientTest) {
@@ -732,7 +641,7 @@ actionModel.passesClientTest = function (action) {
             testForNegative = true;
         }
         result = evaluateTest(clientTestFunction, action.clientTestArgs, action.text, action.id, testForNegative, null);
-    }    //number of selections ok?
+    }
     //number of selections ok?
     var selected = actionModel.selObjects;
     if (!_.isEmpty(selected)) {
@@ -741,9 +650,7 @@ actionModel.passesClientTest = function (action) {
         }
     }
     return result;
-};    /***
- * If last row is a separator, remove it
- */
+};
 /***
  * If last row is a separator, remove it
  */
@@ -756,9 +663,7 @@ actionModel.removeTrailingSeparator = function () {
             lastRow.remove();
         }
     }
-};    /**
- * Only applies to certain menus (e.g. naviagtion menu has a parent mutton)
- */
+};
 /**
  * Only applies to certain menus (e.g. naviagtion menu has a parent mutton)
  */
@@ -767,10 +672,7 @@ actionModel.getMenuParent = function () {
 };
 actionModel.getFirstMenuButton = function () {
     return actionModel.menuDom.down(layoutModule.BUTTON_PATTERN, 0);
-};    /* Move focus into the menu, starting with the top item in the list.  This
- * function runs when a user presses the down arrow key from a top-level main
- * menu entry.
- */
+};
 /* Move focus into the menu, starting with the top item in the list.  This
  * function runs when a user presses the down arrow key from a top-level main
  * menu entry.
@@ -780,42 +682,10 @@ actionModel.focusMenu = function () {
     // If the menu already has focus, do nothing.
     if (!jQuery.contains(jQMenuDom, document.activeElement)) {
         //will restore old focus when menu is closed
-        actionModel.lastFocused = document.activeElement;    //!menuDom.hasClass(layoutModule.HIDDEN_CLASS) && menuDom.focus();
-        //if (!jQMenuDom.hasClass(actionModel.DROP_DOWN_MENU_CLASS) && !is SupportsTouch()) {
-        /*
-       if (!jQMenuDom.hasClass(actionModel.DROP_DOWN_MENU_CLASS)) {
-            var jQChildItems = jQMenuDom.children("li");
-            if (jQChildItems[0]) {
-                var firstButton = jQChildItems[0].find(layoutModule.BUTTON_PATTERN);
-                firstButton && buttonManager.over(firstButton);
-            }
-       }
-       */
-        //!menuDom.hasClass(layoutModule.HIDDEN_CLASS) && menuDom.focus();
-        //if (!jQMenuDom.hasClass(actionModel.DROP_DOWN_MENU_CLASS) && !is SupportsTouch()) {
-        /*
-       if (!jQMenuDom.hasClass(actionModel.DROP_DOWN_MENU_CLASS)) {
-            var jQChildItems = jQMenuDom.children("li");
-            if (jQChildItems[0]) {
-                var firstButton = jQChildItems[0].find(layoutModule.BUTTON_PATTERN);
-                firstButton && buttonManager.over(firstButton);
-            }
-       }
-       */
-        var jQChildItems = jQMenuDom.find(layoutModule.BUTTON_PATTERN);
-        if (jQChildItems.length > 0) {
-            jQuery('#' + jQChildItems[0])[0].focus();
-        }
+        actionModel.lastFocused = document.activeElement;
+        jQMenuDom.find('ul').trigger('focus');
     }
-};    /*
- * Used to display fine positioned menu relative to the object
- *
- * @param event Initial event
- * @param object Element that cause element to appear
- * @param context actionModel context in which we show this menu. Used to find proper metadata
- * @param cssClass Menu css class
- * @param aModel action model
- */
+};
 /*
  * Used to display fine positioned menu relative to the object
  *
@@ -825,19 +695,14 @@ actionModel.focusMenu = function () {
  * @param cssClass Menu css class
  * @param aModel action model
  */
-actionModel.showDropDownMenu = function (event, object, context, cssClass, aModel) {
+actionModel.showDropDownMenu = function (event, object, context, cssClass, aModel, label) {
     object = jQuery(object);
     var offsets = object.offset(), coordinates = {
         'menuLeft': offsets.left,
         'menuTop': offsets.top + object.height() - 1
     };
-    actionModel.showDynamicMenu(context, event, cssClass, coordinates, aModel);
-};    ////////////////////////////////////////////////////////////
-// General section for menu events
-////////////////////////////////////////////////////////////
-/**
- * Register event handlers to menu objects
- */
+    actionModel.showDynamicMenu(context, event, cssClass, coordinates, aModel, undefined, label);
+};
 ////////////////////////////////////////////////////////////
 // General section for menu events
 ////////////////////////////////////////////////////////////
@@ -887,55 +752,27 @@ actionModel.setMenuEventHandlers = function (menu , menuContext) {
         }
     });
 };
-actionModel.initializeOneTimeMenuHandlers = function () {
-}    /**
- * generic mouseenter for menu - to initialize for mouse use
- */
-// FIXME-- turn back on, disabled for debugging
-/*
-    $('menu').observe('mouseenter', function(event) {
-        var selected = this.select("." + layoutModule.HOVERED_CLASS)[0];
-        selected && buttonManager.out(selected);
-    }.bind($('menu')))
-    */;    /**
- * Public method used to hide a menu.
- */
+
 /**
  * Public method used to hide a menu.
  */
-actionModel.hideMenu = function () {
+actionModel.hideMenu = function (focus = true) {
     if (actionModel.isMenuShowing()) {
         var setNextFocus = function () {
             var nextFocus = actionModel.lastFocused;
+            actionModel.lastFocused = undefined;
             try {
-                nextFocus && nextFocus.focus();
+                focus && nextFocus && nextFocus.focus();
             } catch (ex) {
             }    //IE gets bothered if you try to focus something that it can't
         };
-        !isSupportsTouch() && setTimeout(setNextFocus, 0);    //timeout so that any current key action misses this focus
+        !isSupportsTouch() && setTimeout(setNextFocus, 0);
         //timeout so that any current key action misses this focus
+        jQuery('#menu').empty();
         actionModel.makeMenuInVisible(jQuery('#menu')[0]);
         jQuery(actionModel.MOUSE_OUT_PATTERNS.join(',')).off('mouseout', actionModel.closeHandler);
     }
-};    /*
- * Utility method which helps to create menu element
- * @param type type of menu element, one of ["simpleAction", "selectAction", "optionAction"]
- *  this is the only mandatory parameter to create manu item.
- * @param options - object with optional arguments.
- *  Possible object structure is:
- * {
- *  text: test,
- *  clientTest: clientTest,
- *  clientTestArgs: clientTestArgs,
- *  action: action,
- *  actionArgs: actionArgs,
- *  children: children,
- *  isSelectedTest: isSelectedTest,
- *  isSelectedTestArgs: isSelectedTestArgs,
- *  selectionConstraint: selectionConstraint,
- *  className: className
- *  }
- */
+};
 /*
  * Utility method which helps to create menu element
  * @param type type of menu element, one of ["simpleAction", "selectAction", "optionAction"]
@@ -963,9 +800,7 @@ actionModel.createMenuElement = function (type, options) {
 };
 actionModel.setSelected = function (selected) {
     actionModel.selObjects = selected;
-};    ////////////////////////////////////////////////////////////
-// function utils
-////////////////////////////////////////////////////////////
+};
 ////////////////////////////////////////////////////////////
 // function utils
 ////////////////////////////////////////////////////////////
@@ -987,6 +822,14 @@ function fireMenuActionWithEvent(args, funcString, event) {
         return;
     }
     args = _.isArray(args) ? args : [args];
+    if (!_.isUndefined(event)) {
+        if (event instanceof jQuery.Event && event.originalEvent) {
+            event = event.originalEvent;
+        }
+        // HACK: undefined argument necessary to not replace arguments in later calls where params are expected
+        // this is used for repository.search.components create dialog to store the focusable element
+        args.push(undefined, event);
+    }
     func.apply(belongsToLocalContext ? window.localContext : null, args);
 }
 function getMenuMouseupFunction(actionFunction, argsToInvokeWith, label, id, event) {
@@ -1038,17 +881,6 @@ function resolveReservedStrings(thisString, label, id, ev) {
         return ev;
     }
     return thisString;
-}    /**
- * Get a random number.
- * May need to move this to common utils
- */
-/**
- * Get a random number.
- * May need to move this to common utils
- */
-function getRandomId() {
-    var rand = Math.round(Math.random(10) * 50);
-    return '_' + rand;
 }
 
 actionModel.getMenuMouseupFunction = getMenuMouseupFunction;

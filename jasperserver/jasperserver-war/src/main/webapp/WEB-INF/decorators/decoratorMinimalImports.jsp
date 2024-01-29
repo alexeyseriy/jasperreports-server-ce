@@ -1,6 +1,6 @@
 <%@ page contentType="text/html; charset=utf-8" %>
 <%--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -25,7 +25,7 @@
 
 <%@ include file="../jsp/modules/common/jsEdition.jsp" %>
 
-<meta name = "viewport" content="user-scalable=no, initial-scale=1.0, maximum-scale=1.0, width=device-width">
+<meta name = "viewport" content="initial-scale=1.0, width=device-width">
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 
 <%-- JavaScript and CSS resources that are common to all or most pages, doesn't include decorations-related code --%>
@@ -46,7 +46,10 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/<spring:theme code="overrides_ie.css"/>" type="text/css" media="screen"/>
     <![endif]-->
 
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/<spring:theme code="jasper-ui/jasper-ui.css"/>" type="text/css" media="screen,print"/>
+    <c:if test="${empty openInEditor or openInEditor == false}">
+      <link rel="stylesheet" href="${pageContext.request.contextPath}/<spring:theme code="jasper-ui/jasper-ui.css"/>" type="text/css" media="screen,print"/>
+    </c:if>
+
     <link rel="stylesheet" href="${pageContext.request.contextPath}/<spring:theme code="jquery-ui/jquery-ui.css"/>" type="text/css" media="screen,print"/>
 
     <link rel="stylesheet" href="${pageContext.request.contextPath}/<spring:theme code="panel.css"/>" type="text/css" media="screen,print"/>

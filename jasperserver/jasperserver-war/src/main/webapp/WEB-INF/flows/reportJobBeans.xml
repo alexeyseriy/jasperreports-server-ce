@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -145,6 +145,14 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 			</property>
 			<property name="labelMessage">
 				<value>report.output.xls.label</value>
+			</property>
+		</bean>
+		<bean class="com.jaspersoft.jasperserver.war.dto.ByteEnum">
+			<property name="code">
+				<util:constant static-field="com.jaspersoft.jasperserver.api.engine.scheduling.domain.ReportJob.OUTPUT_FORMAT_DATA_XLSX"/>
+			</property>
+			<property name="labelMessage">
+				<value>report.output.data.xlsx.label</value>
 			</property>
 		</bean>
 		<bean class="com.jaspersoft.jasperserver.war.dto.ByteEnum">

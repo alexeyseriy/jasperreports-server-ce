@@ -1,6 +1,6 @@
 <%@ page contentType="text/html; charset=utf-8" %>
 <%--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -65,7 +65,7 @@
     }
 
     resource.messages["resource.Query.Title"] = '<spring:message code="resource.DataSource.Title" javaScriptEscape="true"/>';
-    resource.messages["dataSourceInvalid"] = '<spring:message code="resource.query.linkDataSource2" javaScriptEscape="true"/>';
+    resource.messages["dataSourceInvalid"] = '<spring:message code="ReportDataSourceValidator.error.no.dataResource.selectedUri" javaScriptEscape="true"/>';
 
     if (typeof __jrsConfigs__.addQuery === "undefined") {
         __jrsConfigs__.addQuery = {};

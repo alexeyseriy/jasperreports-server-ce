@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -165,11 +165,11 @@ function pulsate(element, numberOfPulses, duration){
  * @return image - assign to var for future clean up
  */
 function renderImageOverMousePointer(img, event) {
-    var img = jQuery('#' + img)[0];
-    img.show();
-    img.style.left=event.clientX;
-    img.style.top=event.clientY;
-    return img;
+    var image = jQuery('#' + img)[0];
+    image.show();
+    image.style.left=event.clientX;
+    image.style.top=event.clientY;
+    return image;
 }
 
 export {renderImageOverMousePointer, pulsate, appear, appearMany, fade, fadeMany, move, moveMany, moveTo};

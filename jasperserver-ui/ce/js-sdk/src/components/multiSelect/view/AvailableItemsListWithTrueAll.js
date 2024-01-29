@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -19,7 +19,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import $ from 'jquery';
 import _ from 'underscore';
 import AvailableItemsList from '../view/AvailableItemsList';
 import listWithTrueAllSelectionTrait from '../mixin/listWithTrueAllSelectionTrait';
@@ -48,18 +47,28 @@ var AvailableItemsListWithTrueAll = AvailableItemsList.extend({
     selectionAdd: function (selection) {
         if (this.model.get('isTrueAll')) {
             this.model.set('isTrueAll', false, { silent: true });
-            var visibleItems = _.chain(this.listViewModel.get('items')).map(function (item) {
+            const items = this.listViewModel.get('items');
+            const selectedItems = _.chain(items).map(function (item) {
                 return item.value;
-            }).reject(function (item) {
-                return item === selection.value;
+            }).reject((item) => {
+                if (this.caseSensitiveSelection) {
+                    return item === selection.value;
+                } else {
+                    return item.toLowerCase() === selection.value.toLowerCase();
+                }
             }).value();
             this.listView.setTrueAll(false, { silent: true });
-            this.listView.setValue(visibleItems, { silent: true });
+            this.listView.setValue(selectedItems, { silent: true });
             this._boundedOnSelectionChangeOnce = _.bind(this._onSelectionChangeOnce, this, selection);
             this.listViewModel.once('selection:change', this._boundedOnSelectionChangeOnce);
             this.listView.selectAll({ silent: true });
         } else {
-            this.model.get('value')[selection.value] = true;
+            const currentValues = this.model.get('value');
+            if (this.caseSensitiveSelection) {
+                currentValues[selection.value] = true;
+            } else {
+                currentValues[selection.value.toLowerCase()] = selection.value;
+            }
             this.model.trigger('change:value');
         }
     },
@@ -103,7 +112,9 @@ var AvailableItemsListWithTrueAll = AvailableItemsList.extend({
         }
     },
     getModelForRendering: function () {
-        return _.extend(AvailableItemsList.prototype.getModelForRendering.call(this), { isTrueAll: this.model.get('isTrueAll') });
+        return _.extend(AvailableItemsList.prototype.getModelForRendering.call(this), {
+            isTrueAll: this.model.get('isTrueAll')
+        });
     },
     setTrueAll: function (all) {
         this.model.set('isTrueAll', all);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -21,8 +21,16 @@
 package com.jaspersoft.jasperserver.api.engine.scheduling.domain;
 
 import com.jaspersoft.jasperserver.api.JasperServerAPI;
+import com.jaspersoft.jasperserver.api.engine.scheduling.domain.jaxb.RelativeDateRangeWrapper;
+import com.jaspersoft.jasperserver.api.engine.scheduling.domain.jaxb.ReportJobSourceParametersXmlAdapter;
+import com.jaspersoft.jasperserver.api.engine.scheduling.domain.jaxb.ValuesCollection;
 import com.jaspersoft.jasperserver.api.engine.scheduling.domain.reportjobmodel.ReportJobSourceModel;
 import com.jaspersoft.jasperserver.api.metadata.jasperreports.domain.ReportUnit;
+
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlSeeAlso;
+import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,6 +45,8 @@ import java.util.Map;
  * @see ReportJob#getSource()
  */
 @JasperServerAPI
+@XmlRootElement
+@XmlSeeAlso({ValuesCollection.class, RelativeDateRangeWrapper.class})
 public class ReportJobSource implements Serializable {
 	public static final String REFERENCE_WIDTH_PARAMETER_NAME = "REFERENCE_WIDTH_PARAMETER_NAME";
 	public static final String REFERENCE_HEIGHT_PARAMETER_NAME = "REFERENCE_HEIGHT_PARAMETER_NAME";
@@ -84,6 +94,7 @@ public class ReportJobSource implements Serializable {
 	 * @see ReportUnit#getInputControls()
      * @deprecated use ReportJobSource.getParameters() instead
 	 */
+    @XmlTransient
 	public Map getParametersMap() {
 		return getParameters();
 	}
@@ -101,6 +112,7 @@ public class ReportJobSource implements Serializable {
      * @see ReportUnit#getInputControls()
      * @since 4.7
      */
+    @XmlJavaTypeAdapter(ReportJobSourceParametersXmlAdapter.class)
     public Map<String, Object> getParameters(){
         return parameters;
     }

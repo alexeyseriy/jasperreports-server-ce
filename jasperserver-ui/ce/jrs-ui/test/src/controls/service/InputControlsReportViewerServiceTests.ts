@@ -627,7 +627,7 @@ describe('InputControlsReportViewerService Tests', () => {
                 expect(structure).toEqual(inputControlsStructureMock);
 
                 initialStateSelectionMock[1] = [{ value: '1.1', label: '1.1' }]
-                expect(selection).toEqual({ 1: '1.1' });
+                expect(selection).toEqual({ 1: [{ value: '1.1', label: '1.1' }] });
                 expect(paginationOptionsPerControl).toEqual(initialStatePaginationOptionsPerControlWithSelection);
                 expect(paginatedValuesResponse).toEqual(inputControlsPaginatedValuesResponseMockForText);
 

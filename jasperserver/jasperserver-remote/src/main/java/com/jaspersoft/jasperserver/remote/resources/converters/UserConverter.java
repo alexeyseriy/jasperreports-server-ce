@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -66,6 +66,7 @@ public class UserConverter implements ToServerConverter<ClientUser, User, ToServ
         clientUser.setPreviousPasswordChangeTime(user.getPreviousPasswordChangeTime());
         clientUser.setTenantId(user.getTenantId());
         clientUser.setUsername(user.getUsername());
+        clientUser.setNumberOfFailedLoginAttempts(user.getNumberOfFailedLoginAttempts());
 
         if (user.getRoles() != null){
             Set<ClientRole> roleSet = new HashSet<ClientRole>();
@@ -88,6 +89,7 @@ public class UserConverter implements ToServerConverter<ClientUser, User, ToServ
         if (clientObject.getFullName() != null) user.setFullName(clientObject.getFullName());
         if (clientObject.isEnabled() != null) user.setEnabled(clientObject.isEnabled());
         if (clientObject.isExternallyDefined() != null) user.setExternallyDefined(clientObject.isExternallyDefined());
+        if (clientObject.getNumberOfFailedLoginAttempts() != null) user.setNumberOfFailedLoginAttempts(clientObject.getNumberOfFailedLoginAttempts());
         if (clientObject.getPassword() != null) {
             if (user.getPassword()!= null && !clientObject.getPassword().equals(user.getPassword())){
                 user.setPreviousPasswordChangeTime(new Date());

@@ -1,6 +1,6 @@
 <%@ page contentType="text/html; charset=utf-8" %>
 <%--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -29,17 +29,26 @@
 <li class="leaf first">
     <t:insertTemplate template="/WEB-INF/jsp/templates/container.jsp">
         <t:putAttribute name="containerClass" value="panel pane settings"/>
-        <t:putAttribute name="containerTitle"><spring:message code="${param.oLabelCode}"/></t:putAttribute>
+
         <t:putAttribute name="bodyClass" value="twoColumn"/>
         <t:putAttribute name="bodyContent">
             <div class="column simple primary">
                 <div class="control checkBox">
+
                     <label class="wrap" for="input_${param.oName}" title="<spring:message code='${param.oLabelCode}' />">
-                        <spring:message code="${oDesc}"/>
+                        <spring:message code="${param.oLabelCode}"/>
                     </label>
-                    <input ${param.oValue ? "checked=\"checked\"" : "" } id="input_${param.oName}" type="checkbox" value=""/>
+                    <c:if test="${param.oName=='showDistinctRowValues'}">
+                        <input ${!param.oValue ? "checked=\"checked\"" : "" } id="input_${param.oName}" type="checkbox" value=""/>
+                    </c:if>
+                    <c:if test="${param.oName !='showDistinctRowValues'}">
+                        <input ${param.oValue ? "checked=\"checked\"" : "" } id="input_${param.oName}" type="checkbox" value=""/>
+                    </c:if>
                     <span class="message warning" id="error_${param.oName}">&nbsp;</span>
                 </div>
+				<div class="control description">
+					<spring:message code="${param.oDesc}"/>
+				</div>
             </div>
             <div class="column simple secondary">
                 <fieldset class="actions">

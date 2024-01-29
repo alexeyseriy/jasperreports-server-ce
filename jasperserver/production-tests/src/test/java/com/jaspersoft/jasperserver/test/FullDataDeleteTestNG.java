@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -67,7 +67,7 @@ public class FullDataDeleteTestNG extends BaseServiceSetupTestNG {
         deleteHibernateRepositoryReportResources();
         deleteHibernateRepositoryDataSourceResources();
         deleteDefaultDomainWhitelist();
-        deleteAuditDBProfileAttribute();
+        deleteDBProfileAttributes();
     }
 
     // move this to configuration file if people want to use

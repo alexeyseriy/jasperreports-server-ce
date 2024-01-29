@@ -21,7 +21,7 @@
 
 /* =============================================
     DATA TABLE MODULE
-    Last modified date:    Dec 7, 2020
+    Last modified date:    Apr 23, 2021
     Last modified by:      Anna Leeg
  * ============================================= */
 
@@ -82,6 +82,7 @@
   text-align: left;
   vertical-align: top;
   white-space: normal;
+  word-wrap: break-word;
 }
 
 .jr-mDatatable-cell-expander.jr {
@@ -226,6 +227,33 @@
   background-color: #f4f4f4;
 }
 
+.jr-mDatatableCrosstab.jr .jr-mDatatable-header.jr .jr-mDatatable-cell-text.jr {
+  display: inline-block;
+} /* text and sort icon (below) both need inline-block to display correctly */
+
+.jr-mDatatableCrosstab.jr .jr-mDatatable-header.jr .jr-mDatatable-cell-sort.jr {
+  display: inline-block;
+  vertical-align: unset;
+}
+
+.jr-mDatatable-cell-filter {
+  background-image: image-url("sort_filter_icons_sprite.png");
+  background-repeat: no-repeat;
+  display: inline-block;
+  height: 12px;
+  position: relative;
+  top: 3px;
+  width: 20px;
+  margin: 0 5px;
+}
+
+.jr-mDatatable-cell-filter.top {
+  background-position: 0 -420px;
+}
+
+.jr-mDatatable-cell-filter.bottom {
+  background-position: 0 -440px;
+}
 
 // BODY
 .jr-mDatatableCrosstab.jr .jr-mDatatable-rowGroup.jr {

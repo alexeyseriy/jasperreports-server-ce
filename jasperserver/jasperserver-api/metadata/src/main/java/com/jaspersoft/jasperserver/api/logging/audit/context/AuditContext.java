@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -111,6 +111,10 @@ public interface AuditContext {
      * created
      */
     public void addPropertyToAuditEvent(String propertyTypeName, Object param, AuditEvent auditEvent);
+
+    default void addPropertyToAuditEvent(String propertyTypeName, Object param, AuditEvent auditEvent, boolean append, Class type) {
+        addPropertyToAuditEvent(propertyTypeName, param, auditEvent);
+    }
 
     public void setResourceTypeToAuditEvent(String resourceType, AuditEvent auditEvent);
 

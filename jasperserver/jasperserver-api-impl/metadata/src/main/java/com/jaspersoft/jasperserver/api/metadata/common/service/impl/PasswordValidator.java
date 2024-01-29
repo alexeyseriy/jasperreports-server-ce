@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -28,7 +28,7 @@ import com.jaspersoft.jasperserver.crypto.EncryptionProperties;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.dao.DataAccessException;
-import org.springframework.security.authentication.encoding.PasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.security.Key;
 
@@ -54,23 +54,23 @@ public class PasswordValidator extends BaseCipher implements PasswordEncoder {
 	 * @see org.springframework.security.authentication.encoding.PasswordEncoder#encodePassword(java.lang.String, java.lang.Object)
 	 * NOTE: salt will be ignored since we will use the "secretkey" defined in Spring configuration
 	 */
-	public String encodePassword(String rawPass, Object salt) throws DataAccessException {
+	/*public String encodePassword(String rawPass, Object salt) throws DataAccessException {
 		try {
 			return encode(rawPass);
 		} catch (Exception ex) {
 			log.debug(ex);
 			throw new PasswordEncryptionException(ex.getMessage(), ex.getCause());
 		}
-	}
+	}*/
 
 	/**
 	 * @see org.springframework.security.authentication.encoding.PasswordEncoder#isPasswordValid(java.lang.String, java.lang.String, java.lang.Object)
 	 * NOTE: salt will be ignored since we will use the "secretkey" defined in Spring configuration
 	 */
-	public boolean isPasswordValid(String encPass, String otherPass, Object salt) throws DataAccessException {
+	/*public boolean isPasswordValid(String encPass, String otherPass, Object salt) throws DataAccessException {
 		String rawPass = decode(encPass);
 		return rawPass.equals(otherPass);
-	}
+	}*/
 
 	@Override
 	public void setAllowEncryption(boolean flag) {
@@ -117,6 +117,28 @@ public class PasswordValidator extends BaseCipher implements PasswordEncoder {
 	@Override
 	public Key getKey() {
 		return cipher.getKey();
+	}
+
+	@Override
+	public String encode(CharSequence rawPassword) throws DataAccessException {
+		try {
+			return cipher.encode((String)rawPassword);
+		} catch (Exception ex) {
+			log.debug(ex);
+			throw new PasswordEncryptionException(ex.getMessage(), ex.getCause());
+		}
+	}
+
+	@Override
+	public boolean matches(CharSequence encPassword, String otherPass) {
+		try {
+			String rawPass = decode((String) encPassword);
+			return rawPass.equals(otherPass);
+		} catch (Exception e) {
+			log.debug(e);
+		}
+		return false;
+
 	}
 }
 

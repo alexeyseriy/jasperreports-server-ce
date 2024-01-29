@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -23,10 +23,10 @@ package com.jaspersoft.jasperserver.api.engine.scheduling.quartz;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Collections;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.quartz.JobExecutionException;
 
 import com.jaspersoft.jasperserver.api.JSExceptionWrapper;
 import com.jaspersoft.jasperserver.api.engine.jasperreports.common.XlsExportParametersBean;
@@ -40,6 +40,7 @@ import net.sf.jasperreports.engine.JRPropertiesUtil;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.export.ooxml.JRXlsxExporter;
 import net.sf.jasperreports.export.SimpleExporterInput;
+import net.sf.jasperreports.export.SimpleExporterInputItem;
 import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
 import net.sf.jasperreports.export.SimpleXlsxExporterConfiguration;
 import net.sf.jasperreports.export.SimpleXlsxReportConfiguration;
@@ -60,16 +61,16 @@ public class XlsxReportOutput extends AbstractReportOutput
 	{
 	}
 
-	/** 
-	 * @see com.jaspersoft.jasperserver.api.engine.scheduling.quartz.Output#getOutput()
-	 */
-	public ReportOutput getOutput(
-			ReportJobContext jobContext,
-			JasperPrint jasperPrint) throws JobExecutionException
-	{
+	@Override
+	protected DataContainer export(ReportJobContext jobContext, 
+			JasperPrint jasperPrint, Integer startPageIndex, Integer endPageIndex) {
 		try {
 			JRXlsxExporter exporter = new JRXlsxExporter(getJasperReportsContext());
-            exporter.setExporterInput(new SimpleExporterInput(jasperPrint));
+			SimpleXlsxReportConfiguration reportConfiguration = new SimpleXlsxReportConfiguration();
+			reportConfiguration.setStartPageIndex(startPageIndex);
+			reportConfiguration.setEndPageIndex(endPageIndex);
+            exporter.setExporterInput(new SimpleExporterInput(Collections.singletonList(
+            		new SimpleExporterInputItem(jasperPrint, reportConfiguration))));
 			
 			boolean close = false;
 			DataContainer xlsxData = jobContext.createDataContainer(this);
@@ -104,16 +105,7 @@ public class XlsxReportOutput extends AbstractReportOutput
 
 				close = false;
 				xlsxDataOut.close();
-				
-				String baseFilename = jobContext.getBaseFilename();
-				if (isIgnorePagination() != null && isIgnorePagination()
-						&& jobContext.hasOutput(ReportJob.OUTPUT_FORMAT_XLSX))
-				{
-					//we have both paginated and unpaginated XLSX outputs, we need a different name
-					baseFilename += "_nopag";
-				}
-				String filename = baseFilename + "." + getFileExtension();
-				return new ReportOutput(xlsxData, getFileType(), filename);
+				return xlsxData;
 			} catch (IOException e) {
 				throw new JSExceptionWrapper(e);
 			} finally {
@@ -128,6 +120,19 @@ public class XlsxReportOutput extends AbstractReportOutput
 		} catch (JRException e) {
 			throw new JSExceptionWrapper(e);
 		}
+	}
+	
+	@Override
+	protected String getBaseFilename(ReportJobContext jobContext, ReportJob outputJobDetails) {
+		String baseFilename = super.getBaseFilename(jobContext, outputJobDetails);
+		if (isIgnorePagination() != null && isIgnorePagination()
+				&& (jobContext.hasOutput(ReportJob.OUTPUT_FORMAT_XLSX)
+						|| jobContext.hasOutput(ReportJob.OUTPUT_FORMAT_XLS))) // to account for old jobs having the deprecated option set
+		{
+			//we have both paginated and unpaginated XLSX outputs, we need a different name
+			baseFilename += "_nopag";
+		}
+		return baseFilename;
 	}
 	
 	/**

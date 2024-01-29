@@ -78,4 +78,14 @@ export default class InputControlsService implements InputControlsServiceInterfa
             },
         });
     }
+
+    getReportRawParameterValues(executionId: string) {
+        return this.request({
+            type: 'GET',
+            url: `${jrsConfigs.urlContext}/rest_v2/reportExecutions/${executionId}/rawParameterValues`,
+            headers: {
+                Accept: 'application/json',
+            },
+        });
+    }
 }

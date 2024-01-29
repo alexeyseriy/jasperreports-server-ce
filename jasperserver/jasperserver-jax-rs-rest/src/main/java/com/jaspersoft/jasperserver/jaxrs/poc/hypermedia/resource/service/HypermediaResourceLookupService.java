@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -66,6 +66,9 @@ public class HypermediaResourceLookupService {
     private SearchResourcesActivity searchResourceLookupActivity;
 
     @Resource
+    private SearchResourcesActivity favoritesLookupActivity;
+
+    @Resource
     private ReadResourceActivity resourceLookupActivity;
 
     @Context
@@ -86,6 +89,9 @@ public class HypermediaResourceLookupService {
             }
             if("type".equals(paramName)){
                 criteria.setResourceTypes(values);
+            }
+            if("favorites".equals(paramName)){
+                criteria.setFavorites(Boolean.valueOf(value));
             }
             if("accessType".equals(paramName)){
                 AccessType accessType =  AccessType.ALL;
@@ -154,7 +160,11 @@ public class HypermediaResourceLookupService {
 
     @GET
     @Produces({MediaTypes.APPLICATION_HAL_JSON})
-    public Response getResourceLookupRepresentation(){
+    public Response getResourceLookupRepresentation() {
+        MultivaluedMap<String, String> queryParams = uriInfo.getQueryParameters();
+        List<String> favValue = queryParams.get("favorites");
+        if (favValue != null && favValue.get(0).equals("true"))
+            searchResourceLookupActivity = favoritesLookupActivity;
 
         RepositorySearchCriteria searchCriteria = convertToSearchCriteria(searchResourceLookupActivity.getCriteria(), uriInfo.getQueryParameters());
 

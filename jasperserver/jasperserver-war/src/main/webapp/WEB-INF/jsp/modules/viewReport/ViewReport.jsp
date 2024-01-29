@@ -1,6 +1,6 @@
 <%@ page contentType="text/html; charset=utf-8" %>
 <%--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -58,7 +58,7 @@
                     <div id="dataTimestampMessage"></div>
                     <ul id="asyncIndicator" class="list buttonSet hidden">
                         <li class="leaf">
-                            <button id="asyncCancel" class="button capsule text up" disabled="disabled" tabindex="4" js-navtype="toolbar">
+                            <button id="asyncCancel" class="button capsule text up" disabled="disabled" tabindex="0" js-navtype="toolbar">
                                 <span class="wrap"><spring:message code="button.cancel.loading"/>
                                     <span class="icon"></span>
                                 </span>
@@ -67,7 +67,7 @@
                     </ul>
                     <ul class="list buttonSet">
                         <li class="leaf">
-                            <button id="dataRefreshButton" data-title="true" aria-label="<spring:message code="jasper.report.view.button.data.refresh" javaScriptEscape="true"/>" class="button capsule up" tabindex="4">
+                            <button id="dataRefreshButton" data-title="true" aria-label="<spring:message code="jasper.report.view.button.data.refresh" javaScriptEscape="true"/>" class="button capsule up" tabindex="0">
                                 <span class="wrap">
                                     <span class="icon"></span>
                                 </span>
@@ -80,7 +80,7 @@
                     <div id="exportMessage"><spring:message code="label.report.export.progress"/></div>
                 </div>
                 <div id="reportPartsController" class="hidden">
-                    <ul id="reportPartsContainer" class="list buttonSet j-toolbar" tabindex="5" js-navtype="toolbar">
+                    <ul id="reportPartsContainer" class="list buttonSet j-toolbar" tabindex="0" js-navtype="toolbar">
 
                         <li class="leaf control search">
                             <button id="part_prev" data-title="true" class="button action square move searchPrevious up" disabled="disabled" aria-label="<spring:message code="REPORT_VIEWER_PAGINATION_CONTROLS_PREVIOUS"/>" js-navtype="button" tabindex="-1">
@@ -179,11 +179,18 @@
                     </c:choose>
 
                     <!-- ========== LEFT BUTTON SET =========== -->
-                    <ul class="list buttonSet j-toolbar" tabindex="6" js-navtype="toolbar">
+                    <ul class="list buttonSet j-toolbar" tabindex="0" js-navtype="toolbar">
                         <c:if test="${param.decorate != 'no'}">
                             <li class="leaf">
-                                <button id="back" data-title="true" class="button capsule text up" aria-label="<spring:message code="button.back"/>" tabindex="-1">
-                                    <span class="wrap"><spring:message code="button.back"/>
+                                <button id="back" data-title="true" class="button capsule up" style="display: none" aria-label="<spring:message code="button.back"/>" tabindex="-1" title="<spring:message code="button.back"/>">
+                                    <span class="wrap">
+                                        <span class="icon"></span>
+                                    </span>
+                                </button>
+                            </li>
+                            <li class="leaf">
+                                <button id="close" data-title="true" class="button capsule up" aria-label="<spring:message code="button.exit"/>" tabindex="-1" title="<spring:message code="button.exit"/>">
+                                    <span class="wrap">
                                         <span class="icon"></span>
                                     </span>
                                 </button>
@@ -218,13 +225,15 @@
                                     </span>
                                 </button>
                             </li>
-                            <li class="leaf">
-                                <button id="embed" data-title="true" class="button capsule up middle" disabled="disabled" aria-label="<spring:message code="button.embed"/>" tabindex="-1">
-                                    <span class="wrap">
-                                        <span class="icon"></span>
-                                    </span>
-                                </button>
-                            </li>
+                            <c:if test="${isPro}">
+                                <li class="leaf">
+                                    <button id="embed" data-title="true" class="button capsule up middle" disabled="disabled" aria-label="<spring:message code="button.embed"/>" tabindex="-1">
+                                        <span class="wrap">
+                                            <span class="icon"></span>
+                                        </span>
+                                    </button>
+                                </li>
+                            </c:if>
                             <li class="leaf">
                                 <button id="schedule" data-title="true" class="button capsule up  middle" disabled="disabled" aria-label="<spring:message code="button.schedule"/>" tabindex="-1">
                                     <span class="wrap">
@@ -277,7 +286,7 @@
                     <!-- ========== END LEFT BUTTON SET =========== -->
 
                     <!-- ========== RIGHT BUTTON SET =========== -->
-                    <ul class="control toolsRight j-toolbar list" js-navtype="toolbar" tabindex="7">
+                    <ul class="control toolsRight j-toolbar list" js-navtype="toolbar" tabindex="0">
                         <!-- ========== ZOOM =========== -->
                         <li class="leaf divider"></li>
                         <li class="control zoom leaf">
@@ -459,7 +468,7 @@
                 <%--c:if test="${empty param.frame}">
                     <center>
                 </c:if--%>
-                <div id="reportContainer" class="" style="position:relative;height:100%;overflow:auto"></div>
+                <div id="reportContainer" class="" style="position:relative;height:100%;overflow:auto" tabindex="0"></div>
                 <%--c:if test="${empty param.frame}">
                     </center>
                 </c:if--%>
@@ -491,6 +500,7 @@
         <form id="exportActionForm" action="<c:url value="flow.html"/>" method="post">
             <input type="hidden" name="_flowExecutionKey" value=""/>
             <input type="hidden" name="_eventId" value=""/>
+            <input type="hidden" name="_executionId" value=""/>
             <input type="hidden" name="output"/>
         </form>
     </t:putAttribute>

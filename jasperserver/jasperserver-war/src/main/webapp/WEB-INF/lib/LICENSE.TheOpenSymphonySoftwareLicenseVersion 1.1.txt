@@ -3,7 +3,7 @@ The OpenSymphony Software License, Version 1.1
 (this license is derived and fully compatible with the Apache Software
 License - see http://www.apache.org/LICENSE.txt)
 
-Copyright (c) 2001-2004 The OpenSymphony Group. All rights reserved.
+Copyright (c) 2001-2004 The OpenSymphony Group. All Rights Reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions

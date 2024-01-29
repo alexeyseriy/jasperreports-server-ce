@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -23,7 +23,6 @@ import _ from 'underscore';
 import $ from 'jquery';
 import ClassUtil from '../../util/classUtil';
 
-import xssUtil from '../../util/xssUtil';
 import request from '../../transport/request';
 
 export default ClassUtil.extend({

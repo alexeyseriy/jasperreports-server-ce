@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -510,9 +510,7 @@ export default Backbone.Model.extend({
 
         if (model.alert) {
             var toAddressAlert = (model.alert.toAddresses && model.alert.toAddresses.address) || "",
-                subjectAlert = model.alert.subject || "",
-                sucMessage = model.alert.messageText || "",
-                failMessage = model.alert.messageTextWhenJobFails || "";
+                subjectAlert = model.alert.subject || "";
 
             if (toAddressAlert && !this.validateEmails(toAddressAlert)) {
                 results.push({
@@ -585,8 +583,9 @@ export default Backbone.Model.extend({
     update: function (key, value) {
         if ('object' === typeof value) {
             value = _.extend({}, this.get(key), value);
-            for (var i in value) if (value.hasOwnProperty(i))
-                if (value[i] === undefined) delete value[i];
+            for (var i in value) {
+                if (value.hasOwnProperty(i) && value[i] === undefined) delete value[i];
+            }
         }
 
         this.set(key, value);
@@ -773,6 +772,17 @@ export default Backbone.Model.extend({
 
         // ==============================
         // output tab
+        if (data.outputFormats != null && data.outputFormats.outputFormat != null) {
+            var formats = data.outputFormats.outputFormat;
+            for (var i = 0; i < formats.length; i++) {
+                if (formats[i] === 'XLS') {
+                    formats[i] = 'XLSX';
+                } else if (formats[i] === 'XLS_NOPAG') {
+                    formats[i] = 'XLSX_NOPAG';
+                }
+            }
+        }
+
         if (typeof data.repositoryDestination === "undefined" || data.repositoryDestination === null) {
             data.repositoryDestination = {
                 overwriteFiles: true,
@@ -848,7 +858,7 @@ export default Backbone.Model.extend({
         }
 
         // convert arrays into strings
-        var keys = ["toAddresses", "ccAddresses", "bccAddresses"], i, from , to;
+        var keys = ["toAddresses", "ccAddresses", "bccAddresses"], i;
         for (i = 0; i < keys.length; i++) {
 
             if (typeof data.mailNotification[keys[i]] === "undefined" || data.mailNotification[keys[i]] === null) {
@@ -1074,7 +1084,7 @@ export default Backbone.Model.extend({
 
         if (data.mailNotification) {
             // convert strings into arrays
-            var keys = ["toAddresses", "ccAddresses", "bccAddresses"], i, from , to;
+            var keys = ["toAddresses", "ccAddresses", "bccAddresses"], i;
             for (i = 0; i < keys.length; i++) {
                 if (data.mailNotification[keys[i]] && typeof data.mailNotification[keys[i]].address !== "undefined") {
                     // if key is empty, remove it
@@ -1308,7 +1318,7 @@ export default Backbone.Model.extend({
             contentType: 'application/connections.ftp+json',
             headers:{ 'Accept': 'application/json' },
             type: 'POST',
-            success: function (data, xhr) {
+            success: function (successData, xhr) {
                 ftpIsProcessings = false;
                 // enable FTP button
                 $("#ftpTestButton").removeClass("checking");
@@ -1452,6 +1462,10 @@ export default Backbone.Model.extend({
         }
 
         var folder = this.get('repositoryDestination').folderURI;
+        if (folder.indexOf('${') >= 0) {
+            // property placeholder used, cannot check
+            return dfr.resolve();
+        }
 
         // check for empty
         if (!folder || folder === "") {
@@ -1764,24 +1778,28 @@ export default Backbone.Model.extend({
 
     isHostName: function(hostname) {
         if (!hostname) return false;
+        if (hostname.indexOf('${') >= 0) return true;
         var hostnameRegex = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/;
         return hostnameRegex.test(hostname);
     },
 
     isEmail: function(email) {
         if (!email) return false;
+        if (email.indexOf('${') >= 0) return true;
         var re = new XRegExp(globalConfig.emailRegExpPattern, "g");
         return re.test(email);
     },
 
     isValidFileName: function(fileName) {
         if (!fileName) return false;
+        if (fileName.indexOf('${') >= 0) return true;
         var re = new RegExp(globalConfig.resourceIdNotSupportedSymbols, "g");
         return !re.test(fileName);
     },
 
     isValidUri: function(uri) {
         if (!uri) return false;
+        if (uri.indexOf('${') >= 0) return true;
         var re = new RegExp(globalConfig.resourceIdNotSupportedSymbols, "g");
         return !re.test(uri.replace(/\//g,"")); // exclude / from testing value
     },

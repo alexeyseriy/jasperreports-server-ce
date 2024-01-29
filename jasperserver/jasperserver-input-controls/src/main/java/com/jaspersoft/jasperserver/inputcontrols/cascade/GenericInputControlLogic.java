@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -59,6 +59,9 @@ import com.jaspersoft.jasperserver.inputcontrols.cascade.handlers.ValueFormattin
 import com.jaspersoft.jasperserver.inputcontrols.cascade.handlers.ValuesLoader;
 import com.jaspersoft.jasperserver.inputcontrols.cascade.handlers.converters.InputControlValueClassResolver;
 import com.jaspersoft.jasperserver.inputcontrols.cascade.token.FilterResolver;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.extension.annotations.WithSpan;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -108,7 +111,9 @@ public class GenericInputControlLogic<T extends InputControlsContainer> implemen
     /**
      * This is the MAIN public interface method for getting controls structure in JasperServer CE
      */
+    @WithSpan
     public final List<ReportInputControl> getInputControlsStructure(T container, Set<String> inputControlIds) throws CascadeResourceNotFoundException {
+        Optional.ofNullable(container).ifPresent(c -> Span.current().setAttribute("resourceUri", c.getURIString()));
         ReportInputControlsInformation reportInputControlsInformation = getReportInputControlsInformation(container);
         final List<InputControl> allInputControls = getAllInputControls(container);
         List<InputControl> localizedInputControls = localizeInputControls(allInputControls, reportInputControlsInformation);
@@ -141,7 +146,7 @@ public class GenericInputControlLogic<T extends InputControlsContainer> implemen
 
                 ReportInputControlValuesInformation controlValueInfos = controlInfo.getReportInputControlValuesInformation();
 
-                if (controlValueInfos != null) {
+                if (controlValueInfos != null && CollectionUtils.isNotEmpty(controlValueInfos.getControlValuesNames())) {
                     //create new list of values with localized labels to replace existing
                     ListOfValues localizedListOfValues = new ListOfValuesImpl();
                     Set<String> controlValuesNames = controlValueInfos.getControlValuesNames();
@@ -309,9 +314,11 @@ public class GenericInputControlLogic<T extends InputControlsContainer> implemen
      * This is the MAIN public interface method for getting values in JasperServer CE
      * Resolves the Input Controls values based on given parameters
      */
+    @WithSpan
     @Override
     public final List<InputControlState> getValuesForInputControlsFromRawData(final T container, Set<String> inputControlIds, Map<String, String[]> requestParameters)
             throws CascadeResourceNotFoundException {
+        Optional.ofNullable(container).ifPresent(c -> Span.current().setAttribute("resourceUri", c.getURIString()));
         StateParameters stateParameters = new StateParameters(container, inputControlIds, requestParameters).invoke();
 
         List<InputControlState> states = getValuesForInputControls(container, stateParameters.getControls(),
@@ -482,10 +489,12 @@ public class GenericInputControlLogic<T extends InputControlsContainer> implemen
         return checkedMasterDependencies;
     }
 
+    @WithSpan
     @Override
     public final Map<String, Object> getTypedParameters(
             T container, Map<String, String[]> requestParameters, boolean skipValidation)
                 throws CascadeResourceNotFoundException, InputControlsValidationException {
+        Optional.ofNullable(container).ifPresent(c -> Span.current().setAttribute("resourceUri", c.getURIString()));
 
         List<InputControl> controls = getAllInputControls(container);
         ReportInputControlsInformation infos = getReportInputControlsInformation(container);
@@ -509,8 +518,10 @@ public class GenericInputControlLogic<T extends InputControlsContainer> implemen
         typedParameters.put(absentControlName, null);
     }
 
+    @WithSpan
     @Override
     public Map<String, String[]> formatTypedParameters(T container, Map<String, Object> typedParameters) throws CascadeResourceNotFoundException {
+        Optional.ofNullable(container).ifPresent(c -> Span.current().setAttribute("resourceUri", c.getURIString()));
         List<InputControl> controls = getAllInputControls(container);
         ReportInputControlsInformation infos = getReportInputControlsInformation(container);
         Map<String, String[]> formattedValues = new HashMap<String, String[]>(controls.size());
@@ -667,8 +678,8 @@ public class GenericInputControlLogic<T extends InputControlsContainer> implemen
     }
 
     private class StateParameters {
-        private T container;
-        private Set<String> inputControlIds;
+        private final T container;
+        private final Set<String> inputControlIds;
         private Map<String, String[]> requestParameters;
         private List<InputControl> allControls;
         private ResourceReference dataSource;

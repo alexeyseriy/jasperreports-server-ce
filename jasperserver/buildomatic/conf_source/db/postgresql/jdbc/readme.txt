@@ -1,5 +1,24 @@
 buildomatic/conf_source/db/postgresql/jdbc/readme.txt
 -----------------------------------------------------
+2023-03-01
+----------
+Added most current JDBC42 driver from the postgresql website
+
+  postgresql-42.5.4.jar
+
+2023-01-01
+----------
+Added most current JDBC42 driver from the postgresql website
+
+    postgresql-42.5.0.jar
+
+2022-05-11
+----------
+
+Added most current JDBC42 driver from the postgresql website
+
+  postgresql-42.3.5.jar
+
 2021-05-28
 ----------
 

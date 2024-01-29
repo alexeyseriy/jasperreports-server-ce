@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -147,5 +147,17 @@ describe("Scheduler Job View", function() {
 
         expect(lastRunDate).toEqual("localizedDate");
         expect(nextRunDate).toEqual("localizedDate");
+    });
+
+    it("should validate email containing ${", function() {
+        expect(jobModel.isEmail("${name}@domain.com")).toEqual(true);
+    });
+
+    it("should validate fileName containing ${", function() {
+        expect(jobModel.isValidFileName("file-${name}.pdf")).toEqual(true);
+    });
+
+    it("should validate URI containing ${", function() {
+        expect(jobModel.isValidUri("/path/to/${name}")).toEqual(true);
     });
 });

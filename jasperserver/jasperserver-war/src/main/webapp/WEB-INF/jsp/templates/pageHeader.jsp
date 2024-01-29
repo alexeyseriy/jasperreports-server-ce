@@ -1,6 +1,6 @@
 <%@ page contentType="text/html; charset=utf-8" %>
 <%--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -46,10 +46,10 @@ Usage:
         <div class="pageHeader-title-icon ">
             <span class="icon ${pageHeaderIconClass}"></span>
         </div>
-        <div class="pageHeader-title-text">${pageHeaderText}</div>
+        <div role="heading" aria-level="1" class="pageHeader-title-text">${pageHeaderText}</div>
         <c:if test="${isEmbeddedDesigner}">
             <div class="pageHeader-title-controls pageHeader-controls-right">
-                <div id="closeDesigenr" class="closeIcon" js-nonmodal-tabindex="undefined" tabindex="-1"></div>
+                <div id="closeDesigner" class="closeIcon" js-nonmodal-tabindex="undefined" tabindex="-1"></div>
             </div>
         </c:if>
     </div>

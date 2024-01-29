@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -34,6 +34,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.springframework.orm.hibernate5.HibernateCallback;
 import org.springframework.orm.hibernate5.HibernateTemplate;
 import org.springframework.orm.hibernate5.SessionFactoryUtils;
 import org.springframework.orm.hibernate5.SessionHolder;
@@ -120,7 +121,7 @@ public class CoreDataDeleteTestNG extends BaseServiceSetupTestNG {
         deleteDefaultTheme();
         deleteUsersAndRoles();
         deleteDefaultDomainWhitelist();
-        deleteAuditDBProfileAttribute();
+        deleteDBProfileAttributes();
         deleteTenantForRoot();
         deleteRootFolder();
 	}
@@ -223,7 +224,11 @@ public class CoreDataDeleteTestNG extends BaseServiceSetupTestNG {
         m_logger.info("deleteRootFolder() called");
 
         //we need to delete a folder because RepoResource.parent is not nullable
-		List result = m_template.find("from RepoFolder where uri = ?", "/");
+        List result = (List)m_template.execute((HibernateCallback) session -> session
+                .createQuery("from RepoFolder where uri = ?1")
+                .setParameter(1, "/")
+                .list());
+
 
 //		assertNotNull("result", result);
 //		assertTrue("result.size() == 1",result.size() == 1);

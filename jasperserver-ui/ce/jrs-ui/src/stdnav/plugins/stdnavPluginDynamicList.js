@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -71,6 +71,11 @@ $.extend(stdnavPluginDynamicList.prototype, {
                 this._onEnter,
                 null
             ],
+            'toggle': [
+                this,
+                this._onEnter,
+                null
+            ],
             'fixfocus': [
                 this,
                 this._fixFocus,
@@ -117,8 +122,8 @@ $.extend(stdnavPluginDynamicList.prototype, {
     // being instrumented, but this construct may not actually have focus at
     // the time this function is called.
     _ariaPrep: function (el) {
-        $(el).attr('role', 'application');
-        $(el).attr('aria-label', 'Dynamic List');
+        //$(el).attr('role', 'application');
+        // $(el).attr('aria-label', 'Dynamic List');
         return null;
     },
     // This callback is run when the superfocus changes to the construct.
@@ -129,12 +134,12 @@ $.extend(stdnavPluginDynamicList.prototype, {
     // construct, but this construct may not actually have focus at the time
     // this function is called.
     _ariaRefresh: function (el) {
-        $(el).attr('role', 'application');
-        $(el).attr('aria-label', 'Dynamic List');
+        //$(el).attr('role', 'application');
+        //$(el).attr('aria-label', 'Dynamic List');
         return null;
     },
     _onEnter: function (element) {
-        var $el = $(element);
+        let $el = $(element);
         if ($el.is('.supercursor')) {
             // If a sublist is expanded, and a subitem has an active cursor,
             // then the parent item gets the "supercursor" class instead,
@@ -150,28 +155,50 @@ $.extend(stdnavPluginDynamicList.prototype, {
             // give us the sublist, if any, if that appears in the markup
             // prior to the actual link on this item.  Therefore, explicitly
             // look for buttons, links, and form fields only.
-            var $links = $el.find('a,:input');
+            let $links = $el.find('a,:input');
+            let isButtonLink = $el.hasClass('button focus-visible')
+
             if ($links.length > 0) {
                 // Fire the click handler
                 eventAutomation.simulateClickSequence($links[0]);
             }
-        }    // DO NOT move focus.
-        // DO NOT move focus.
+
+            if(isButtonLink) {
+                eventAutomation.simulateClickSequence($el[0]);
+            }
+
+        }// DO NOT move focus.
         return element;
     },
     // Focus adjustment callback.  Given an element somewhere within a
     // dynamicList, including the list itself, return the element which should
     // have get focused.  This is done by obtaining the cursor for the list.
     _fixFocus: function (element) {
+        function findRow(el){
+            if ($(el).attr('role') === 'row'){
+                return el;
+            }
+
+            return element.querySelector('[role="row"]') ? element.querySelector('[role="row"]') : element;
+        }
+
         var $listEl = $(element).closest('[js-navtype=\'' + this.navtype + '\']');
         if ($listEl.length < 1) {
             logger.warn('Can\'t find a dynamic list to fix focus to');
-            return element;
+            return findRow(element);
         }
         var listObj = dynamicList.getDynamicListForElement($listEl[0]);
         if (stdnav.nullOrUndefined(listObj)) {
             logger.warn('Can\'t map a dynamic list to fix focus to');
-            return element;
+            return findRow(element);
+        }
+        if($(element).attr('role')==='treegrid'){
+            if($(element).find('.selected').length){
+                return $(element).find('.selected[role="row"]');
+            }
+            let focusableEl = findRow(element);
+            $(focusableEl).addClass('selected');
+            return focusableEl;
         }
         return listObj.getCursorElement();
     },

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -98,11 +98,11 @@ dynamicTree.createRepositoryTree = function(id, options) {
                 var publicFolder;
                 var ch = rootObj.children;
                 var newCh = [];
-                for (var i=0; i<ch.length; i++) {
-                    if (ch[i].uri == this.publicFolderUri) {
-                        publicFolder = ch[i];
+                for (var j=0; j<ch.length; j++) {
+                    if (ch[j].uri == this.publicFolderUri) {
+                        publicFolder = ch[j];
                     } else {
-                        newCh.push(ch[i]);
+                        newCh.push(ch[j]);
                     }
                 }
                 rootObj.children = newCh;

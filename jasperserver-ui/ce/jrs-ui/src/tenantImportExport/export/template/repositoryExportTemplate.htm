@@ -4,21 +4,21 @@
     <p>{{- i18n["export.dialog.options"] }}</p>
     <div class="group">
         <div class="control checkBox">
-            <label class="wrap" title="">{{- i18n["export.report.jobs"] }}</label>
-            <input class="includeScheduledReportJobs" name="includeScheduledReportJobs" type="checkbox" data-bind="checked:includeScheduledReportJobs">
+            <label for="includeScheduledReportJobsId" class="wrap" title="">{{- i18n["export.report.jobs"] }}</label>
+            <input id="includeScheduledReportJobsId" class="includeScheduledReportJobs" name="includeScheduledReportJobs" aria-labelledby="includeScheduledReportJobsLabel" type="checkbox" data-bind="checked:includeScheduledReportJobs">
         </div>
         <div class="control checkBox">
-            <label class="wrap" title="">{{- i18n["export.include.permissions"] }}</label>
-            <input class="includeRepositoryPermissions" name="includeRepositoryPermissions" type="checkbox" data-bind="checked:includeRepositoryPermissions">
+            <label for="includeRepositoryPermissionsId" class="wrap" title="">{{- i18n["export.include.permissions"] }}</label>
+            <input id="includeRepositoryPermissionsId" class="includeRepositoryPermissions" name="includeRepositoryPermissions" aria-labelledby="includeRepositoryPermissionsLabel" type="checkbox" data-bind="checked:includeRepositoryPermissions">
         </div>
         <div class="control checkBox">
-            <label class="wrap" title="">{{- i18n["export.include.dependencies"] }} </label>
-            <input class="includeDependencies" name="includeDependencies" type="checkbox" data-bind="checked:includeDependencies">
+            <label for="includeDependenciesCheckbox" class="wrap" title="">{{- i18n["export.include.dependencies"] }} </label>
+            <input id="includeDependenciesCheckbox" class="includeDependencies" name="includeDependencies" type="checkbox" data-bind="checked:includeDependencies">
         </div>
         {{ if (isSubOrgLevel) { }}
         <div class="control checkBox">
-            <label class="wrap" title="">{{- i18n["export.include.full.repo.path"] }}</label>
-            <input class="includeFullResourcePath" name="includeFullResourcePath" type="checkbox" data-bind="checked:includeFullResourcePath">
+            <label for="includeFullResourcePathId" class="wrap" title="">{{- i18n["export.include.full.repo.path"] }}</label>
+            <input id="includeFullResourcePathId" class="includeFullResourcePath" name="includeFullResourcePath" aria-labelledby="includeFullResourcePathLabel" type="checkbox" data-bind="checked:includeFullResourcePath">
         </div>
         {{ } }}
     </div>

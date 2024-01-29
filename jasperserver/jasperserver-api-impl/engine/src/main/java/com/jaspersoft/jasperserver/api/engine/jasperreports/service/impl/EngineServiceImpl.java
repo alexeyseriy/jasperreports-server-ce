@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -96,10 +96,7 @@ import com.jaspersoft.jasperserver.api.metadata.common.domain.Resource;
 import com.jaspersoft.jasperserver.api.metadata.common.domain.ResourceContainer;
 import com.jaspersoft.jasperserver.api.metadata.common.domain.ResourceLookup;
 import com.jaspersoft.jasperserver.api.metadata.common.domain.ResourceReference;
-import com.jaspersoft.jasperserver.api.metadata.common.service.RepositoryCache;
-import com.jaspersoft.jasperserver.api.metadata.common.service.RepositoryCacheableItem;
-import com.jaspersoft.jasperserver.api.metadata.common.service.RepositoryService;
-import com.jaspersoft.jasperserver.api.metadata.common.service.RepositoryUnsecure;
+import com.jaspersoft.jasperserver.api.metadata.common.service.*;
 import com.jaspersoft.jasperserver.api.metadata.common.service.impl.AsyncThumbnailCreator;
 import com.jaspersoft.jasperserver.api.metadata.common.service.impl.ExecutorServiceWrapper;
 import com.jaspersoft.jasperserver.api.metadata.data.cache.DataCacheSnapshot;
@@ -114,36 +111,26 @@ import com.jaspersoft.jasperserver.api.metadata.jasperreports.domain.ReportUnit;
 import com.jaspersoft.jasperserver.api.metadata.jasperreports.service.ReportDataSourceService;
 import com.jaspersoft.jasperserver.api.metadata.jasperreports.service.ReportDataSourceServiceFactory;
 import com.jaspersoft.jasperserver.api.metadata.user.domain.Role;
+import com.jaspersoft.jasperserver.api.metadata.user.domain.Tenant;
+import com.jaspersoft.jasperserver.api.metadata.user.domain.TenantQualified;
 import com.jaspersoft.jasperserver.api.metadata.user.domain.User;
 import com.jaspersoft.jasperserver.api.metadata.user.domain.impl.client.MetadataUserDetails;
+import com.jaspersoft.jasperserver.api.metadata.user.service.TenantService;
 import com.jaspersoft.jasperserver.api.metadata.view.domain.FilterCriteria;
+import com.jaspersoft.jasperserver.dto.reports.ReportQueryDetails;
+import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.StatusCode;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Scope;
+import io.opentelemetry.extension.annotations.WithSpan;
 import net.sf.ehcache.pool.SizeOfEngine;
 import net.sf.ehcache.pool.impl.DefaultSizeOfEngine;
 import net.sf.jasperreports.data.cache.DataSnapshotException;
-import net.sf.jasperreports.engine.DefaultJasperReportsContext;
-import net.sf.jasperreports.engine.JRDataSource;
-import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JRExporterParameter;
-import net.sf.jasperreports.engine.JRField;
-import net.sf.jasperreports.engine.JRParameter;
-import net.sf.jasperreports.engine.JRPropertiesUtil;
-import net.sf.jasperreports.engine.JRQuery;
-import net.sf.jasperreports.engine.JRRuntimeException;
-import net.sf.jasperreports.engine.JRTemplate;
-import net.sf.jasperreports.engine.JasperCompileManager;
-import net.sf.jasperreports.engine.JasperPrint;
-import net.sf.jasperreports.engine.JasperReport;
-import net.sf.jasperreports.engine.JasperReportsContext;
+import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.design.JasperDesign;
 import net.sf.jasperreports.engine.export.JRPdfExporter;
-import net.sf.jasperreports.engine.fill.AsynchronousFillHandle;
-import net.sf.jasperreports.engine.fill.AsynchronousFilllListener;
-import net.sf.jasperreports.engine.fill.BaseFillHandle;
-import net.sf.jasperreports.engine.fill.BaseReportFiller;
-import net.sf.jasperreports.engine.fill.FillHandle;
-import net.sf.jasperreports.engine.fill.FillListener;
-import net.sf.jasperreports.engine.fill.JRFillContext;
-import net.sf.jasperreports.engine.fill.JRParameterDefaultValuesEvaluator;
+import net.sf.jasperreports.engine.fill.*;
 import net.sf.jasperreports.engine.query.JRQueryExecuter;
 import net.sf.jasperreports.engine.util.JRLoader;
 import net.sf.jasperreports.engine.util.JRResourcesUtil;
@@ -164,10 +151,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.logging.log4j.ThreadContext;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.security.core.Authentication;
+import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import javax.naming.NameNotFoundException;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
@@ -180,18 +171,21 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InvalidClassException;
 import java.io.OutputStream;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.jar.JarFile;
 
 import static com.jaspersoft.jasperserver.api.engine.jasperreports.service.impl.ErrorTemplateReportService.ERROR_PARAM;
+import static com.jaspersoft.jasperserver.api.logging.audit.domain.AuditEventType.EXECUTION_QUERY_DETAILS;
 
 /**
  *
@@ -210,6 +204,7 @@ public class EngineServiceImpl implements EngineService, ReportExecuter,
 	private DataSourceServiceFactory dataSourceServiceFactories;
 	protected RepositoryUnsecure unsecureRepository;
 	protected RepositoryService repository;
+	protected TenantService tenantService;
 	private SecurityContextProvider securityContextProvider;
 	private ProtectionDomainProvider reportJarsProtectionDomainProvider = new DefaultProtectionDomainProvider();
 	private String reportParameterLabelKeyPrefix;
@@ -243,6 +238,9 @@ public class EngineServiceImpl implements EngineService, ReportExecuter,
     @javax.annotation.Resource
     private Map<String, ErrorTemplateReportService> errorReportDSFactory;
 
+    @javax.annotation.Resource(name="monitoringExceptionMapping")
+	private Map<String, List<String>> monitoringExceptionMapping;
+
     private Executor syncReportExecutorService =
 			SynchronousExecutor.INSTANCE;//default value
 
@@ -266,6 +264,11 @@ public class EngineServiceImpl implements EngineService, ReportExecuter,
     private AtomicLong errorReportExecutionCount=new AtomicLong();
     
     private boolean reportUnitClassLoadingEnabled;
+
+	@Value("${reportExecutions.otel.instrumentation.lib.name:io.opentelemetry.jaxrs-annotations-2.0}")
+	private String otelInstrumentationLibName;
+	@Value("${reportExecutions.otel.instrumentation.lib.version:null}")
+	private String otelInstrumentationLibVersion;
 
 	public EngineServiceImpl()
 	{
@@ -315,6 +318,14 @@ public class EngineServiceImpl implements EngineService, ReportExecuter,
 
 	public void setRepositoryService(RepositoryService repository) {
 		this.repository = repository;
+	}
+
+	public TenantService getTenantService() {
+		return tenantService;
+	}
+
+	public void setTenantService(TenantService tenantService) {
+		this.tenantService = tenantService;
 	}
 
 	public RepositoryCache getCompiledReportsCache() {
@@ -562,13 +573,16 @@ public class EngineServiceImpl implements EngineService, ReportExecuter,
         } else {
             status = new ReportExecutionStatus(request);
         }
-
+		log.debug("ENGINE SERVICE: start report execution: " + request.getId());
 		engineExecutions.put(request.getId(), status);
+        addPropertyToAuditEvent("executionID", request.getId());
+		addPropertyToAuditEvent("executionIDS", request.getId(), true, String.class);
 		currentExecutionStatus.set(status);
 	}
 
 	protected void endExecution(Request request) {
         engineExecutions.remove(request.getId());
+		log.debug("ENGINE SERVICE: end report execution: " + request.getId());
 		currentExecutionStatus.set(null);
 
 		if (log.isDebugEnabled()) {
@@ -644,6 +658,9 @@ public class EngineServiceImpl implements EngineService, ReportExecuter,
 	}
 
 	protected ReportUnitResult fillReport(ExecutionContext context, ReportUnitRequestBase request, ReportUnit reportUnit, boolean inMemoryUnit) {
+		Span.current()
+				.setAttribute("executionId", request.getId())
+				.setAttribute("resourceUri", reportUnit.getURIString());
 		ReportExecutionListener executionListener = createReportExecutionListener(request);
 		
 		boolean asynchronous = request.isAsynchronous();
@@ -961,17 +978,20 @@ public class EngineServiceImpl implements EngineService, ReportExecuter,
 		protected final ReportUnitRequestBase request;
 		protected final ReportFiller filler;
 		private final ReportExecutionListener executionListener;
-
+		private Tracer tracer;
 		public ReportRunnable(ReportUnitRequestBase request, ReportFiller filler, 
 				ReportExecutionListener executionListener) {
 			this.request = request;
 			this.filler = filler;
 			this.executionListener = executionListener;
+			tracer = GlobalOpenTelemetry.getTracer(otelInstrumentationLibName, otelInstrumentationLibVersion);
 		}
 
 		public final void run() {
 			executionListener.start();
-			try {
+			Span span = tracer.spanBuilder("execution").startSpan();
+			span.setAttribute("executionId", request.getId());
+			try(Scope scope = span.makeCurrent())  {
                 incrementStartReportExecutionCount(request.isAsynchronous());
 				startExecution(request);
 				try {
@@ -980,11 +1000,14 @@ public class EngineServiceImpl implements EngineService, ReportExecuter,
 					endExecution(request);
                     incrementEndReportExecutionCount(request.isAsynchronous());
 				}
+				span.setStatus(StatusCode.OK);
 			} catch (Throwable t) {
+				span.setStatus(StatusCode.ERROR, t.getMessage());
 				filler.setError(t);
                 incrementErrorReportExecutionCount();
-				addPropertyToAuditEvent("exception", t);
+				addExceptionToAudit(t);
 			} finally {
+				span.end();
 				long size = -1;
 				if (recordSizeof) {
 					try {
@@ -1098,7 +1121,11 @@ public class EngineServiceImpl implements EngineService, ReportExecuter,
 					// if we don't have a result yet (no cache or invalid cache), run with data source and query
 					if (!filler.hasResult()) {
 						runWithDataSource(runtimeContext, report, reportParameters);
-					}					
+					}
+					/*if(request.getDashboardExecutionID() != null) {
+						addPropertyToAuditEvent("dashboardExecutionID", request.getDashboardExecutionID());
+					}*/
+					addQueryDetailsToAudit(reportParameters, request);
 				} finally {
 					revert(origContext);
 				}
@@ -1806,6 +1833,7 @@ public class EngineServiceImpl implements EngineService, ReportExecuter,
                         auditContext.setResourceTypeToAuditEvent(reportUnit.getResourceType(), auditEvent);
                         String uri = reportUnit.getDataSource() != null ? reportUnit.getDataSource().getReferenceURI() : "";
                         getAuditContext().addPropertyToAuditEvent("dataSource", uri, auditEvent);
+                        getAuditContext().addPropertyToAuditEvent("resourceName", reportUnit.getLabel(), auditEvent);
                     }
                 });
     }
@@ -1820,6 +1848,16 @@ public class EngineServiceImpl implements EngineService, ReportExecuter,
                 });
     }
 
+	protected void addPropertyToAuditEvent(final String propertyType, final Object param, boolean append, Class type) {
+		getAuditContext().doInAuditContext(AuditEventType.RUN_REPORT.toString(),
+				new AuditContext.AuditContextCallbackWithEvent() {
+					public void execute(AuditEvent auditEvent) {
+						getAuditContext()
+								.addPropertyToAuditEvent(propertyType, param, auditEvent, append, type);
+					}
+				});
+	}
+
 	protected void fillReport(ExecutionContext context,
 			ReportUnit reportUnit, JasperReport report, Map reportParameters, 
 			ReportDataSource datasource, Query query, ReportFiller filler, boolean hasCachedData) {
@@ -1833,8 +1871,10 @@ public class EngineServiceImpl implements EngineService, ReportExecuter,
 		try {
 			if (datasource != null) {
 				try {
+					long startTime = System.currentTimeMillis();
 					dataSourceService = createDataSourceService(datasource, hasCachedData);
 					dataSourceService.setReportParameterValues(reportParameters, hasCachedData);
+					addPropertyToAuditEvent("dataPrepTime",System.currentTimeMillis()-startTime, true, Long.class);
 				} catch (RuntimeException e) {
 					Optional<ErrorTemplateReportService> errorDSService = getErrorReportDataSourceService(e, reportParameters);
 
@@ -1850,12 +1890,13 @@ public class EngineServiceImpl implements EngineService, ReportExecuter,
 
             long renderingStartTime = System.currentTimeMillis();
             addPropertyToAuditEvent("reportRenderingStartTime", new Date(renderingStartTime));
+			addPropertyToAuditEvent("reportRenderingEpochStartTime", renderingStartTime);
 			if (query == null) {
 				filler.fillReport(report, reportParameters, null);
 			} else {
 				fillQueryReport(context, report, reportParameters, query, filler);
 			}
-            addPropertyToAuditEvent("reportRenderingTime", System.currentTimeMillis() - renderingStartTime);
+            addPropertyToAuditEvent("reportRenderingTime", System.currentTimeMillis() - renderingStartTime, true, Long.class);
 
 			dsClosing = true;
 			if (dataSourceService != null) {
@@ -2026,7 +2067,9 @@ public class EngineServiceImpl implements EngineService, ReportExecuter,
 		}
 	}
 
+	@WithSpan
 	public ReportDataSourceService createDataSourceService(ReportDataSource dataSource) {
+		java.util.Optional.ofNullable(dataSource).ifPresent(c -> Span.current().setAttribute("resourceUri", c.getURIString()));
 		ReportDataSourceServiceFactory factory = (ReportDataSourceServiceFactory) getDataSourceServiceFactories().getBean(dataSource.getClass());
 		return factory.createService(dataSource);
 	}
@@ -2128,11 +2171,12 @@ public class EngineServiceImpl implements EngineService, ReportExecuter,
 		}
 	}
 
+	@WithSpan
 	public ReportUnitResult executeReportUnitRequest(ExecutionContext context, ReportUnitRequest request) {
 		ReportUnit reportUnit = getRepositoryResource(context, request.getReportUnitUri(), ReportUnit.class);
 		return fillReport(context, request, reportUnit, false);
 	}
-
+	@WithSpan
 	public ReportUnitResult executeTrialReportUnitRequest(ExecutionContext context, TrialReportUnitRequest request) {
 		return fillReport(context, request, request.getReportUnit(), true);
 	}
@@ -2332,10 +2376,12 @@ public class EngineServiceImpl implements EngineService, ReportExecuter,
         return executeQuery(context, queryReference, keyColumn, resultColumns, defaultDataSourceReference, parameterValues, null, true);
     }
 
-        public OrderedMap executeQuery(ExecutionContext context,
+	@WithSpan
+	public OrderedMap executeQuery(ExecutionContext context,
 			ResourceReference queryReference, String keyColumn, String[] resultColumns,
 			ResourceReference defaultDataSourceReference,
 			Map parameterValues, Map<String, Class<?>> parameterTypes, boolean formatValueColumns) {
+		java.util.Optional.ofNullable(queryReference).ifPresent(c -> Span.current().setAttribute("resourceUri", c.getTargetURI()));
 		// set exec-only context
 		context = getRuntimeExecutionContext(context);
 		
@@ -2668,7 +2714,8 @@ public class EngineServiceImpl implements EngineService, ReportExecuter,
 	/*
 	 *
 	 */
-    @Override
+	@WithSpan
+	@Override
 	public ReportInputControlsInformation getReportInputControlsInformation(ExecutionContext context, InputControlsContainer icContainer, Map initialParameters) {
 
         RepositoryContextHandle repositoryContextHandle = setThreadRepositoryContext(context, (ResourceContainer) icContainer, icContainer.getURIString());
@@ -2732,9 +2779,10 @@ public class EngineServiceImpl implements EngineService, ReportExecuter,
         ResourceBundle reportBundle = loadResourceBundle(report);
 
         // evaluate the default values from Jasper Report
-        Map jrDefaultValues = JRParameterDefaultValuesEvaluator.evaluateParameterDefaultValues(getEffectiveJasperReportsContext(), 
-        		report, initialParameters);
-        
+        Map jrDefaultValues = getDefaultValuesFromJasperReport(
+				JRParameterDefaultValuesEvaluator.evaluateParameterDefaultValues(getEffectiveJasperReportsContext(),
+        		report, initialParameters));
+
         // build the JasperReportInputControlInformation object for given input controls
         for (ResourceReference inputControlRef : inputControls) {
             // ExecutionContext may contain no attribute.  If so, add "execute override" attribute before calling getFinalResource()
@@ -2785,6 +2833,31 @@ public class EngineServiceImpl implements EngineService, ReportExecuter,
 
         return result;
 	}
+
+	protected Map<String, Object>  getDefaultValuesFromJasperReport(Map<String, Object>jrDefaultValues) throws JRException {
+		// JasperReport uses "," to separate items in TOPIC JRXML
+		// and it escapes "," to "\,", we need to replace "\," back to "," before using in adhoc / visiualize
+
+		if (jrDefaultValues != null) {
+			for (Map.Entry entry: jrDefaultValues.entrySet()) {
+				Object defaultValue = entry.getValue();
+				if ((defaultValue != null) && (defaultValue instanceof Collection)) {
+					ArrayList newList = new ArrayList();
+					for (Object val : (Collection) defaultValue) {
+						if (val != null) {
+							newList.add(val.toString().replace("\\,", ","));
+						} else {
+							newList.add(null);
+						}
+					}
+					entry.setValue(newList);
+				}
+			}
+		}
+		return jrDefaultValues;
+	}
+
+
 
     private ReportInputControlInformation createReportInputControlInformationWithoutParameter(final String name,
                                 final String label, final String description, final ReportInputControlValuesInformation valuesInformation) {
@@ -2938,7 +3011,6 @@ public class EngineServiceImpl implements EngineService, ReportExecuter,
 
     public List<ReportExecutionStatusInformation> getSchedulerReportExecutionStatusList(SchedulerReportExecutionStatusSearchCriteria searchCriteria) {
         List<ReportExecutionStatusInformation> executions = getReportExecutionStatusList();
-
 		User loginUser = null;
 		if (SecurityContextHolder.getContext() != null && SecurityContextHolder.getContext().getAuthentication()!= null) {
 			if (SecurityContextHolder.getContext().getAuthentication().getPrincipal() instanceof User) {
@@ -3275,4 +3347,94 @@ public class EngineServiceImpl implements EngineService, ReportExecuter,
 	public void setReportUnitClassLoadingEnabled(boolean reportUnitClassLoadingEnabled) {
 		this.reportUnitClassLoadingEnabled = reportUnitClassLoadingEnabled;
 	}
+
+	private String getCategory(Throwable e) {
+		AtomicReference<String> type = new AtomicReference<>();
+		monitoringExceptionMapping.forEach( (key,value) -> {
+			for(String exClass:value)	{
+				try {
+					if(Class.forName(exClass).isInstance(e))	{
+						type.set(key);
+					}
+				} catch (ClassNotFoundException classNotFoundException) {
+					log.error("Exception occured while trying to fetch category "+classNotFoundException);
+				}
+
+			}
+		});
+		return java.util.Optional.ofNullable(type.get()).orElse("Other");
+	}
+	private void addExceptionToAudit(Throwable e) {
+    	Throwable suppressedException = e;
+    	if (e.getSuppressed() != null && e.getSuppressed().length > 0)
+    		suppressedException = e.getSuppressed()[0];
+		addPropertyToAuditEvent("exceptionCategory", getCategory(suppressedException));
+		addPropertyToAuditEvent("exception", suppressedException);
+    }
+
+	private void addQueryDetailsToAudit(ReportQueryDetails queryDetail, ReportUnitRequestBase request) {
+		auditContext.doInAuditContext(EXECUTION_QUERY_DETAILS.toString(),
+				new AuditContext.AuditContextCallbackWithEvent() {
+					public void execute(AuditEvent auditEvent) {
+						auditContext.addPropertyToAuditEvent("sqlQuery", queryDetail.getQuery(), auditEvent);
+						auditContext.addPropertyToAuditEvent("executionID",request.getId(),auditEvent);
+						auditContext.addPropertyToAuditEvent(ReportExecutionJob.REPORT_SCHEDULE_EXECUTION_ID,request.getScheduleExecutionID()
+								,auditEvent);
+						auditContext.addPropertyToAuditEvent(ReportExecutionJob.TENANT_URI,getTenantURI() ,auditEvent );
+						auditContext.addPropertyToAuditEvent("queryExecutionEpochStartTime", queryDetail.getStarTime(), auditEvent);
+						auditContext.addPropertyToAuditEvent("queryExecutionEpochEndTime", queryDetail.getEndTime(), auditEvent);
+						auditContext.addPropertyToAuditEvent("queryExecutionTime", queryDetail.getExecutionTime(), auditEvent);
+					}
+				});
+	}
+
+	private void addQueryDetailsToAudit(Map<String, Object> parameters, ReportUnitRequestBase request) {
+		if (request.getScheduleExecutionID() != null &&
+				request.getScheduleResourceType().equals(ReportExecutionJob.RESOURCE_TYPE_REPORT)) {
+			List<ReportQueryDetails> queryDetailsList = java.util.Optional.ofNullable(parameters.get(JRParameter.REPORT_CONTEXT)).filter(obj -> obj instanceof SimpleReportContext)
+					.map(SimpleReportContext.class::cast)
+					.map(reportContext -> reportContext.getParameterValue("reportQueries")).map(List.class::cast).orElse(new ArrayList<>());
+
+			if(queryDetailsList!=null && queryDetailsList.size()>0)
+				queryDetailsList.stream().forEach(detail -> {
+					createQueryDetailsAudit();
+					addQueryDetailsToAudit(detail, request);
+					closeQueryDetailsAudit();
+
+				});
+		}
+	}
+
+	public void closeQueryDetailsAudit() {
+		auditContext.doInAuditContext(EXECUTION_QUERY_DETAILS.toString(), new AuditContext.AuditContextCallbackWithEvent() {
+			public void execute(AuditEvent auditEvent) {
+				auditContext.closeAuditEvent(auditEvent);
+			}
+		});
+	}
+
+	public void createQueryDetailsAudit() {
+		auditContext.doInAuditContext(new AuditContext.AuditContextCallback() {
+			public void execute() {
+				auditContext.createAuditEvent(EXECUTION_QUERY_DETAILS.toString());
+			}
+		});
+	}
+
+	private String getTenantURI() {
+		Authentication authenticationToken = SecurityContextHolder.getContext().getAuthentication();
+		if (authenticationToken == null) {
+			return null;
+		}
+		if (authenticationToken.getPrincipal() instanceof TenantQualified) {
+			TenantQualified tenantQualified = (TenantQualified) authenticationToken.getPrincipal();
+			String tenantID = java.util.Optional.ofNullable(tenantQualified.getTenantId()).orElse("organizations");
+			Tenant tenant = getTenantService().getTenant(null,tenantID);
+			return tenant.getTenantUri();
+		} else {
+			return null;
+		}
+	}
+
+
 }

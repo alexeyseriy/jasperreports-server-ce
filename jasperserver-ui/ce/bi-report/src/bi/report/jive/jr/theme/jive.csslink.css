@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved. Confidentiality & Proprietary.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved. Confidentiality & Proprietary.
  * Licensed pursuant to commercial TIBCO End User License Agreement.
  */
 
@@ -91,7 +91,6 @@ table.jrPage span.jr_search_result.highlight span {
     display:inline-block;
     width:24px;
     height:16px;
-    .display:inline;
     zoom:1;
     cursor:pointer;
 }
@@ -100,7 +99,7 @@ table.jrPage span.jr_search_result.highlight span {
     background: none repeat scroll 0 0 #FFFFFF;
     border: 1px solid #CCCCCC;
     box-shadow: 0 0 4px 4px rgba(51, 51, 51, 0.5);
-    font-family: Verdana;
+    font-family: Verdana, Arial, Helvetica, sans-serif;
     font-size: 11px;
     position: absolute;
     z-index: 2;
@@ -124,7 +123,6 @@ table.jrPage span.jr_search_result.highlight span {
     position:relative;
     color: #0872A4;
     background:url(images/column.header.png) repeat-x #e8e8e8;
-    .border-top:solid 1px #e8e8e8;
 }
 
 .jive_dialog h2 {
@@ -196,7 +194,7 @@ table.jrPage span.jr_search_result.highlight span {
     min-width:130px;
     padding:0;
     margin:0;
-    font-family: arial;
+    font-family: Arial, Verdana, Helvetica, sans-serif;
     overflow: auto;
     max-height: 400px;
 }
@@ -274,8 +272,6 @@ table.jrPage span.jr_search_result.highlight span {
     border-color:#c5c5c5;
     border-bottom:transparent;
     background-color: #efefef;
-    *margin-right:4px;
-    *top:3px;
     margin: 0 2px;
 }
 
@@ -293,9 +289,8 @@ table.jrPage span.jr_search_result.highlight span {
 .jive_dialog .tab.multisheet.active,
 .jive_dialog .tab.dialog.active {
     height:22px;
-    top:0px;
+    top:0;
     border:1px solid #c5c5c5;
-    border-top:1px solid #c5c5c5;
     border-bottom:transparent;
 }
 
@@ -340,7 +335,7 @@ table.jrPage span.jr_search_result.highlight span {
 }
 .jive_dialog div.wrapper.label {
 	padding:8px 10px 2px 10px;
-	margin-bottom:0px;
+	margin-bottom:0;
 }
 .jive_dialog div.t_wrap {padding-right: 4px;}
 .jive_form input,
@@ -381,7 +376,7 @@ table.jrPage span.jr_search_result.highlight span {
     cursor: pointer;
     float: left;
     height: 26px;
-    margin-left: 0px;
+    margin-left: 0;
     margin-right: 4px;
     position: relative;
     width: 26px;
@@ -406,7 +401,7 @@ table.jrPage span.jr_search_result.highlight span {
 .jive_inputbutton.over {background-position:-50px -45px;}
 .jive_inputbutton.pressed {background-position:-50px -103px;}
 .jive_inputbutton.selected {background-position: 0 -50px;}
-.jive_inputbutton.unchanged {background-position: -124px 0px;}
+.jive_inputbutton.unchanged {background-position: -124px 0;}
 .jive_inputbutton.drop {background-position: -58px 0; width: 34px;}
 .jive_inputbutton.drop.unchanged {background-position: -182px 0;}
 
@@ -637,7 +632,6 @@ table.jrPage .jrxtrowheader {cursor:pointer;}
 	position:relative;
 	vertical-align:middle;
 	padding:4px 2px;
-	*padding:2px;
 	border-top:1px solid #ffffff;
 	border-right:1px solid #e3e9ef;
 	border-bottom:1px solid #ececec;
@@ -669,7 +663,7 @@ table.jrPage .jrxtrowheader {cursor:pointer;}
 @media screen and (-webkit-min-device-pixel-ratio:0) {
 	.jive_dialog div.wrapper.label { /* CHROME/SAFARI STYLES */
 		margin-top:2px;
-		margin-bottom:0px;
+		margin-bottom:0;
 	}
 }
 
@@ -723,7 +717,7 @@ table.jrPage .jrxtrowheader {cursor:pointer;}
 }
 
 .simpleColorPicker .header h2 {
-    font-family: Verdana;
+    font-family: Verdana, Arial, Helvetica, sans-serif;
 }
 
 /* tooltip */

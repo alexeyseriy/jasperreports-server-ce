@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -20,29 +20,19 @@
  */
 package com.jaspersoft.jasperserver.inputcontrols.cascade.handlers.converters;
 
-import com.jaspersoft.jasperserver.api.common.timezone.ClientTimezoneFormattingRulesResolver;
 import com.jaspersoft.jasperserver.api.common.timezone.TimeZoneTransformer;
-import com.jaspersoft.jasperserver.api.engine.jasperreports.util.CalendarFormatProvider;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.sql.Time;
-import java.text.DateFormat;
 import java.text.ParseException;
 
 /**
  * @author Yaroslav.Kovalchyk
- * @version $Id$
  */
 @Service
-public class TimeDataConverter implements DataConverter<Time> {
-    @Resource(name = "isoCalendarFormatProvider")
-    protected CalendarFormatProvider calendarFormatProvider;
-
-    @Resource
-    private ClientTimezoneFormattingRulesResolver clientTimezoneFormattingRulesResolver;
-
+public class TimeDataConverter extends BaseChronoDataConverter implements DataConverter<Time> {
     @Resource
     private TimeZoneTransformer timeZoneTransformer;
 
@@ -50,18 +40,14 @@ public class TimeDataConverter implements DataConverter<Time> {
     public Time stringToValue(String rawData) throws ParseException {
         if (!StringUtils.isNotEmpty(rawData)) return null;
 
-        Time parsedTime = new Time(getFormatter().parse(rawData).getTime());
+        Time parsedTime = new Time(getTimeFormat(rawData).parse(rawData).getTime());
 
         return (Time) timeZoneTransformer.toServerTimeZone(parsedTime);
     }
 
     @Override
     public String valueToString(Time value) {
-        return value != null ? getFormatter().format(timeZoneTransformer.toClientTimezone(value)) : "";
-    }
-
-    private DateFormat getFormatter() {
-        return calendarFormatProvider.getTimeFormat();
+        return value != null ? getTimeFormat().format(timeZoneTransformer.toClientTimezone(value)) : "";
     }
 
 }

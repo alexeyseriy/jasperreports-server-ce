@@ -697,6 +697,7 @@ and (max-device-width : 1024px) {
 #designer .OLAP #mainTableContainer {
 	left: 0;
 	padding: 0;
+	overflow: auto;
 }
 
 #designer .OLAP #canvasTable {

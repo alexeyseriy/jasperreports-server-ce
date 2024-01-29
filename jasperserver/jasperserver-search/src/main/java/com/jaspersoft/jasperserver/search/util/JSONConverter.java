@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -25,6 +25,7 @@ import com.jaspersoft.jasperserver.api.common.util.DateUtils;
 import com.jaspersoft.jasperserver.api.common.util.TimeZoneContextHolder;
 import com.jaspersoft.jasperserver.api.engine.jasperreports.util.CustomDataSourceDefinition;
 import com.jaspersoft.jasperserver.search.common.*;
+import com.jaspersoft.jasperserver.search.model.FileResourceFileType;
 import com.jaspersoft.jasperserver.search.model.FilterPath;
 import com.jaspersoft.jasperserver.search.model.PathItem;
 import com.jaspersoft.jasperserver.search.model.permission.Permission;
@@ -63,8 +64,10 @@ public class JSONConverter extends JSONConverterBase implements Serializable {
     public static String RESOURCE_PARENT_URI = "parentURI";
     public static String RESOURCE_PARENT_FOLDER = "parentFolder";
     public static String RESOURCE_TYPE = "type";
+    public static String RESOURCE_FILE_TYPE = "fileType";
     public static String RESOURCE_RESOURCE_TYPE = "resourceType";
     public static String RESOURCE_SCHEDULED = "scheduled";
+    public static String RESOURCE_FAVORITE = "favorite";
     public static String RESOURCE_PERMISSIONS = "permissions";
     public static String RESOURCE_NUMBER = "resourceNumber";
     public static String RESOURCE_HAS_CHILDREN = "hasChildren";
@@ -148,6 +151,7 @@ public class JSONConverter extends JSONConverterBase implements Serializable {
         jsonObject.put(RESOURCE_TYPE, messages.getMessage("resource." + resource.getResourceType() + ".label", null,
                 resource.getResourceType(), LocaleContextHolder.getLocale()));
         jsonObject.put(RESOURCE_SCHEDULED, resource.isScheduled());
+        jsonObject.put(RESOURCE_FAVORITE, resource.isFavorite());
         jsonObject.put(RESOURCE_PERMISSIONS, getPermissionsMask(resource));
         jsonObject.put(RESOURCE_HAS_CHILDREN, resource.hasChildren());
 
@@ -162,6 +166,15 @@ public class JSONConverter extends JSONConverterBase implements Serializable {
         jsonObject.put(RESOURCE_UPDATE_DATE_TIME,
                 getDateFormat(configuration.getTimeFormat()).format(resource.getUpdateDate()));
         jsonObject.put(RESOURCE_NUMBER, resource.getResourceNumber());
+
+        if (resource.getAttributes() != null) {
+            for (Object attr: resource.getAttributes()) {
+                if (attr instanceof FileResourceFileType) {
+                    jsonObject.put(RESOURCE_FILE_TYPE, ((FileResourceFileType)attr).getFileType());
+                    break;
+                }
+            }
+        }
 
         return jsonObject;
     }

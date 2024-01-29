@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -28,6 +28,8 @@ import com.jaspersoft.jasperserver.api.logging.access.domain.AccessEvent;
 import java.util.List;
 
 import com.jaspersoft.jasperserver.export.service.impl.ImportExportServiceImpl;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.dom4j.Element;
 
 /**
@@ -35,6 +37,8 @@ import org.dom4j.Element;
  * @version $Id$
  */
 public class AccessEventsExporter extends BaseExporterModule {
+    private static final Log log = LogFactory.getLog(AccessEventsExporter.class);
+
     private AccessModuleConfiguration accessModuleConfiguration;
     private String includeAccessEvents;
     private int maxEventsPerIteration = 50;
@@ -79,11 +83,13 @@ public class AccessEventsExporter extends BaseExporterModule {
 
         long counter = 0;
         int firstResult = 0;
+        log.debug("Get all access events");
         accessEventsBuffer = accessModuleConfiguration.getAccessService().getAllEvents(firstResult, maxEventsPerIteration);
         
         while (!accessEventsBuffer.isEmpty()) {
-            commandOut.info("Exporting next " + accessEventsBuffer.size()
-                    + " accessEvents");
+            final String msg = "Exporting next " + accessEventsBuffer.size() + " accessEvents";
+            commandOut.info(msg);
+            log.debug(msg);
 
             for (AccessEvent accessEvent: accessEventsBuffer) {
                 counter++;
@@ -95,7 +101,9 @@ public class AccessEventsExporter extends BaseExporterModule {
             accessEventsBuffer = accessModuleConfiguration.getAccessService().getAllEvents(firstResult, maxEventsPerIteration); 
         }
 
-        commandOut.info(counter + " accessEvents has been exported successfully");
+        final String msg = counter + " accessEvents has been exported successfully";
+        commandOut.info(msg);
+        log.debug(msg);
         addAccessEventIndexEntry(counter);
     }
 

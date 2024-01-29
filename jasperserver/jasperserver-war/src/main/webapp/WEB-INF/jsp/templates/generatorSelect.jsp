@@ -1,6 +1,6 @@
 <%@ page contentType="text/html; charset=utf-8" %>
 <%--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -52,7 +52,7 @@ Usage:
                         <label class="wrap" for="${containerID}DefaultTemplateRadio" title="<spring:message code="GENERATOR_SELECT_DEFAULT_TEMPLATE_LABEL"/>">
                             <spring:message code="GENERATOR_SELECT_DEFAULT_TEMPLATE"/>
                         </label>
-                        <input id="${containerID}DefaultTemplateRadio" type="radio" name="${containerID}" checked="checked" />
+                        <input tabindex="0" id="${containerID}DefaultTemplateRadio" type="radio" name="${containerID}" checked="checked" aria-label="<spring:message code="GENERATOR_SELECT_DEFAULT_TEMPLATE"/>" />
                         <span class="message warning">error message here</span>
                     </div>
                 </li>
@@ -62,7 +62,7 @@ Usage:
                             <spring:message code="GENERATOR_SELECT_CUSTOM_TEMPLATE"/>
                         </label>
                         <!-- ID of radio should match to ID of input to without "Radio" prefix -->
-                        <input id="${containerID}ReportTemplateRadio" type="radio" name="${containerID}"/>
+                        <input tabindex="0" id="${containerID}ReportTemplateRadio" type="radio" name="${containerID}" aria-label="<spring:message code="GENERATOR_SELECT_CUSTOM_TEMPLATE"/>"/>
                         <span class="message warning">error message here</span>
                     </div>
                     <div id="browseTemplate" class="control input file" for="filePath" title="<spring:message code="GENERATOR_SELECT_DEFAULT_CUSTOM_LABEL"/>">
@@ -70,12 +70,12 @@ Usage:
                             <span class="wrap"></span>
                             <!-- ID of input should match to ID of radio without "Radio" prefix -->
                             <input class="" id="${containerID}ReportTemplate" type="text" value=""/>
-                            <button class="button action" id="customTemplateBrowser" type="button">
+                            <button class="button action up" id="customTemplateBrowser" type="button">
                                 <span class="wrap"><spring:message code="button.browse"/></span>
                                 <span class="icon"></span>
                             </button>
                             <span class="message warning">error message here</span>
-                            <ul id="${containerID}DefaultTemplateRadio" class="responsive collapsible folders hideRoot"></ul>
+                            <ul id="${containerID}DefaultTemplate" class="responsive collapsible folders hideRoot"></ul>
                         </label>
                     </div>
                 </li>
@@ -104,12 +104,13 @@ Usage:
 </t:insertTemplate>
 
 <t:insertTemplate template="/WEB-INF/jsp/templates/container.jsp">
+    <t:putAttribute name="containerAttributes" value="role='dialog' aria-labelledby='${containerID}TemplateDialogTitle' aria-modal='true'"/>
     <t:putAttribute name="containerClass">panel dialog overlay detail centered_horz centered_vert moveable hidden sizeable</t:putAttribute>
     <t:putAttribute name="containerID" value="${containerID}TemplateDialog"/>
     <t:putAttribute name="containerElements"><div class="sizer diagonal"></div></t:putAttribute>
     <t:putAttribute name="headerClass" value="mover"/>
     <t:putAttribute name="containerTitle">
-        <span><spring:message code="ADH_1015_TEMPLATE_PROPERTIES_DIALOG_TITLE"/></span>
+        <div id="${containerID}TemplateDialogTitle"><spring:message code="ADH_1015_TEMPLATE_PROPERTIES_DIALOG_TITLE"/></div>
     </t:putAttribute>
     <t:putAttribute name="bodyContent" cascade="true">
         <t:insertTemplate template="/WEB-INF/jsp/templates/container.jsp">

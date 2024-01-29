@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -385,6 +385,23 @@ export default {
         { 'type': 'separator' },
         {
             'type': 'simpleAction',
+            'clientTest': 'canBeAddedToFavorites',
+            'className': 'up',
+            'text': 'Add to Favorites',
+            'action': 'invokeResourceAction',
+            'actionArgs': ['ResourceFavoriteAction']
+        },
+        {
+            'type': 'simpleAction',
+            'clientTest': 'canBeRemovedFromFavorites',
+            'className': 'up',
+            'text': 'Remove from Favorites',
+            'action': 'invokeResourceAction',
+            'actionArgs': ['ResourceFavoriteAction']
+        },
+        { 'type': 'separator' },
+        {
+            'type': 'simpleAction',
             'clientTest': 'canResourceBeCopied',
             'className': 'up',
             'text': 'Copy',
@@ -457,6 +474,23 @@ export default {
             'text': 'Open',
             'action': 'invokeBulkAction',
             'actionArgs': ['Open']
+        },
+        { 'type': 'separator' },
+        {
+            'type': 'simpleAction',
+            'clientTest': 'canBeAddedToFavorites',
+            'className': 'up',
+            'text': 'Add to Favorites',
+            'action': 'invokeResourceAction',
+            'actionArgs': ['ResourceFavoriteAction']
+        },
+        {
+            'type': 'simpleAction',
+            'clientTest': 'canBeRemovedFromFavorites',
+            'className': 'up',
+            'text': 'Remove from Favorites',
+            'action': 'invokeResourceAction',
+            'actionArgs': ['ResourceFavoriteAction']
         },
         { 'type': 'separator' },
         {

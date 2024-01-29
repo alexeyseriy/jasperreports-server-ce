@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -21,7 +21,7 @@
 
 package com.jaspersoft.jasperserver.api.security.csrf;
 
-import org.springframework.http.HttpHeaders;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.web.util.UrlUtils;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.DefaultCorsProcessor;
@@ -29,7 +29,6 @@ import org.springframework.web.cors.DefaultCorsProcessor;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -43,22 +42,25 @@ public class JSCorsProcessor extends DefaultCorsProcessor {
 
     @Override
     public boolean processRequest(CorsConfiguration config, HttpServletRequest request, HttpServletResponse response) throws IOException {
-        Boolean pr = super.processRequest(config, request, response);
+        boolean processRequest = super.processRequest(config, request, response);
         addJrsHeaders(response, request);
-        return pr;
-
+        return processRequest;
     }
 
     public void addJrsHeaders(HttpServletResponse response, HttpServletRequest request) {
-        for(String header : headerUrlPatterns.keySet()) {
+        for (String header : headerUrlPatterns.keySet()) {
             String resourceUrl = UrlUtils.buildRequestUrl(request);
-            if (resourceUrl != null) {
-                for(String urlPattern: headerUrlPatterns.get(header)) {
-                    Matcher matcher = Pattern.compile(urlPattern).matcher(resourceUrl);
-                    if(matcher.matches())  {
-                        String newHeader = String.join(",", headerValues.get(header));
-                        response.setHeader(header, String.format("%s, %s", response.getHeader(header), newHeader));
-                    }
+
+            for (String urlPattern : headerUrlPatterns.get(header)) {
+                Matcher matcher = Pattern.compile(urlPattern).matcher(resourceUrl);
+
+                if (matcher.matches()) {
+                    String valuesToAdd = String.join(", ", headerValues.get(header));
+                    String oldValues = response.getHeader(header);
+                    String newValues = StringUtils.isNotBlank(oldValues)
+                            ? String.format("%s, %s", oldValues, valuesToAdd)
+                            : valuesToAdd;
+                    response.setHeader(header, newValues);
                 }
             }
         }

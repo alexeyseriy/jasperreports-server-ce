@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -64,6 +64,7 @@ public class FileResourceAction extends FormAction {
 
     private static final String ATTRIBUTE_ORGANIZATION_ID = "organizationId";
     private static final String ATTRIBUTE_PUBLIC_FOLDER_URI = "publicFolderUri";
+    private static final String PARAM_ATTR_OPEN_IN_EDITOR = "openInEditor";
     private static final String ATTRIBUTE_ALL_FILE_TYPES = "allTypes";
     private static final String ATTRIBUTE_RESOURCE_ID_NOT_SUPPORTED_SYMBOLS = "resourceIdNotSupportedSymbols";
 
@@ -188,6 +189,11 @@ public class FileResourceAction extends FormAction {
             expectedFileType = wrapper.getFileResource().getFileType();
         }
 		context.getFlowScope().put(expectedFileTypeAttribute, expectedFileType);
+
+		// set openInEditor on flow scope
+		Boolean openInEditor = context.getRequestParameters().getBoolean(PARAM_ATTR_OPEN_IN_EDITOR);
+		context.getFlowScope().put(PARAM_ATTR_OPEN_IN_EDITOR, openInEditor != null ? openInEditor.booleanValue() : false);
+
         context.getFlowScope().put(FILE_RESOURCE_COPY, new FileResourceImpl((FileResourceImpl) wrapper.getFileResource()));
 
         context.getFlowScope().put(ATTRIBUTE_ORGANIZATION_ID,

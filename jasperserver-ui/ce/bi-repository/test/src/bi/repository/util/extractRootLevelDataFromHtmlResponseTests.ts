@@ -2,7 +2,7 @@ import extractRootLevelDataFromHtmlResponse from 'src/bi/repository/util/extract
 
 describe('extractRootLevelDataFromHtmlResponse Tests.', () => {
     it('should extract data from html div', () => {
-        const dataHtml = '  <div id="id">{"children": [{"label": "<label>", "id": "1"}]}</div>  ';
+        const dataHtml = '  <div id="treeNodeText">{"children": [{"label": "<label>", "id": "1"}]}</div>  ';
 
         expect(extractRootLevelDataFromHtmlResponse(dataHtml))
             .toEqual({

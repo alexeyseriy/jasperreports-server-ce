@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -112,6 +112,7 @@ public class RepositoryJaxrsService {
             @QueryParam("excludeType") List<String> excludeType,
             @QueryParam("excludeFolder") List<String> excludeFolders,
             @QueryParam("accessType") String accessTypeString,
+            @QueryParam("favorites") @DefaultValue("false")Boolean favorites,
             @QueryParam(RestConstants.QUERY_PARAM_OFFSET) Integer start,
             @QueryParam(RestConstants.QUERY_PARAM_LIMIT) Integer limit,
             @QueryParam("recursive") @DefaultValue("true") Boolean recursive,
@@ -137,13 +138,12 @@ public class RepositoryJaxrsService {
                     accessType = AccessType.VIEWED;
                 }
             }
-
             User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
             RepositorySearchResult<ClientResourceLookup> result =
                     batchRepositoryService.getResources(q, folderUri, type, excludeType, null, excludeFolders,
                             start, limit,
                             recursive, showHiddenItems,
-                            sortBy, accessType, user,
+                            sortBy, accessType, favorites, user,
                             forceFullPage);
 
             final int iStart = result.getClientOffset();

@@ -1,6 +1,6 @@
 <%@ page contentType="text/html; charset=utf-8" %>
 <%--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -27,6 +27,7 @@
 
 
 <t:insertTemplate template="/WEB-INF/jsp/templates/page.jsp">
+    <t:putAttribute name="showServerSettingsHeader" value="true"/>
     <t:putAttribute name="pageTitle"><spring:message code="export.export"/></t:putAttribute>
     <t:putAttribute name="bodyID" value="exportDataFile"/>
     <t:putAttribute name="bodyClass" value="twoColumn"/>
@@ -40,9 +41,11 @@
 		<t:insertTemplate template="/WEB-INF/jsp/templates/container.jsp">
             <t:putAttribute name="containerID" value="settings"/>
 		    <t:putAttribute name="containerClass" value="column decorated primary"/>
-		    <t:putAttribute name="containerTitle"><spring:message code="export.export"/></t:putAttribute>
+
 		    <t:putAttribute name="bodyClass" value=""/>
-		    <t:putAttribute name="bodyContent"> </t:putAttribute>
+		    <t:putAttribute name="bodyContent">
+				<div class="title"></b><spring:message code="export.export"/></div>
+			</t:putAttribute>
 		    <t:putAttribute name="footerContent">
                 <button id="exportButton" class="button action primary up">
                     <span class="wrap"><spring:message code="export.export"/></span>
@@ -62,7 +65,11 @@
 		    <t:putAttribute name="containerTitle"><spring:message code="menu.settings"/></t:putAttribute>
 		    <t:putAttribute name="bodyClass" value=""/>
 		    <t:putAttribute name="bodyContent">
+
 		    	<ul class="list responsive filters">
+		    	    <c:if test="${isProVersion}">
+					<li class="leaf"><p class="wrap button" id="navGeneralSettings"><b class="icon"></b><spring:message code="menu.general"/></p></li>
+					</c:if>
                     <li class="leaf"><p class="wrap button" id="navLogSettings"><b class="icon"></b><spring:message code="menu.log.Settings"/></p></li>
                     <c:if test="${isProVersion}">
                         <li class="leaf"><p class="wrap button" id="logCollectors"><b class="icon"></b><spring:message code="logCollectors.title"/></p></li>

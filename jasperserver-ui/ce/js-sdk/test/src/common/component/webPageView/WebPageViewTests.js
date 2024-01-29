@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -46,6 +46,13 @@ describe('WebPageView embeddable component', function () {
         expect(view instanceof WebPageView).toBe(true);
         expect(view.url).toBe('http://test.com');
     });
+
+    it('should resist to XSS attacks', function () {
+        view = WebPageView.open('<script>alert("xss")</script>');
+        expect(view instanceof WebPageView).toBe(true);
+        expect(view.url).toBe('&lt;script>alert("xss")&lt;/script>');
+    });
+
     it('should create a new WebPageView instance with static \'open\' method and settings object as an argument', function () {
         view = WebPageView.open({
             url: 'http://test.com',

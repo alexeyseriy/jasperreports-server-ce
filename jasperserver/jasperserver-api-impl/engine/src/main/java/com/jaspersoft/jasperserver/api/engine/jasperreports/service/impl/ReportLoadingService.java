@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -32,6 +32,8 @@ import com.jaspersoft.jasperserver.api.metadata.common.service.RepositoryCache;
 import com.jaspersoft.jasperserver.api.metadata.common.service.RepositoryCacheableItem;
 import com.jaspersoft.jasperserver.api.metadata.common.service.RepositoryService;
 import com.jaspersoft.jasperserver.api.metadata.common.service.impl.hibernate.util.RepositoryUtils;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.extension.annotations.WithSpan;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRParameter;
 import net.sf.jasperreports.engine.JasperCompileManager;
@@ -44,10 +46,7 @@ import org.apache.commons.logging.LogFactory;
 
 import java.io.InputStream;
 import java.io.InvalidClassException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 
 public class ReportLoadingService {
@@ -418,7 +417,9 @@ public class ReportLoadingService {
      * @param container InputControlsContainer
      * @return List of InputControl
      */
+    @WithSpan
     public List<InputControl> getInputControls(ExecutionContext context, InputControlsContainer container) {
+        Optional.ofNullable(container).ifPresent(c -> Span.current().setAttribute("resourceUri", c.getURIString()));
         return getInputControls(context, container, (inputControl)->{
             if (SrcSets.hasUnresolved(inputControl.getSources())) {
                 Query query = getFinalResource(context, inputControl.getQuery(), Query.class);

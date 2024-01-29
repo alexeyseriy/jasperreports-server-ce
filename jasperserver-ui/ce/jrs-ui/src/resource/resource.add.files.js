@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -27,6 +27,7 @@ import resource from './resource.base';
 import {ValidationModule, matchAny} from "../util/utils.common";
 import buttonManager from '../core/core.events.bis';
 import resourceLocator from './resource.locate';
+import layoutModule from "../core/core.layout";
 
 var addFileResource = {
     PAGE_ID: 'addResourceFile',
@@ -87,7 +88,7 @@ var addFileResource = {
     },
     _canGenerateId: true,
     initialize: function (options) {
-        this._form = jQuery('#' + this.PAGE_ID).find('form')[0];
+        this._form = jQuery('#' + layoutModule.PAGE_BODY_ID).find('form')[0];
         this._type = jQuery('#' + this.TYPE_ID)[0];
         this._path = jQuery('#' + this.PATH_ID)[0];
         this._label = jQuery('#' + this.LABEL_ID)[0];

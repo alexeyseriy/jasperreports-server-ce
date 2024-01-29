@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -211,7 +211,8 @@
                 <prop key="/adminExport.html">adminExportController</prop>
                 <prop key="/customAttributes.html">customAttributesController</prop>
                 <prop key="/resetSettings.html">resetSettingsController</prop>
-			</props>
+                <prop key="/adminConsole.html">ServerMonitoringController</prop>
+            </props>
 		</property>
 	</bean>
 
@@ -219,6 +220,10 @@
 		<property name="log4jSettingsService" ref="log4jSettingsService"/>
         <property name="propertiesManagementService" ref="propertiesManagementService"/>
 	</bean>
+
+    <bean id="ServerMonitoringController" class="com.jaspersoft.jasperserver.war.control.ServerMonitoringController">
+        <property name="navigationActionModelSupport" ref="navigationActionModelSupport"/>
+    </bean>
 
     <bean id="resetSettingsController" class="com.jaspersoft.jasperserver.war.control.ResetSettingsController"/>
     <bean id="customAttributesController" class="com.jaspersoft.jasperserver.war.control.CustomAttributesController"/>

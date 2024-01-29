@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -26,6 +26,7 @@ import com.jaspersoft.jasperserver.api.JSException;
 import com.jaspersoft.jasperserver.api.engine.jasperreports.util.AwsDataSourceRecovery;
 import com.jaspersoft.jasperserver.api.metadata.common.service.JSDataSourceConnectionFailedException;
 import com.jaspersoft.jasperserver.api.metadata.jasperreports.domain.AwsReportDataSource;
+import io.opentelemetry.extension.annotations.WithSpan;
 import org.apache.commons.dbcp.PoolingDataSource;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
@@ -60,6 +61,7 @@ public class AwsDataSourceService extends JdbcDataSourceService {
         this.awsDataSourceRecovery = awsDataSourceRecovery;
     }
 
+    @WithSpan
     protected Connection createConnection() {
         try {
             return getDataSource().getConnection();

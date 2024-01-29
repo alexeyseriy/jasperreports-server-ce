@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -33,11 +33,11 @@ import java.io.Serializable;
 public class JSWebApplicationContext extends XmlWebApplicationContext implements Serializable {
 
     public JSWebApplicationContext() {
-        setAllowBeanDefinitionOverriding(false);
+        setAllowBeanDefinitionOverriding(true);
     }
 
-	protected ResourcePatternResolver getResourcePatternResolver() {
-		return new SortedServletResourcePatternResolver(this);
-	}
+    protected ResourcePatternResolver getResourcePatternResolver() {
+        return new SortedServletResourcePatternResolver(this);
+    }
 
 }

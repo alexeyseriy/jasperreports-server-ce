@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -57,6 +57,8 @@ import {Template} from 'prototype';
         isLoaded: false,
         hasError: false,
         hasInvisibleICValidationErrors: false,
+        reportViewerTabsMaxCount: null,
+        reportViewerTabsLabelsMaxLength: null,
 
         // ViewReport id's
         EXPORT_ACTION_FORM: "exportActionForm",
@@ -171,12 +173,15 @@ import {Template} from 'prototype';
                     Report.showInvisibleICValidationMessages();
                     return jQuery.Deferred().resolve();
                 } else if (Report.isLoaded) {
-                    this.hideAjaxDialog();
                     return window.viewer.refreshPage(1, finalReportParameters, urlParams.freshData);
                 } else {
-                    return window.viewer.loadReport(finalReportParameters, _.once(function() {
-                        Report.isLoaded = true;
-                    }));
+                    return window.viewer.loadReport({
+                        executionId: Report.reportExecutionId.length > 0 ? Report.reportExecutionId : null,
+                        params: finalReportParameters,
+                        onReportCompleted: _.once(function() {
+                            Report.isLoaded = true;
+                        })
+                    });
                 }
             } else {
                 return Report.exportReport(output, url);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -38,13 +38,13 @@ $.jCryption.encryptKeyWithoutRedundancy = function (string, keyPair, callback) {
         charSum += string.charCodeAt(i);
     }
     var encrypt = [];
-    var j = 0;
-    while (j < string.length) {
-        encrypt[j] = string.charCodeAt(j);
-        j++;
+    var l = 0;
+    while (l < string.length) {
+        encrypt[l] = string.charCodeAt(l);
+        l++;
     }
     while (encrypt.length % keyPair.chunkSize !== 0) {
-        encrypt[j++] = 0;
+        encrypt[l++] = 0;
     }
 
     function encryption(encryptObject) {

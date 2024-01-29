@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -52,6 +52,7 @@ public class UserImpl implements User, InternalURI, Serializable {
 	@XmlTransient private Date previousPasswordChangeTime = null;
     @XmlTransient private List attributes = null;
     private String tenantId = null;
+    private Integer numberOfFailedLoginAttempts;
 
 	/**
 	 * @return Returns the username.
@@ -290,4 +291,14 @@ public class UserImpl implements User, InternalURI, Serializable {
     public String getParentPath() {
         return null;
     }
+
+	@Override
+	public Integer getNumberOfFailedLoginAttempts() {
+		return (numberOfFailedLoginAttempts == null) ? 0 : numberOfFailedLoginAttempts;
+	}
+
+	@Override
+	public void setNumberOfFailedLoginAttempts(Integer numberOfFailedLoginAttempts) {
+		this.numberOfFailedLoginAttempts = numberOfFailedLoginAttempts;
+	}
 }

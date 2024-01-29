@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -150,8 +150,8 @@ JSTooltip.addMethod("_setValues", function(elements, values) {
 });
 
 JSTooltip.addMethod("_calculateZIndex", function(element) {
-    function getElementZIndex(element) {
-        return parseInt(jQuery(element).css("z-index"));
+    function getElementZIndex(elem) {
+        return parseInt(jQuery(elem).css("z-index"));
     }
 
     // Get tooltip element zIndex.
@@ -182,9 +182,9 @@ JSTooltip.addMethod("_escapeText", function(text) {
         : xssUtil.hardEscape(text);
 });
 
-JSTooltip.addMethod("show", function(offsets) {
-    if(offsets) {
-        this.offsets = offsets;
+JSTooltip.addMethod("show", function(tooltipOffsets) {
+    if(tooltipOffsets) {
+        this.offsets = tooltipOffsets;
     }
 
     this._element = jQuery('#' + this.templateId)[0];
@@ -283,17 +283,14 @@ var tooltipModule = {
     TOOLTIP_PATTERN: "*[tooltiptext] > *",
     ELEMENT_WITH_TOOLTIP_PATTERN: "*[tooltiptext]",
 
-    actualX:0,
-    actualY:0,
-
     tooltips: [],
 
     showJSTooltip: function(element, offsets) {
         if (!element.jsTooltip) {
             element.jsTooltip = new JSTooltip(element, {});
         } else if (!element.jsTooltip.disabled && offsets) {
-            this.actualX = offsets[0];
-            this.actualY = offsets[1];
+            var actualX = offsets[0];
+            var actualY = offsets[1];
 
             this.cleanUp();
 
@@ -302,12 +299,12 @@ var tooltipModule = {
 
             element.jsTooltip.timer && clearTimeout(element.jsTooltip.timer);
             element.jsTooltip.timer = setTimeout(function() {
-                element.jsTooltip.show([tooltipModule.actualX, tooltipModule.actualY]);
+                element.jsTooltip.show([actualX, actualY]);
             }, appearDelay);
 
             jQuery(element).on("mousemove", function(evt){
-                tooltipModule.actualX = evt.clientX;
-                tooltipModule.actualY = evt.clientY;
+                actualX = evt.clientX;
+                actualY = evt.clientY;
             });
         }
     },
@@ -349,7 +346,7 @@ var tooltipModule = {
                         tooltip.hide();
                         removed.push(tooltip);
                     }
-                    tooltip.srcElement.setAttribute("id",null);
+                    tooltip.srcElement.removeAttribute("id");
                 }
             });
 

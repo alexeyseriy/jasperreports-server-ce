@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -82,7 +82,7 @@ public final class TeiidOracleMetadataProcessor extends JDBCMetdataProcessor {
             PreparedStatement stmt = null;
             ResultSet rs = null;
             try {
-                stmt = conn.prepareStatement("select num_rows from ALL_TABLES where owner = ? AND table_name = ?");  //$NON-NLS-1$
+                stmt = conn.prepareStatement("select num_rows from ALL_TABLES where owner = ?1 AND table_name = ?2");  //$NON-NLS-1$
                 stmt.setString(1, schema);
                 stmt.setString(2, name);
                 rs = stmt.executeQuery();
@@ -129,7 +129,7 @@ public final class TeiidOracleMetadataProcessor extends JDBCMetdataProcessor {
             PreparedStatement ps = null;
             ResultSet rs = null;
             try {
-                ps = conn.prepareStatement("select coord_dimension, srid from ALL_GEOMETRY_COLUMNS where f_table_schema=? and f_table_name=? and f_geometry_column=?"); //$NON-NLS-1$
+                ps = conn.prepareStatement("select coord_dimension, srid from ALL_GEOMETRY_COLUMNS where f_table_schema=?1 and f_table_name=?2 and f_geometry_column=?3"); //$NON-NLS-1$
                 ps.setString(1, tableSchema);
                 ps.setString(2, tableName);
                 ps.setString(3, columnName);

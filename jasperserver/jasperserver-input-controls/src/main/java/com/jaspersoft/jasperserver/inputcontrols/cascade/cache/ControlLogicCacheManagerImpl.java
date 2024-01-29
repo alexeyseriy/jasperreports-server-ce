@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -20,75 +20,101 @@
  */
 package com.jaspersoft.jasperserver.inputcontrols.cascade.cache;
 
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.web.context.request.RequestContextHolder;
-
+import com.jaspersoft.jasperserver.api.common.util.EhCacheCleanerRunner;
+import com.jaspersoft.jasperserver.api.metadata.user.service.impl.UserManagerServiceImpl;
+import net.sf.ehcache.Ehcache;
+import net.sf.ehcache.Element;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
+
+import org.springframework.beans.factory.InitializingBean;
 
 /**
  * ControlLogicCacheManagerImpl
  * @author jwhang
- * @version $Id: ControlLogicCacheManagerImpl.java 22557 2012-03-15 10:44:12Z ykovalchyk $
  */
 
 public class ControlLogicCacheManagerImpl implements ControlLogicCacheManager, InitializingBean {
 
-	private long cacheCleanTriggerTime = 300000l; //default to 5 minutes between cache cleanups.
-	private long userCacheTimeout = 120000l; //default to 2 minutes before invalidating an individual session.
-
-    private volatile Map<String, SessionCache> sessionCachePool = Collections.synchronizedMap(new HashMap<String, SessionCache>());
+    private Ehcache inputControlCache;
+    private static final Logger log = LogManager.getLogger(ControlLogicCacheManagerImpl.class);
+    private long cacheCleanTriggerTime = TimeUnit.MINUTES.toMillis(30);
 
     public ControlLogicCacheManagerImpl(){
     }
 
     public void afterPropertiesSet() throws Exception {
         Timer cascadeCacheCleanerTimer = new Timer("CascadeCacheCleaner",true);
-        TimerTask cacheCleanerTimerTask = new CacheCleaner(sessionCachePool, userCacheTimeout);
+        TimerTask cacheCleanerTimerTask = new EhCacheCleanerRunner("CascadeCacheCleanerRunner", inputControlCache);
         cascadeCacheCleanerTimer.scheduleAtFixedRate(cacheCleanerTimerTask, cacheCleanTriggerTime, cacheCleanTriggerTime);
-    }
-
-
-    public void setCacheCleanTriggerTime(long cacheCleanTriggerTime) {
-        //convert seconds into millisecond equivalent
-        this.cacheCleanTriggerTime = cacheCleanTriggerTime * 1000;
-    }
-
-    public void setUserCacheTimeout(long userCacheTimeout) {
-        // convert seconds into millisecond equivalent
-        this.userCacheTimeout = userCacheTimeout * 1000;
     }
 
     public void clearCache(){
         getSessionCache().clear();
     }
 
-    // field is volatile
-    @SuppressWarnings("SynchronizeOnNonFinalField")
     public SessionCache getSessionCache() {
         String key = getSessionCacheKey();
-        SessionCache cache = sessionCachePool.get(key);
+        SessionCache cache = getItem(key);
         if (cache == null) {
-            synchronized (sessionCachePool) {
-                cache = sessionCachePool.get(key);
-                if (cache == null) {
-                    //create a new cache.
-                    cache = new SessionCacheImpl();
-                    sessionCachePool.put(key, cache);
-                }
-            }
+            //create a new cache.
+            cache = new SessionCacheImpl();
+            addItem(key, cache);
         }
         return cache;
+    }
+
+    public void addItem(Object key, SessionCache value) {
+        logEvent("PUT", key, value);
+        inputControlCache.put(new Element(key, value));
+    }
+
+    public SessionCache getItem(Object key) {
+        Element el= inputControlCache.get(key);
+        if(el!=null)
+        {
+            log.debug("element found for key: {}", key);
+            SessionCache value = (SessionCache) el.getObjectValue();
+            logEvent("GET", key, value);
+            return value;
+        }
+        return null;
+    }
+
+    public void shutdown() {
+        log.warn("ControlLogicCacheManagerImpl shutdown called. This normal shutdown operation.");
+        inputControlCache.removeAll();
     }
 
     public String getSessionCacheKey() {
         String key;
         try {
-            key = RequestContextHolder.currentRequestAttributes().getSessionId();
+            key = UserManagerServiceImpl.getCurrentUserQualifiedName();
+            log.debug("Current Session key = {} time = {}", key, System.currentTimeMillis());
         } catch (IllegalStateException e) {
             // For case when code is invoked on some internal event without real HTTP request.
             key = Long.toString(Thread.currentThread().getId());
         }
+        if (key == null) key = Long.toString(Thread.currentThread().getId());
     	return key;
+    }
+
+    private void logEvent(String event, Object key, SessionCache value) {
+        if (log.isDebugEnabled()) {
+            log.debug("{} key = {}, value = {}, time = {}",
+                    event, key, (value != null ? value.toString() : null), System.currentTimeMillis());
+        }
+    }
+
+    public void setInputControlCache(Ehcache inputControlCache) {
+        this.inputControlCache = inputControlCache;
+    }
+
+    public void setCacheCleanTriggerTime(long cacheCleanTriggerTime) {
+        // Convert seconds into millisecond equivalent
+        this.cacheCleanTriggerTime = TimeUnit.SECONDS.toMillis(cacheCleanTriggerTime);
     }
 }
 

@@ -30,7 +30,7 @@ const getCacheKey = (reportUri: string, options: PaginatedValuesOptions[]) => {
 };
 
 export interface InputControlsServiceWithCacheInterface
-    extends Pick<InputControlsServiceInterface, 'getInputControlsSelectedValues' | 'getInputControlsMetadata' | 'getInputControlsValues'> {
+    extends Pick<InputControlsServiceInterface, 'getInputControlsSelectedValues' | 'getInputControlsMetadata' | 'getInputControlsValues' | 'getReportRawParameterValues'> {
     getInputControlsPaginatedValues(reportUri: string, options: PaginatedValuesOptions[]): JQueryDeferred<PaginatedValuesResponse>,
     setCacheValueForControlPaginatedValues(
         reportUri: string,
@@ -61,6 +61,10 @@ export default class InputControlsServiceWithCache implements InputControlsServi
 
     getInputControlsValues(reportUri: string, inputControlIds: string[]) {
         return this.inputControlsService.getInputControlsValues(reportUri, inputControlIds);
+    }
+
+    getReportRawParameterValues(executionId: string) {
+        return this.inputControlsService.getReportRawParameterValues(executionId);
     }
 
     getInputControlsOnlySelectedValue(reportUri: string, options: SelectedOnlyOptions) {

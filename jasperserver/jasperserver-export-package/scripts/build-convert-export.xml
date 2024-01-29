@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 
 <!--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -85,6 +85,7 @@
     <delete dir="${JS-Pro-3.0-converted-dir}"/>
     <xslt basedir="${prior-JS-export-dir}" destdir="${JS-Pro-3.0-converted-dir}" includes="resources/**/*.xml"
           extension=".xml" style="${basedir}/config/toSecureMondrianConnection.xsl">
+        <factory name="net.sf.saxon.TransformerFactoryImpl" />
     </xslt>
       <copy todir="${JS-Pro-3.0-converted-dir}">
         <fileset dir="${prior-JS-export-dir}">

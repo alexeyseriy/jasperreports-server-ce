@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2021 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -22,7 +22,7 @@
 /*  --------------------------------------
     Pagination control used in Dashboard
     --------------------------------------
-    File last modified Jan 13, 2021
+    File last modified Oct 12, 2022
     --------------------------------------  */
 
 .paginationControlWrapper {
@@ -63,25 +63,6 @@
     position: relative;
     width: 28px;
     outline: 0;
-
-    /*
-    box-sizing: border-box;
-    color: rgb(170, 170, 170);
-    font-family: 'Lucida Grande';
-    font-size: 11px;
-    font-weight: bold;
-    letter-spacing: normal;
-    line-height: normal;
-    min-height: 24px;
-    overflow-x: visible;
-    overflow-y: visible;
-    text-align: center;
-    text-decoration: none;
-    text-indent: 0;
-    text-shadow: none;
-    text-transform: none;
-    word-spacing: 0;
-    */
 }
 
 .paginationControl button .wrap {
@@ -93,17 +74,6 @@
     margin: 0;
     padding: 0;
     width: auto;
-
-    /*
-    color: rgb(51, 51, 51);
-    font-family: Verdana, Arial, Helvetica, sans-serif;
-    font-size: 11px;
-    font-weight: normal;
-    line-height: 13px;
-    text-align: center;
-    vertical-align: baseline;
-    white-space: nowrap;
-    */
 }
 
 .paginationControl button .wrap .icon {
@@ -122,21 +92,6 @@
     width: 24px;
     zoom: 1;
     cursor: pointer;
-
-    /*
-    color: rgb(51, 51, 51);
-    font-size: 11px;
-    font-weight: normal;
-    letter-spacing: normal;
-    line-height: 13px;
-    text-align: center;
-    text-indent: -5000px;
-    text-shadow: none;
-    text-transform: none;
-    vertical-align: baseline;
-    white-space: nowrap;
-    word-spacing: 0;
-    */
 }
 
 /* 2x icons */
@@ -163,17 +118,6 @@
     background-position: 2px -146px;
 }
 
-/* states */
-.paginationControl > tbody > tr > td > button:active > .wrap > .icon {
-    opacity: .7;
-}
-
-.paginationControl > tbody > tr > td > button[disabled] > .wrap > .icon {
-    cursor: default;
-    opacity: .4;
-}
-
-
 .paginationControl .currentPageCell {
     line-height: 28px;
     min-width: 104px;
@@ -195,19 +139,14 @@
     padding: 2px 3px;
     white-space: nowrap;
     width: 50px;
+}
 
-    /*
-    background-color: rgb(255, 255, 255);
-    border: 1px solid rgb(193, 193, 193);
-    border-top-color: rgb(132, 132, 132);
-    color: rgb(0, 0, 0);
-    font-family: Verdana, Arial, Helvetica, sans-serif;
-    font-size: 11px;
-    font-weight: normal;
-    letter-spacing: normal;
-    text-align: start;
-    text-indent: 0;
-    text-shadow: none;
-    text-transform: none;
-    */
+/* States */
+.paginationControl > tbody > tr > td > button:active > .wrap > .icon {
+    opacity: .7;
+}
+
+.paginationControl > tbody > tr > td > button[disabled] > .wrap > .icon {
+    cursor: default;
+    opacity: .4;
 }

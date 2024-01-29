@@ -21,7 +21,7 @@
 
  /* =======================================
    SELECT LIST MODULE
-   Last modified date:     May 22, 2020
+   Last modified date:     Oct 25, 2021
    Last modified by:       Anna Leeg
  * ========================================= */
 
@@ -73,17 +73,18 @@
 // with an associated delete icon. Used inside the multi-select module
 .jr-mSelectlistSelected.jr {}
 
-.jr-mSelectlistSelected.jr > .jr-mSelectlist-item.jr {
-    background-color: #1388d8;
+/* .jr-mSelectlistSelected.jr > .jr-mSelectlist-item.jr {
+    background-color: $color-tciLight;
     color: #fff;
-}
+} Redundant, delete if there are no issues */
 
 .jr-mSelectlistSelected .jr-mSelectlist-item-delete.jr {
     background-color: transparent;
-    background-image: image-url("icontrol_icons_sprite.png");
-    background-position: 0 -85px;
+    background-image: image-url("icontrol_icons_sprite.svg");
+    background-position: -3px -144px;
+    background-size: 16px;
     float: left;
-    height:16px;
+    height: 16px;
     width: 16px;
 }
 
@@ -138,12 +139,13 @@
 }
 
 .jr-mSingleselect-input-expander.jr {
-    background: #fff image-url("icontrol_icons_sprite.png") no-repeat right -292px;
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    width: em(33px);
+  background: #fff image-url("icontrol_icons_sprite.svg") no-repeat 10px -89px;
+  background-size: 16px;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: em(33px);
 }
 
 
@@ -254,7 +256,7 @@
 }
 
 .jr-mMultiselect-toggle-label.jr {
-    color: #195b8a;
+    color: $color-tciMedium;
     display: block;
     text-align: center;
     text-overflow: ellipsis;
@@ -413,12 +415,12 @@
 }
 
 .jr-mSelectlist-item.jr-isSelected.jr {
-    background-color: #1388d8;
+    background-color: $color-tciLight;
     color: #fff;
 }
 
 .jr-mSelectlist-item.jr-isSelected.jr-isHovered.jr {
-    background-color: #0f67a9;
+    background-color: $color-tciMedium;
     color: #fff;
 }
 

@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Ant-Version: Apache Ant 1.8.2
+Created-By: Apache Maven ${maven.version}
+Build-Jdk: ${java.version}
+Archiver-Version: Plexus Archiver
+Built-By: schubar
+Dependencies: jdk.unsupported
+Components-Categories: Connectors, Observability
+
+Name: Observability
+Javamelody-Artifacts: javamelody-core-1.91.0.jar jrobin-1.5.9.jar
+

@@ -1,5 +1,5 @@
 /*!
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2023 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -21,7 +21,7 @@
 
 /* ===========================================
    INPUT STYLES
-   Last modified date:    May 22, 2020
+   Last modified date:    Feb 1, 2023
    Last modified by:      Anna Leeg
  * =========================================== */
 
@@ -251,10 +251,11 @@
 
 // TODO remove this rule after search input is fixed in multi- and single-select components
 .jr-mInput-search.jr:only-child {
-  background-image: image-url("icontrol_icons_sprite.png");
+  background-image: image-url("icontrol_icons_sprite.svg");
   background-repeat: no-repeat;
   background-attachment: scroll;
-  background-position: right -269px;
+  background-position: right -89px;
+  background-size: 20px;
 }
 
 .jr-mInput-searchPlaceholder.jr {
@@ -295,14 +296,25 @@
 
 // TEXT-BASED
 .jr-mInput-date.jr,
-.jr-mInput-text.jr,
-.jr-mInput-number.jr,
 .jr-mInput-email.jr,
+.jr-mInput-number.jr,
 .jr-mInput-password.jr,
+.jr-mInput-text.jr,
 .jr-mInput-search.jr {
   height: em(28px, 13px);
   width: 100%;
 }
+
+.jr-mInput-date.jr:focus,
+.jr-mInput-email.jr:focus,
+.jr-mInput-number.jr:focus,
+.jr-mInput-password.jr:focus,
+.jr-mInput-text.jr:focus,
+.jr-mInput-textarea.jr:focus,
+.jr-mInput-search.jr:focus {
+  outline-offset: -2px;
+}
+
 
 // text input with associated button
 .jr-mInput-action.jr {

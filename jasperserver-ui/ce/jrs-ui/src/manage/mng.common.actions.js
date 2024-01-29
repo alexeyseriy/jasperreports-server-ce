@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -87,13 +87,13 @@ orgModule.serverActionFactory = {
         var entity = options.entity;
         var data = { entityName: entity.getNameWithTenant() };
         var action = new orgModule.ServerAction(orgModule.ActionMap.EXIST, data);
-        action.onSuccess = function (data) {
-            data.exist ? options.onExist && options.onExist(data.uniqueId) : options.onNotExist && options.onNotExist();
+        action.onSuccess = function (successData) {
+            successData.exist ? options.onExist && options.onExist(successData.uniqueId) : options.onNotExist && options.onNotExist();
         };
-        action.onError = function (data) {
+        action.onError = function (errorData) {
             orgModule.fire(orgModule.Event.SERVER_ERROR, {
                 inputData: options,
-                responseData: data
+                responseData: errorData
             });
         };
         return action;
@@ -197,11 +197,11 @@ orgModule.clientActionFactory = {
                 if (properties.isEditMode) {
                     properties.lock();
                     properties.cancel().done(function () {
-                        var entity = properties.getDetailsLoadedEntity(), showProperties = orgModule.userManager ? orgModule.entityList.findEntity(entity.fullName) : true;
+                        var newEntity = properties.getDetailsLoadedEntity(), showProperties = orgModule.userManager ? orgModule.entityList.findEntity(newEntity.fullName) : true;
                         properties.unlock();
                         if (showProperties) {
                             orgModule.fire(orgModule.Event.ENTITY_SELECT_AND_GET_DETAILS, {
-                                entityId: entity.id,
+                                entityId: newEntity.id,
                                 cancelIfEdit: true,
                                 entityEvent: true
                             });

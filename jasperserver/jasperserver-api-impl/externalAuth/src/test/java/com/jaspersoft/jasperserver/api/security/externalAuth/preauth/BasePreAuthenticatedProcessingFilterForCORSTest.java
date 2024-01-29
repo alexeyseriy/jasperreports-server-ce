@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -114,6 +114,7 @@ public class BasePreAuthenticatedProcessingFilterForCORSTest {
 
     private void setProviderManager() {
         Mockito.when(securityContext.getAuthentication()).thenReturn(authentication);
+        PowerMockito.when(contextHolder.createEmptyContext()).thenReturn(securityContext);
         PowerMockito.when(contextHolder.getContext()).thenReturn(securityContext);
         Mockito.when(authentication.getName()).thenReturn("test");
         Mockito.when(authentication.getPrincipal()).thenReturn("test");

@@ -42,7 +42,7 @@ export default class InputControlsDataProvider implements InputControlsDataProvi
 
                 return {
                     data,
-                    total: parseInt(controlData.totalCount as string, 10)
+                    total: parseInt(controlData.totalCount, 10)
                 }
             });
 
@@ -51,4 +51,4 @@ export default class InputControlsDataProvider implements InputControlsDataProvi
             total: number
         }>
     }
-};
+}

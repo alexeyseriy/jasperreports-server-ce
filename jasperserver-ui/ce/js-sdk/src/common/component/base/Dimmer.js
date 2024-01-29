@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -39,7 +39,7 @@ export default classUtil.extend({
     },
     show: function () {
         var dimmerCount = this.getCount() || 0;
-        this.setCount(++dimmerCount);
+        this.setCount(dimmerCount + 1);
         $dimmer.show();
         return this;
     },

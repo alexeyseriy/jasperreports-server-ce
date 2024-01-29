@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved. Confidentiality & Proprietary.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved. Confidentiality & Proprietary.
  * Licensed pursuant to commercial TIBCO End User License Agreement.
  */
 
@@ -38,8 +38,8 @@ export const loadDynamicModule = (module, url) => {
             const namespace = {define: defineLocal, require: requireLocal, requirejs: requirejsLocal};
             func(namespace, namespace, requireLocal, requirejsLocal, defineLocal);
 
-            requireLocal([module], (module) => {
-                resolve(module);
+            requireLocal([module], (requireModule) => {
+                resolve(requireModule);
             }, reject);
         }).catch(reject);
     });

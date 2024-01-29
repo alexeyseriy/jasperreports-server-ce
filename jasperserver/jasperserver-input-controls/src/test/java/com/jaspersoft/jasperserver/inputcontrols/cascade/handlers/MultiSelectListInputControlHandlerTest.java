@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -20,13 +20,17 @@
  */
 package com.jaspersoft.jasperserver.inputcontrols.cascade.handlers;
 
+import com.jaspersoft.jasperserver.api.metadata.common.domain.DataType;
 import com.jaspersoft.jasperserver.api.metadata.common.domain.InputControl;
 import com.jaspersoft.jasperserver.api.metadata.common.domain.ListOfValuesItem;
 import com.jaspersoft.jasperserver.api.metadata.common.domain.ResourceReference;
 import com.jaspersoft.jasperserver.dto.reports.inputcontrols.InputControlOption;
 import com.jaspersoft.jasperserver.dto.reports.inputcontrols.InputControlState;
 import com.jaspersoft.jasperserver.inputcontrols.cascade.CascadeResourceNotFoundException;
+import com.jaspersoft.jasperserver.inputcontrols.cascade.handlers.converters.DataConverterService;
+
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 
@@ -53,8 +57,8 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.nullable;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
 
 /**
  * @author Yaroslav.Kovalchyk
@@ -77,6 +81,7 @@ public class MultiSelectListInputControlHandlerTest extends BaseInputControlHand
                 .convertSingleValue(anyString(), any(InputControl.class), any());
         doAnswer(invocation -> invocation.getArgument(0)).when(dataConverterService)
                 .formatSingleValue(anyString(), any(InputControl.class), any());
+        handler.setCaseSensitive(true);
     }
 
     /**
@@ -200,20 +205,36 @@ public class MultiSelectListInputControlHandlerTest extends BaseInputControlHand
         SingleSelectListInputControlHandler.SelectedValuesDict selectedValuesDict =  handler.createSelectedValuesDict(defaultValue);
         assertFalse(selectedValuesDict.checkMatch("String"));
     }
-
+/***
+    @Test
+    public void SelectedValuesDict_withCollection_CaseInSensitive() {
+        try {
+            handler.setCaseSensitive(false);
+            List<Object> defaultValue = Arrays.asList(new String[]{"abc2", "efg2"});
+            SingleSelectListInputControlHandler.SelectedValuesDict selectedValuesDict = handler.createSelectedValuesDict(defaultValue);
+            doAnswer(invocation -> invocation.getArgument(0)).when(dataConverterService)
+                    .formatSingleValue(anyString(), nullable(DataType.class), nullable(Class.class));
+            assertTrue(selectedValuesDict.checkMatch("aBc2"));
+            //    assertTrue(selectedValuesDict.checkMatch("EFG2"));
+            //    handler.setCaseSensitive(true);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+    ***/
     @Test
     public void selectedOnly_fillStateValue_selectedOptions() throws CascadeResourceNotFoundException{
-        Map<String, Object> parameters = new HashMap<>();
+            Map<String, Object> parameters = new HashMap<>();
 
-        setIncomingValue(parameters, Collections.singletonList("Canada"), inputControl);
-        setSelectedOnly(parameters, true);
+            setIncomingValue(parameters, Collections.singletonList("Canada"), inputControl);
+            setSelectedOnly(parameters, true);
 
-        mockLoadValues(values);
+            mockLoadValues(values);
 
-        handler.fillStateValue(state, inputControl, dataSource, parameters, reportInputControlInformation, Collections.emptyMap());
+            handler.fillStateValue(state, inputControl, dataSource, parameters, reportInputControlInformation, Collections.emptyMap());
 
-        assertEquals(1, state.getOptions().size());
-        assertEquals("Canada", state.getOptions().get(0).getValue());
+            assertEquals(1, state.getOptions().size());
+            assertEquals("Canada", state.getOptions().get(0).getValue());
     }
 
     @Test
@@ -230,6 +251,18 @@ public class MultiSelectListInputControlHandlerTest extends BaseInputControlHand
         handler.fillStateValue(state, inputControl, dataSource, parameters, reportInputControlInformation, Collections.emptyMap());
 
         assertEquals(3, state.getOptions().size());
+    }
+
+    @Test
+    public void fillStateValue_withNoParameterValue() throws CascadeResourceNotFoundException {
+        Map<String, Object> parameters = new HashMap<>();
+        setIncomingValue(parameters, Arrays.asList(), inputControl);
+        setSelectedOnly(parameters, true);
+        setLimit(parameters, 1);
+        setOffset(parameters, 1);
+        mockLoadValues(values);
+        handler.fillStateValue(state, inputControl, dataSource, parameters, reportInputControlInformation, Collections.emptyMap());
+        assertEquals(0, state.getOptions().size());
     }
 
 }

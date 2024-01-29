@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -27,6 +27,7 @@ import net.sf.jasperreports.engine.JasperReportsContext;
 import net.sf.jasperreports.engine.ReportContext;
 
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -47,6 +48,9 @@ public abstract class ReportUnitRequestBase implements Request {
     private ReportContext reportContext;
     private boolean useDataSnapshot;
     private boolean recordDataSnapshot;
+
+	private String scheduleExecutionID;
+	private String scheduleResourceType;
     
     private long startTime = System.currentTimeMillis();
     private boolean createAuditEvent;
@@ -54,10 +58,7 @@ public abstract class ReportUnitRequestBase implements Request {
     private JasperReportsContext jasperReportsContext;
 
 	protected ReportUnitRequestBase(Map reportParameters) {
-		this.id = System.identityHashCode(this) 
-			+ "_" + System.currentTimeMillis() 
-			+ "_" + COUNTER.incrementAndGet();
-
+		this.id =  UUID.randomUUID().toString();
 		this.reportParameters = reportParameters;
 	}
 
@@ -157,5 +158,21 @@ public abstract class ReportUnitRequestBase implements Request {
 	}
 
 	public abstract ReportUnitResult execute(ExecutionContext context, ReportExecuter executer);
+
+	public String getScheduleExecutionID() {
+		return scheduleExecutionID;
+	}
+
+	public void setScheduleExecutionID(String scheduleExecutionID) {
+		this.scheduleExecutionID = scheduleExecutionID;
+	}
+
+	public String getScheduleResourceType() {
+		return scheduleResourceType;
+	}
+
+	public void setScheduleResourceType(String scheduleResourceType) {
+		this.scheduleResourceType = scheduleResourceType;
+	}
 
 }

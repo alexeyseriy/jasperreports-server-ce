@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -34,13 +34,14 @@ import com.jaspersoft.jasperserver.api.metadata.common.service.impl.HibernateDao
 import com.jaspersoft.jasperserver.api.metadata.common.service.impl.hibernate.util.IlikeEscapeAwareExpression;
 import com.jaspersoft.jasperserver.api.metadata.common.util.DatabaseCharactersEscapeResolver;
 import com.jaspersoft.jasperserver.api.metadata.tenant.service.TenantPersistenceResolver;
+import com.jaspersoft.jasperserver.api.metadata.user.domain.ProfileAttribute;
 import com.jaspersoft.jasperserver.api.metadata.user.domain.Role;
 import com.jaspersoft.jasperserver.api.metadata.user.domain.Tenant;
 import com.jaspersoft.jasperserver.api.metadata.user.domain.User;
 import com.jaspersoft.jasperserver.api.metadata.user.domain.impl.client.MetadataUserDetails;
-import com.jaspersoft.jasperserver.api.metadata.user.domain.impl.hibernate.RepoRole;
-import com.jaspersoft.jasperserver.api.metadata.user.domain.impl.hibernate.RepoTenant;
-import com.jaspersoft.jasperserver.api.metadata.user.domain.impl.hibernate.RepoUser;
+import com.jaspersoft.jasperserver.api.metadata.user.domain.impl.hibernate.*;
+import com.jaspersoft.jasperserver.api.metadata.user.service.ExternalUserLoginEventService;
+import com.jaspersoft.jasperserver.api.metadata.user.service.ProfileAttributeLevel;
 import com.jaspersoft.jasperserver.api.metadata.user.service.ProfileAttributeService;
 import com.jaspersoft.jasperserver.api.metadata.user.service.TenantService;
 import com.jaspersoft.jasperserver.api.metadata.view.domain.FilterCriteria;
@@ -51,15 +52,16 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.CacheMode;
 import org.hibernate.Criteria;
+import org.hibernate.FetchMode;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
+import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.MatchMode;
+import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.sql.JoinType;
-import org.hibernate.criterion.Criterion;
-import org.hibernate.criterion.Order;
 import org.springframework.context.MessageSource;
 import org.springframework.dao.DataAccessException;
 import org.springframework.orm.hibernate5.HibernateCallback;
@@ -75,17 +77,23 @@ import org.springframework.security.web.authentication.switchuser.SwitchUserGran
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Date;
 import java.util.Map;
-import java.util.ArrayList;
+import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
-import static com.jaspersoft.jasperserver.api.logging.audit.domain.AuditEventType.*;
+import static com.jaspersoft.jasperserver.api.logging.audit.domain.AuditEventType.CREATE_ROLE;
+import static com.jaspersoft.jasperserver.api.logging.audit.domain.AuditEventType.CREATE_USER;
+import static com.jaspersoft.jasperserver.api.logging.audit.domain.AuditEventType.DELETE_ROLE;
+import static com.jaspersoft.jasperserver.api.logging.audit.domain.AuditEventType.DELETE_USER;
+import static com.jaspersoft.jasperserver.api.logging.audit.domain.AuditEventType.UPDATE_ROLE;
+import static com.jaspersoft.jasperserver.api.logging.audit.domain.AuditEventType.UPDATE_USER;
 import static org.springframework.context.i18n.LocaleContextHolder.getLocale;
 
 /**
@@ -109,25 +117,25 @@ public class UserAuthorityServiceImpl extends HibernateDaoImpl implements UserDe
     private boolean isUsernameCaseSensitive;
     private Pattern passwordPattern = Pattern.compile("^.*$");
     private MessageSource messageSource;
-
+    private ExternalUserLoginEventService externalUserLoginEventService;
     /**
      * Helper findByCriteria methods to cache all results
      *
      */
     private List findByCriteria(DetachedCriteria criteria){
-    	HibernateTemplate template = getHibernateTemplate();
-    	//template.setCacheQueries(true);
-    	return template.findByCriteria(criteria);
-    }
-    
-    private List findByCriteria(DetachedCriteria criteria, int firstResult, int maxResults){
-    	HibernateTemplate template = getHibernateTemplate();
-    	//template.setCacheQueries(true);
-    	return template.findByCriteria(criteria, firstResult, maxResults);
+        HibernateTemplate template = getHibernateTemplate();
+        //template.setCacheQueries(true);
+        return template.findByCriteria(criteria);
     }
 
-    
-    
+    private List findByCriteria(DetachedCriteria criteria, int firstResult, int maxResults){
+        HibernateTemplate template = getHibernateTemplate();
+        //template.setCacheQueries(true);
+        return template.findByCriteria(criteria, firstResult, maxResults);
+    }
+
+
+
     public void setDatabaseCharactersEscapeResolver(DatabaseCharactersEscapeResolver databaseCharactersEscapeResolver) {
         this.databaseCharactersEscapeResolver = databaseCharactersEscapeResolver;
     }
@@ -245,8 +253,8 @@ public class UserAuthorityServiceImpl extends HibernateDaoImpl implements UserDe
     }
 
     /* (non-Javadoc)
-      * @see com.jaspersoft.jasperserver.api.metadata.user.service.UserAuthorityService#getUser(com.jaspersoft.jasperserver.api.common.domain.ExecutionContext, java.lang.String)
-      */
+     * @see com.jaspersoft.jasperserver.api.metadata.user.service.UserAuthorityService#getUser(com.jaspersoft.jasperserver.api.common.domain.ExecutionContext, java.lang.String)
+     */
     @Transactional(propagation = Propagation.REQUIRED)
     public User getUser(ExecutionContext context, String username) {
         RepoUser user = getRepoUser(context, username);
@@ -268,8 +276,8 @@ public class UserAuthorityServiceImpl extends HibernateDaoImpl implements UserDe
     }
 
     /* (non-Javadoc)
-      * @see com.jaspersoft.jasperserver.api.metadata.user.service.UserAuthorityService#getUser(com.jaspersoft.jasperserver.api.common.domain.ExecutionContext, java.lang.Long)
-      */
+     * @see com.jaspersoft.jasperserver.api.metadata.user.service.UserAuthorityService#getUser(com.jaspersoft.jasperserver.api.common.domain.ExecutionContext, java.lang.Long)
+     */
     protected User getUser(ExecutionContext context, Long id) {
         RepoUser user = getRepoUser(context, id);
         User userDTO = null;
@@ -280,8 +288,8 @@ public class UserAuthorityServiceImpl extends HibernateDaoImpl implements UserDe
     }
 
     /* (non-Javadoc)
-      * @see org.springframework.security.core.userdetails.UserDetailsService#loadUserByUsername(java.lang.String)
-      */
+     * @see org.springframework.security.core.userdetails.UserDetailsService#loadUserByUsername(java.lang.String)
+     */
     @Transactional(propagation = Propagation.REQUIRED)
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException, DataAccessException {
         User u = getUser(null, username);
@@ -298,22 +306,22 @@ public class UserAuthorityServiceImpl extends HibernateDaoImpl implements UserDe
     }
 
     /*
-      * 11-11-08 bob
-      * Modified to deal with bogus behavior allowed by a method signature that isn't specific enough.
-      * This fixes bug 12382.
-      * This method expects a client object (UserImpl),
-      * but its signature just says User which has both RepoUser and UserImpl (client) implementations.
-      * When you pass in a RepoUser, it does a copyFromClient() on it, which is wrong, but doesn't
-      * burn anyone most of the time.
-      * It DOES burn you when you have password encryption turned on, in which case it encrypts your already-encrypted password.
-      * Guess what, you can't log in anymore!
-      *
-      * TODO Per Sherman, if there are methods calling putUser() with a RepoUser, they need to be fixed.
-      * I looked at all the callers (about 20) and found three that do this: addRole(), removeRole(), and removeAllRoles().
-      * We should probably change the interface so it can't be called with RepoUser, but we should probably look at other API's.
-      *  (non-Javadoc)
-      * @see com.jaspersoft.jasperserver.api.metadata.user.service.UserAuthorityService#putUser(com.jaspersoft.jasperserver.api.common.domain.ExecutionContext, com.jaspersoft.jasperserver.api.metadata.user.domain.User)
-      */
+     * 11-11-08 bob
+     * Modified to deal with bogus behavior allowed by a method signature that isn't specific enough.
+     * This fixes bug 12382.
+     * This method expects a client object (UserImpl),
+     * but its signature just says User which has both RepoUser and UserImpl (client) implementations.
+     * When you pass in a RepoUser, it does a copyFromClient() on it, which is wrong, but doesn't
+     * burn anyone most of the time.
+     * It DOES burn you when you have password encryption turned on, in which case it encrypts your already-encrypted password.
+     * Guess what, you can't log in anymore!
+     *
+     * TODO Per Sherman, if there are methods calling putUser() with a RepoUser, they need to be fixed.
+     * I looked at all the callers (about 20) and found three that do this: addRole(), removeRole(), and removeAllRoles().
+     * We should probably change the interface so it can't be called with RepoUser, but we should probably look at other API's.
+     *  (non-Javadoc)
+     * @see com.jaspersoft.jasperserver.api.metadata.user.service.UserAuthorityService#putUser(com.jaspersoft.jasperserver.api.common.domain.ExecutionContext, com.jaspersoft.jasperserver.api.metadata.user.domain.User)
+     */
     @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
     public void putUser(ExecutionContext context, User aUser) {
         if (!aUser.isExternallyDefined() ? isPasswordStrongEnough(aUser.getPassword()) : true) {
@@ -330,14 +338,15 @@ public class UserAuthorityServiceImpl extends HibernateDaoImpl implements UserDe
         RepoUser existingUser;
         if (aUser instanceof RepoUser) {
             existingUser = (RepoUser) aUser;
+            existingUser.setNumberOfFailedLoginAttempts(aUser.getNumberOfFailedLoginAttempts());
         } else {
             existingUser = getRepoUser(context, aUser);
             if (existingUser == null) {
                 existingUser = (RepoUser) getPersistentClassFactory().newObject(User.class);
             }
+            existingUser.setNumberOfFailedLoginAttempts(aUser.getNumberOfFailedLoginAttempts());
             updatePersistentUser(aUser, existingUser);
         }
-
         addPropertiesToUserEvent(new String[]{CREATE_USER.toString(), UPDATE_USER.toString()}, existingUser);
         getHibernateTemplate().saveOrUpdate(existingUser);
     }
@@ -360,18 +369,17 @@ public class UserAuthorityServiceImpl extends HibernateDaoImpl implements UserDe
     public List<User> getUsers(ExecutionContext context, FilterCriteria filterCriteria) {
         // make User DTOs
         List results = getHibernateTemplate().loadAll(getPersistentUserClass());
-        List userDTOs = null;
+        return convertUserListToDtoList(results);
+    }
 
-        if (results != null) {
-            userDTOs = new ArrayList(results.size());
-            Iterator it = results.iterator();
-            while (it.hasNext()) {
-                RepoUser u = (RepoUser) it.next();
-                User newUser = (User) u.toClient(getObjectMappingFactory());
-                userDTOs.add(newUser);
-            }
-        }
-        return userDTOs;
+    @Transactional(propagation = Propagation.REQUIRED)
+    public List<User> getUsersWithProfileAttributes(ExecutionContext context, FilterCriteria filterCriteria) {
+        // make User DTOs
+        List<RepoUser> results = getHibernateTemplate().execute(session -> {
+            Criteria criteria = includeProfileAttributes(session.createCriteria(RepoUser.class));
+            return criteria.list();
+        });
+        return convertUserListToDtoListWithAttributes(results);
     }
 
     /**
@@ -415,7 +423,7 @@ public class UserAuthorityServiceImpl extends HibernateDaoImpl implements UserDe
                 if (result instanceof Number) {
                     return ((Number) result).intValue();
                 } else
-                return result;
+                    return result;
             }
         });
     }
@@ -431,8 +439,8 @@ public class UserAuthorityServiceImpl extends HibernateDaoImpl implements UserDe
     }
 
     /* (non-Javadoc)
-      * @see com.jaspersoft.jasperserver.api.metadata.user.service.UserAuthorityService#disableUser(com.jaspersoft.jasperserver.api.common.domain.ExecutionContext, java.lang.Long)
-      */
+     * @see com.jaspersoft.jasperserver.api.metadata.user.service.UserAuthorityService#disableUser(com.jaspersoft.jasperserver.api.common.domain.ExecutionContext, java.lang.Long)
+     */
     protected boolean disableUser(ExecutionContext context, Long id) {
         RepoUser user = getRepoUser(context, id);
         if (user != null && user.isEnabled()) {
@@ -444,8 +452,8 @@ public class UserAuthorityServiceImpl extends HibernateDaoImpl implements UserDe
     }
 
     /* (non-Javadoc)
-      * @see com.jaspersoft.jasperserver.api.metadata.user.service.UserAuthorityService#disableUser(com.jaspersoft.jasperserver.api.common.domain.ExecutionContext, java.lang.String)
-      */
+     * @see com.jaspersoft.jasperserver.api.metadata.user.service.UserAuthorityService#disableUser(com.jaspersoft.jasperserver.api.common.domain.ExecutionContext, java.lang.String)
+     */
     @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
     public boolean disableUser(ExecutionContext context, String username) {
         RepoUser user = getRepoUser(context, username);
@@ -458,8 +466,8 @@ public class UserAuthorityServiceImpl extends HibernateDaoImpl implements UserDe
     }
 
     /* (non-Javadoc)
-      * @see com.jaspersoft.jasperserver.api.metadata.user.service.UserAuthorityService#enableUser(com.jaspersoft.jasperserver.api.common.domain.ExecutionContext, java.lang.Long)
-      */
+     * @see com.jaspersoft.jasperserver.api.metadata.user.service.UserAuthorityService#enableUser(com.jaspersoft.jasperserver.api.common.domain.ExecutionContext, java.lang.Long)
+     */
     protected boolean enableUser(ExecutionContext context, Long id) {
         RepoUser user = getRepoUser(context, id);
         if (user != null && !user.isEnabled()) {
@@ -471,13 +479,15 @@ public class UserAuthorityServiceImpl extends HibernateDaoImpl implements UserDe
     }
 
     /* (non-Javadoc)
-      * @see com.jaspersoft.jasperserver.api.metadata.user.service.UserAuthorityService#enableUser(com.jaspersoft.jasperserver.api.common.domain.ExecutionContext, java.lang.String)
-      */
+     * @see com.jaspersoft.jasperserver.api.metadata.user.service.UserAuthorityService#enableUser(com.jaspersoft.jasperserver.api.common.domain.ExecutionContext, java.lang.String)
+     */
     @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
     public boolean enableUser(ExecutionContext context, String username) {
         RepoUser user = getRepoUser(context, username);
         if (user != null && !user.isEnabled()) {
             user.setEnabled(true);
+            user.setNumberOfFailedLoginAttempts(0);
+            enableOrDisableExternalUserLoginEvent(user);
             return true;
         } else {
             return false;
@@ -593,8 +603,8 @@ public class UserAuthorityServiceImpl extends HibernateDaoImpl implements UserDe
     }
 
     /* (non-Javadoc)
-      * @see com.jaspersoft.jasperserver.api.metadata.user.service.UserAuthorityService#getRole(com.jaspersoft.jasperserver.api.common.domain.ExecutionContext, java.lang.String)
-      */
+     * @see com.jaspersoft.jasperserver.api.metadata.user.service.UserAuthorityService#getRole(com.jaspersoft.jasperserver.api.common.domain.ExecutionContext, java.lang.String)
+     */
     @Transactional(propagation = Propagation.REQUIRED)
     public Role getRole(ExecutionContext context, String roleName) {
         RepoRole repoRole = getRepoRole(context, roleName);
@@ -610,8 +620,8 @@ public class UserAuthorityServiceImpl extends HibernateDaoImpl implements UserDe
     }
 
     /* (non-Javadoc)
-      * @see com.jaspersoft.jasperserver.api.metadata.user.service.UserAuthorityService#getRole(com.jaspersoft.jasperserver.api.common.domain.ExecutionContext, java.lang.Long)
-      */
+     * @see com.jaspersoft.jasperserver.api.metadata.user.service.UserAuthorityService#getRole(com.jaspersoft.jasperserver.api.common.domain.ExecutionContext, java.lang.Long)
+     */
     protected RepoRole getRepoRole(ExecutionContext context, String roleName) {
         return getRepoRole(roleName, (String) null);
     }
@@ -654,8 +664,8 @@ public class UserAuthorityServiceImpl extends HibernateDaoImpl implements UserDe
     }
 
     /* (non-Javadoc)
-      * @see com.jaspersoft.jasperserver.api.metadata.user.service.UserAuthorityService#putRole(com.jaspersoft.jasperserver.api.common.domain.ExecutionContext, com.jaspersoft.jasperserver.api.metadata.user.domain.Role)
-      */
+     * @see com.jaspersoft.jasperserver.api.metadata.user.service.UserAuthorityService#putRole(com.jaspersoft.jasperserver.api.common.domain.ExecutionContext, com.jaspersoft.jasperserver.api.metadata.user.domain.Role)
+     */
     @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
     public void putRole(ExecutionContext context, Role aRole) {
         RepoRole existingRole = getRepoRole(aRole);
@@ -716,8 +726,8 @@ public class UserAuthorityServiceImpl extends HibernateDaoImpl implements UserDe
     }
 
     /* (non-Javadoc)
-      * @see com.jaspersoft.jasperserver.api.metadata.user.service.UserAuthorityService#newRole(com.jaspersoft.jasperserver.api.common.domain.ExecutionContext)
-      */
+     * @see com.jaspersoft.jasperserver.api.metadata.user.service.UserAuthorityService#newRole(com.jaspersoft.jasperserver.api.common.domain.ExecutionContext)
+     */
     public Role newRole(ExecutionContext context) {
         // return a Role DTO
         return (Role) getObjectMappingFactory().newObject(Role.class);
@@ -766,7 +776,7 @@ public class UserAuthorityServiceImpl extends HibernateDaoImpl implements UserDe
                                 if (usersIdsBeforeUpdate!=null && usersIdsBeforeUpdate.remove(id)){
                                     i.remove();
                                 } else {
-                                	auditContext.addPropertyToAuditEvent("addedUserId", id, auditEvent);
+                                    auditContext.addPropertyToAuditEvent("addedUserId", id, auditEvent);
                                 }
                             }
                         }
@@ -863,12 +873,12 @@ public class UserAuthorityServiceImpl extends HibernateDaoImpl implements UserDe
     }
 
     /*
-      * TODO this should be generalized. Maybe get the Repo* objects to return a
-      * DetachedCriteria filled with the key from the client object?
-      *
-      *  (non-Javadoc)
-      * @see com.jaspersoft.jasperserver.api.metadata.common.service.impl.hibernate.PersistentObjectResolver#getPersistentObject(java.lang.Object)
-      */
+     * TODO this should be generalized. Maybe get the Repo* objects to return a
+     * DetachedCriteria filled with the key from the client object?
+     *
+     *  (non-Javadoc)
+     * @see com.jaspersoft.jasperserver.api.metadata.common.service.impl.hibernate.PersistentObjectResolver#getPersistentObject(java.lang.Object)
+     */
     @Transactional(propagation = Propagation.REQUIRED)
     public Object getPersistentObject(Object clientObject) {
         if (clientObject instanceof Role) {
@@ -984,8 +994,8 @@ public class UserAuthorityServiceImpl extends HibernateDaoImpl implements UserDe
         }
 
         /*
-           * If we have new external roles, we want to add them
-           */
+         * If we have new external roles, we want to add them
+         */
         Collection newExternalRoles = CollectionUtils.subtract(externalRoles, currentExternalRoles);
 
         if (newExternalRoles.size() > 0) {
@@ -997,8 +1007,8 @@ public class UserAuthorityServiceImpl extends HibernateDaoImpl implements UserDe
         }
 
         /*
-           * If external roles have been removed, we need to remove them
-           */
+         * If external roles have been removed, we need to remove them
+         */
         Collection rolesNeedingRemoval = CollectionUtils.subtract(currentExternalRoles, externalRoles);
 
         if (rolesNeedingRemoval.size() > 0) {
@@ -1010,8 +1020,8 @@ public class UserAuthorityServiceImpl extends HibernateDaoImpl implements UserDe
         }
 
         /*
-           * If we have new default internal roles, we want to add them
-           */
+         * If we have new default internal roles, we want to add them
+         */
         Collection defaultInternalRolesToAdd = CollectionUtils.subtract(getNewDefaultInternalRoles(), currentRoles);
 
         if (defaultInternalRolesToAdd.size() > 0) {
@@ -1082,8 +1092,8 @@ public class UserAuthorityServiceImpl extends HibernateDaoImpl implements UserDe
     }
 
     /*
-    *
-    */
+     *
+     */
     protected Set persistRoles(Set roles) {
         Set persistedRoles = new HashSet();
         for (Iterator iter = roles.iterator(); iter.hasNext(); ) {
@@ -1288,6 +1298,17 @@ public class UserAuthorityServiceImpl extends HibernateDaoImpl implements UserDe
         return userDTOs;
     }
 
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED)
+    public List<User> getTenantUsersWithProfileAttributes(ExecutionContext context, Set<?> tenantIds, String name) {
+        List<RepoUser> userList = getHibernateTemplate().execute(session -> {
+            Criteria criteria = createTenantUsersCriteria(session, tenantIds, name);
+            criteria = includeProfileAttributes(criteria);
+            return criteria.list();
+        });
+        return convertUserListToDtoListWithAttributes(userList);
+    }
+
     @Transactional(propagation = Propagation.REQUIRED)
     public List getTenantUsers(ExecutionContext context,
                                final Set tenantIds, final String name,
@@ -1410,6 +1431,10 @@ public class UserAuthorityServiceImpl extends HibernateDaoImpl implements UserDe
         return  createTenantUsersCriteria(session, tenantIds, name, true);
     }
 
+    private Criteria includeProfileAttributes(Criteria criteria) {
+        return criteria.setFetchMode("principalobjectclass", FetchMode.EAGER);
+    }
+
     private Criteria createTenantUsersCriteria(Session session, Set tenantIds, String name, boolean order) {
         Set internalTenantIds = null;
         if (tenantIds != null) {
@@ -1503,24 +1528,25 @@ public class UserAuthorityServiceImpl extends HibernateDaoImpl implements UserDe
         return criteria;
     }
 
-    private List convertUserListToDtoList(List userList) {
+    private List<User> convertUserListToDtoList(List<RepoUser> userList) {
+        if (userList == null) return null;
+        return userList.stream()
+                .map(repoUser -> (User) repoUser.toClient(getObjectMappingFactory()))
+                .collect(Collectors.toList());
+    }
 
-        List userDTOs = null;
-        if (userList != null) {
-
-            userDTOs = new ArrayList(userList.size());
-
-            Iterator it = userList.iterator();
-            while(it.hasNext()) {
-
-                RepoUser u = (RepoUser) it.next();
-
-                User newUser = (User) u.toClient(getObjectMappingFactory());
-                userDTOs.add(newUser);
+    private List<User> convertUserListToDtoListWithAttributes(List<RepoUser> userList) {
+        if (userList == null) return null;
+        return userList.stream().map(repoUser -> {
+            User user = (User) repoUser.toClient(getObjectMappingFactory());
+            if (repoUser.getProfileAttributes() != null) {
+                List<?> attributes = repoUser.getProfileAttributes().stream()
+                        .map(this::convertRepoProfileAttribute)
+                        .collect(Collectors.toList());
+                user.setAttributes(attributes);
             }
-        }
-
-        return userDTOs;
+            return user;
+        }).collect(Collectors.toList());
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
@@ -1723,6 +1749,7 @@ public class UserAuthorityServiceImpl extends HibernateDaoImpl implements UserDe
 
         addPropertiesToUserEvent(new String[] {UPDATE_USER.toString()}, existingUser);
         getHibernateTemplate().saveOrUpdate(existingUser);
+        enableOrDisableExternalUserLoginEvent(existingUser);
     }
 
     /* (non-Javadoc)
@@ -1847,8 +1874,8 @@ public class UserAuthorityServiceImpl extends HibernateDaoImpl implements UserDe
             }
         }
     }
-    
-    
+
+
     @Transactional(propagation = Propagation.REQUIRED)
     public List getUsersWithRole(ExecutionContext context, String roleName, String userName,
                                  int firstResult, int maxResults) {
@@ -2034,5 +2061,34 @@ public class UserAuthorityServiceImpl extends HibernateDaoImpl implements UserDe
 
     public void setMessageSource(MessageSource messageSource) {
         this.messageSource = messageSource;
+    }
+
+    private ProfileAttribute convertRepoProfileAttribute(RepoProfileAttribute repoProfileAttribute) {
+        ProfileAttribute profileAttribute = (ProfileAttribute) repoProfileAttribute.toClient(getObjectMappingFactory());
+        profileAttribute.setGroup(profileAttributeService.getChangerName(profileAttribute.getAttrName()));
+        profileAttribute.setLevel(ProfileAttributeLevel.TARGET_ASSIGNED);
+        return profileAttribute;
+    }
+
+    private void enableOrDisableExternalUserLoginEvent(RepoUser repoUser){
+        RepoTenant repoTenant = repoUser.getTenant();
+        if(repoUser.isExternallyDefined()){
+            RepoExternalUserLoginEvent repoExternalUserLoginEvent = (RepoExternalUserLoginEvent)
+                    getExternalUserLoginEventService().getExternalUserLoginEventByUsernameAndTenantId(repoUser.getUsername(),repoTenant.getTenantId());
+            if(repoExternalUserLoginEvent != null){
+                repoExternalUserLoginEvent.setEnabled(repoUser.isEnabled());
+                repoExternalUserLoginEvent.setNumberOfFailedLoginAttempts(repoUser.isEnabled() ? 0 : repoExternalUserLoginEvent.getNumberOfFailedLoginAttempts());
+                repoExternalUserLoginEvent.setRecordLastUpdateDate(new Date());
+                getExternalUserLoginEventService().updateExternalUserLoginEvent(repoExternalUserLoginEvent);
+            }
+        }
+    }
+
+    public ExternalUserLoginEventService getExternalUserLoginEventService() {
+        return externalUserLoginEventService;
+    }
+
+    public void setExternalUserLoginEventService(ExternalUserLoginEventService externalUserLoginEventService) {
+        this.externalUserLoginEventService = externalUserLoginEventService;
     }
 }

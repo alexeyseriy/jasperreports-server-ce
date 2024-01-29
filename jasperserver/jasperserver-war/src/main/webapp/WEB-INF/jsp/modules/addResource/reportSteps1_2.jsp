@@ -1,6 +1,6 @@
 <%@ page contentType="text/html; charset=utf-8" %>
 <%--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -153,7 +153,7 @@
                                                         <c:if test="${wrapper.source!='CONTENT_REPOSITORY'}">
                                                             <span class="message warning"><spring:message code="${jrxmlUnparsable}"/></span>
                                                         </c:if>
-                                                        <button id="fake_upload_button" class="button action">
+                                                        <button id="fake_upload_button" class="button action up">
                                                             <span class="wrap"><spring:message code="button.browse"/>
                                                                 <span class="icon">
                                                                 </span>
@@ -186,7 +186,7 @@
                                                         <c:if test="${status.error || wrapper.source=='CONTENT_REPOSITORY' && jrxmlUnparsable != null}">
                                                             <span class="message warning">${status.errorMessage}<spring:message code="${jrxmlUnparsable}"/></span>
                                                         </c:if>
-                                                        <button id="browser_button" type="button" class="button action" <c:if test="${wrapper.source!='CONTENT_REPOSITORY'}">disabled="disabled"</c:if>>
+                                                        <button id="browser_button" type="button" class="button action up" <c:if test="${wrapper.source!='CONTENT_REPOSITORY'}">disabled="disabled"</c:if>>
                                                             <span class="wrap"><spring:message code="button.browse"/>
                                                                 <span class="icon"></span>
                                                             </span>

@@ -21,7 +21,7 @@
 
 /* ========================================
     VISUALIZATION CHOOSER MODULE
-    Last modified date:     Jan 28, 2021
+    Last modified date:     June 17, 2022
     Last modified by:       Anna Leeg
  * ======================================= */
 
@@ -45,6 +45,7 @@
 
 .jr-mVisualChooserDialog.jr {
   user-select: none;
+  z-index: 4000;
 }
 
 .jr-mVisualchooser.jr {

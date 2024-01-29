@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -23,13 +23,26 @@ package com.jaspersoft.jasperserver.inputcontrols.util;
 import com.jaspersoft.jasperserver.dto.reports.inputcontrols.InputControlOption;
 import com.jaspersoft.jasperserver.dto.reports.inputcontrols.InputControlState;
 import com.jaspersoft.jasperserver.dto.reports.inputcontrols.ReportInputControl;
+import org.apache.commons.collections4.CollectionUtils;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class ReportParametersUtils {
 
+    /**
+     * Get values from input controls states.
+     * This method removes all duplicated values.
+     *
+     * @param states input control states
+     * @return unordered unique values
+     */
     public static Map<String, String[]> getValueMapFromInputControlStates(List<InputControlState> states) {
-        Map<String, String[]> valueMap = new HashMap<String, String[]>(states.size());
+        Map<String, String[]> valueMap = new HashMap<>(states.size());
         for (InputControlState state : states) {
             if (state != null)
                 valueMap.put(state.getId(), getValueFromInputControlState(state));
@@ -38,8 +51,15 @@ public class ReportParametersUtils {
         return valueMap;
     }
 
+    /**
+     * Get values from input controls which contains non-null state.
+     * This method removes all duplicated values.
+     *
+     * @param inputControls with internal non-null states
+     * @return unordered unique values
+     */
     public static Map<String, String[]> getValueMapFromInputControls(List<ReportInputControl> inputControls) {
-        LinkedHashMap<String, String[]> valueMap = new LinkedHashMap<String, String[]>(inputControls.size());
+        HashMap<String, String[]> valueMap = new LinkedHashMap<>(inputControls.size());
         for (ReportInputControl ic : inputControls) {
             InputControlState state = ic.getState();
             if (state != null) {
@@ -52,14 +72,14 @@ public class ReportParametersUtils {
     private static String[] getValueFromInputControlState(InputControlState state) {
         if (state.getValue() != null) {
             return new String[]{state.getValue()};
-        } else if (state.getOptions() != null) {
-            List<String> values = new ArrayList<String>(state.getOptions().size());
+        } else if (CollectionUtils.isNotEmpty(state.getOptions())) {
+            Set<String> values = new LinkedHashSet<>(state.getOptions().size());
             for (InputControlOption option : state.getOptions()) {
                 if (option.isSelected()) {
                     values.add(option.getValue());
                 }
             }
-            return values.toArray(new String[values.size()]);
+            return values.toArray(new String[0]);
         } else {
             return new String[0];
         }

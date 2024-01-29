@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -31,21 +31,36 @@ function isRelativeTime(value) {
     return RelativeTime.isValid(value);
 }
 function isTime(value, timeFormat) {
-    var time = Time.parse(value, timeFormat != null ? timeFormat : localeSettingsObject.timeFormat);
-    return typeof time !== 'undefined' && time.isValid();
+    let time = Time.parse(value, timeFormat ? timeFormat : localeSettingsObject.timeFormat);
+    if (time) {
+        // is we got into this IF that means the format matches the value, so now let's see if the value contains
+        // correct time
+        return time.isValid();
+    }
+    // if the format didn't match the value then, maybe, the value contains millisecnds, and to check this we need to
+    // add a millisecond formatter to the format.
+    // BUT: if the format was specified as an argument, then we don't need to guess if the value has the milliseconds
+    // or not, we just follow the parse() result.
+    if (timeFormat) {
+        return false;
+    }
+    // ok, so, checking with milliseconds formatter:
+    time = Time.parse(value, localeSettingsObject.timeFormat + '.l');
+    return Boolean(time && time.isValid());
 }
 function isIso8601Time(value) {
     return isTime(value, ISO_8061_TIME_PATTERN);
 }
 function compareTimes(value1, value2, timeFormat) {
-    var time1 = value1 instanceof Time ? value1 : Time.parse(value1, timeFormat != null ? timeFormat : localeSettingsObject.timeFormat), time2 = value2 instanceof Time ? value2 : Time.parse(value2, timeFormat != null ? timeFormat : localeSettingsObject.timeFormat);
+    const time1 = value1 instanceof Time ? value1 : Time.parse(value1, timeFormat != null ? timeFormat : localeSettingsObject.timeFormat),
+        time2 = value2 instanceof Time ? value2 : Time.parse(value2, timeFormat != null ? timeFormat : localeSettingsObject.timeFormat);
     if (typeof time1 === 'undefined' || typeof time2 === 'undefined') {
         return;
     }
     return Time.compare(time1, time2);
 }
 function timeToIso8061Time(hours, minutes, seconds) {
-    var obj = new Time(hours, minutes, seconds);
+    const obj = new Time(hours, minutes, seconds);
     if (obj.isValid()) {
         return obj.format(ISO_8061_TIME_PATTERN);
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -37,17 +37,17 @@ orgModule.userActionFactory = {
 
         var action = new orgModule.ServerAction("enableAll", data);
 
-        action.onSuccess = function(data) {
+        action.onSuccess = function(successData) {
             orgModule.fire(orgModule.userManager.Event.USERS_ENABLED, {
                 inputData: options,
-                responseData: data
+                responseData: successData
             });
         };
 
-        action.onError = function(data) {
+        action.onError = function(errorData) {
             orgModule.fire(orgModule.Event.SERVER_ERROR, {
                 inputData: options,
-                responseData: data
+                responseData: errorData
             });
         };
 
@@ -67,17 +67,17 @@ orgModule.userActionFactory = {
 
         var action = new orgModule.ServerAction("disableAll", data);
 
-        action.onSuccess = function(data) {
+        action.onSuccess = function(successData) {
             orgModule.fire(orgModule.userManager.Event.USERS_DISABLED, {
                 inputData: options,
-                responseData: data
+                responseData: successData
             });
         };
 
-        action.onError = function(data) {
+        action.onError = function(errorData) {
             orgModule.fire(orgModule.Event.SERVER_ERROR, {
                 inputData: options,
-                responseData: data
+                responseData: errorData
             });
         };
 

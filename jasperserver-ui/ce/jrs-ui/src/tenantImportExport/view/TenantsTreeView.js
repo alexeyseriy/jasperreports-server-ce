@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -34,7 +34,7 @@ var TenantsTreeView = Backbone.View.extend({
     initialize: function (options) {
         this.$container = $(options.container);
         var tenant = window.localStorage ? JSON.parse(localStorage.getItem('selectedTenant')) : null, selectedTenant = options.selectedTenant || tenant;
-        var root = options.currentUser ? options.currentUser.split('|')[1] || ROOT_TENANT_ID : selectedTenant.tenantUri === '/' ? selectedTenant.tenantId || ROOT_TENANT_ID : ROOT_TENANT_ID;
+        var root = options.currentUser ? options.currentUser.split('|')[1] || ROOT_TENANT_ID : selectedTenant?.tenantUri === '/' ? selectedTenant.tenantId || ROOT_TENANT_ID : ROOT_TENANT_ID;
         this.splittedUri = _.compact(selectedTenant.tenantUri.split('/'));
         this.splittedUri.splice(this.splittedUri.length - 1, 1);
         this.splittedUri.unshift(root);
@@ -138,15 +138,15 @@ var TenantsTreeView = Backbone.View.extend({
     },
     _recursivelyOpenLevels: function (level) {
         this.listenTo(level, 'ready', function () {
-            var level = this.tree.getLevel(this.splittedUri[0]);
+            var treeLevel = this.tree.getLevel(this.splittedUri[0]);
             this.splittedUri.splice(0, 1);
-            if (level) {
-                this.expandedLevels.push(level);
-                this.tree.expand(level.id);
-                this._recursivelyOpenLevels(level);
+            if (treeLevel) {
+                this.expandedLevels.push(treeLevel);
+                this.tree.expand(treeLevel.id);
+                this._recursivelyOpenLevels(treeLevel);
             } else {
-                _.each(this.expandedLevels, function (level) {
-                    this.stopListening(level, 'ready');
+                _.each(this.expandedLevels, function (newlevel) {
+                    this.stopListening(newlevel, 'ready');
                 }, this);
             }
         });

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -46,7 +46,8 @@ public class RunResourceActivity extends ReadResourceActivity {
             ResourceMediaType.REPORT_UNIT_CLIENT_TYPE,
             ResourceMediaType.OLAP_UNIT_CLIENT_TYPE,
             ResourceMediaType.DASHBOARD_CLIENT_TYPE,
-            ResourceMediaType.ADHOC_DATA_VIEW_CLIENT_TYPE
+            ResourceMediaType.ADHOC_DATA_VIEW_CLIENT_TYPE,
+            ResourceMediaType.REPORT_OPTIONS_CLIENT_TYPE
     );
 
     @Resource
@@ -96,6 +97,9 @@ public class RunResourceActivity extends ReadResourceActivity {
                 url = requestInfoProvider.getBaseUrl().concat("dashboard/viewer.html#").concat(resourceUri);
             }else if (ResourceMediaType.ADHOC_DATA_VIEW_CLIENT_TYPE.equals(resourceType)){
                 url += MessageFormat.format("adhocFlow&resource={0}&ParentFolderUri={1}", resourceUri, parentFolderUri);
+            }else if (ResourceMediaType.REPORT_OPTIONS_CLIENT_TYPE.equals(resourceType)){
+                url += MessageFormat.format("viewReportFlow&reportOptionsURI={0}&ParentFolderUri={1}&standAlone=true",
+                        resourceUri,parentFolderUri);
             }
 
             link = new Link().setHref(url)

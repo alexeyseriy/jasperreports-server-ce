@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -354,9 +354,9 @@ public class HibernateRepositoryCache extends HibernateDaoImpl implements Reposi
 		hibernateRepositoryEhcache.removeAll();
 
 		if (isEnabledRepositoryCaching) {
-			getHibernateTemplate().bulkUpdate(
-					"delete CachedItem where cacheName = ?",
-					cacheableItem.getCacheName());
+			getHibernateTemplate().execute((s)-> s.createQuery("delete CachedItem where cacheName = ?1")
+					.setParameter(1, cacheableItem.getCacheName())
+					.executeUpdate());
 		}
 	}
 

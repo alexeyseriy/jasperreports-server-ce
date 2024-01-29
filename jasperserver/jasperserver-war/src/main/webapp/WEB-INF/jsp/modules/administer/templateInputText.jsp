@@ -1,6 +1,6 @@
 <%@ page contentType="text/html; charset=utf-8" %>
 <%--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -29,15 +29,18 @@
 <li class="leaf">
     <t:insertTemplate template="/WEB-INF/jsp/templates/container.jsp">
            <t:putAttribute name="containerClass" value="panel pane settings"/>
-        <t:putAttribute name="containerTitle"><spring:message code='${param.oLabelCode}' /></t:putAttribute>
+
         <t:putAttribute name="bodyClass" value="twoColumn"/>
         <t:putAttribute name="bodyContent">
             <div class="column simple primary">
                 <label class="control input text" for="input_${param.oName}" title="<spring:message code='${param.oLabelCode}' />">
                     <input class="" id="input_${param.oName}" type="text" value="${param.oValue}"/>
-                    <span class="wrap"><spring:message code="${oDesc}"/></span>
+                    <span class="wrap"><spring:message code="${param.oLabelCode}"/></span>
                     <span class="message warning" id="error_${param.oName}">&nbsp;</span>
-               </label>
+                </label>
+				<div class="control description">
+					<spring:message code="${param.oDesc}"/>
+				</div>
             </div>
             <div class="column simple secondary">
                 <fieldset class="actions">

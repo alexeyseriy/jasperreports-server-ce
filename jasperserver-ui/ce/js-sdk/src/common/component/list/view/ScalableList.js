@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -22,7 +22,7 @@
 import $ from 'jquery';
 import Backbone from 'backbone';
 import _ from 'underscore';
-import ScalableListModel from '../model/ScalableListModel';
+import ScalableListModel from '../../../../components/scalableList/model/ScalableListModel';
 import defaultChunksTemplate from '../templates/viewPortChunksTemplate.htm';
 import defaultItemsTemplate from '../templates/itemsTemplate.htm';
 var DEFAULT_VIEW_PORT_CHUNK_HEIGHT = 1000000;

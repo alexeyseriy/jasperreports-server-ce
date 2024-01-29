@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -34,6 +34,7 @@ import net.sf.jasperreports.engine.JRPrintPage;
 import net.sf.jasperreports.engine.JRVirtualizer;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.ReportContext;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.FactoryBean;
@@ -49,10 +50,9 @@ import static java.lang.String.format;
  * Configuring Run Report cache after cache manager is ready.
  *
  * @author esytnik, schubar
- * @version $ Id$
  */
 @Component
-public class RunReportServiceCacheFactoryBean implements FactoryBean<Cache>, InitializingBean {
+public class RunReportServiceCacheFactoryBean implements FactoryBean<Ehcache>, InitializingBean {
     private static final Log log = LogFactory.getLog(RunReportServiceCacheFactoryBean.class);
 
     private static final String DEFAULT_CACHE_NAME = "RRSCache";
@@ -62,7 +62,7 @@ public class RunReportServiceCacheFactoryBean implements FactoryBean<Cache>, Ini
 
     private String cacheName = DEFAULT_CACHE_NAME;
 
-    private Cache cache;
+    private Ehcache cache;
 
     public String getCacheName() {
         return cacheName;
@@ -73,7 +73,7 @@ public class RunReportServiceCacheFactoryBean implements FactoryBean<Cache>, Ini
     }
 
     @Override
-    public Cache getObject() throws CacheException {
+    public Ehcache getObject() throws CacheException {
         if (cache == null) {
             throw new CacheException(format("Cache '%s' is not configured.", getCacheName()));
         }
@@ -124,7 +124,7 @@ public class RunReportServiceCacheFactoryBean implements FactoryBean<Cache>, Ini
         }
     }
 
-    private static class RunReportCacheEventListener implements CacheEventListener {
+    static class RunReportCacheEventListener implements CacheEventListener {
         // freaking Oracle edge case
         public Object clone() {
             return this.clone();
@@ -159,7 +159,8 @@ public class RunReportServiceCacheFactoryBean implements FactoryBean<Cache>, Ini
         @Override
         public void notifyElementEvicted(Ehcache arg0, Element element) {
             String requestId = (String) element.getObjectKey();
-            ReportExecution execution = (ReportExecution) element.getObjectValue();
+            Pair<String, ReportExecution> pair = (Pair<String, ReportExecution>) element.getObjectValue();
+            ReportExecution execution = pair.getRight();
             try {
                 // cancelReportExecution((String)requestId);
                 if (execution.getStatus() == ExecutionStatus.ready

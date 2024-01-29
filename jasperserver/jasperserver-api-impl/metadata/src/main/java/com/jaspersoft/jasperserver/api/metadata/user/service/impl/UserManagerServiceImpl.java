@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -28,6 +28,7 @@ import com.jaspersoft.jasperserver.api.metadata.common.service.impl.HibernateDao
 import com.jaspersoft.jasperserver.api.metadata.common.service.impl.PaginationHelper;
 import com.jaspersoft.jasperserver.api.metadata.jasperreports.domain.ReportUnit;
 import com.jaspersoft.jasperserver.api.metadata.user.domain.Role;
+import com.jaspersoft.jasperserver.api.metadata.user.domain.TenantQualified;
 import com.jaspersoft.jasperserver.api.metadata.user.domain.User;
 import com.jaspersoft.jasperserver.api.metadata.user.service.RoleManagerService;
 import com.jaspersoft.jasperserver.api.metadata.user.service.UserAuthorityService;
@@ -36,6 +37,9 @@ import com.jaspersoft.jasperserver.api.metadata.view.domain.FilterCriteria;
 import com.jaspersoft.jasperserver.api.metadata.view.domain.PropertyFilter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Propagation;
@@ -61,7 +65,7 @@ public class UserManagerServiceImpl extends HibernateDaoImpl implements UserMana
 
     @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
     public void updateUser(ExecutionContext context, String userName, User userDetails,
-                                 Set<Role> assignedRoleSet, Set<Role> unassignedRoleSet) {
+                           Set<Role> assignedRoleSet, Set<Role> unassignedRoleSet) {
 
         User oldUser = this.userService.getUser(null, userName);
 
@@ -137,6 +141,7 @@ public class UserManagerServiceImpl extends HibernateDaoImpl implements UserMana
 
         if (user != null && user.isEnabled() != enable) {
             user.setEnabled(enable);
+            user.setNumberOfFailedLoginAttempts(enable ? 0 : user.getNumberOfFailedLoginAttempts());
             userService.updateUser(context, userName, user);
         }
     }
@@ -160,5 +165,24 @@ public class UserManagerServiceImpl extends HibernateDaoImpl implements UserMana
 
     public void setUserService(UserAuthorityService userService) {
         this.userService = userService;
+    }
+
+    public static String getCurrentUserQualifiedName() {
+        SecurityContext securityContext = SecurityContextHolder.getContext();
+        if (securityContext == null) return null;
+        Authentication authenticationToken = securityContext.getAuthentication();
+        if (authenticationToken == null) return null;
+        return getAuthenicatedQualifiedName(authenticationToken);
+    }
+
+    protected static String getAuthenicatedQualifiedName(Authentication authenticationToken ) {
+        String name = authenticationToken.getName();
+
+        if (authenticationToken.getPrincipal() instanceof TenantQualified) {
+            TenantQualified tenantQualified = (TenantQualified) authenticationToken.getPrincipal();
+            String tenantId = tenantQualified.getTenantId();
+            return (tenantId != null) ? name + "|" + tenantId : name;
+        }
+        return name;
     }
 }

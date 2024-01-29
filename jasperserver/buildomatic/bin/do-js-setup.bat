@@ -8,6 +8,19 @@ rem
 
 rem -----------------------------------------------------------------------------
 
+rem Directory paths are relative to JRS_HOME\buildomatic.
+for /f tokens^=2-5^ delims^=.-_^" %%j in ('java -fullversion 2^>^&1') do @set "jver=%%j"
+echo %jver%
+IF %jver% GEQ 17 (
+  echo "Copying additional jar file(s) that are needed very specific to jdk 17+ runtime."
+  copy /Y .\install_resources\extra-jars-jdk17\asm*.jar .\lib
+  copy /Y .\install_resources\extra-jars-jdk17\nashorn*.jar .\lib
+) ELSE (
+  echo "Deleting any existing jar file(s) that are needed very specific to jdk 17+ runtime."
+  del /F /Q .\lib\asm*.jar
+  del /F /Q .\lib\nashorn*.jar
+)
+
 rem
 rem Determining argument count.
 rem
@@ -57,7 +70,7 @@ IF "%JS_SETUP_MODE%"=="upgrade" (
     )
   )
 )
-ENDLOCAL & SET JS_ANT_OPTIONS=%_JS_ANT_OPTIONS% -Djs.setup.mode=%JS_SETUP_MODE%
+ENDLOCAL & SET JS_ANT_OPTIONS=%_JS_ANT_OPTIONS% -Djs.setup.mode=%JS_SETUP_MODE% -Djs.option=%JS_OPTION%
 
 rem
 rem Initializing time variable.

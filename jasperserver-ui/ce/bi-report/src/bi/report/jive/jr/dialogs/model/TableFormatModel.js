@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved. Confidentiality & Proprietary.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved. Confidentiality & Proprietary.
  * Licensed pursuant to commercial TIBCO End User License Agreement.
  */
 
@@ -33,13 +33,13 @@ export default Epoxy.Model.extend({
                 },
                 set: function(value) {
                     var newFont = _.extend({}, this.get('font')),
-                        val = value;
+                        newValue = value;
 
-                    if (key === 'name' && val != null && !val.trim().length) {
-                        val = null;
+                    if (key === 'name' && newValue != null && !newValue.trim().length) {
+                        newValue = null;
                     }
 
-                    newFont[key] = val;
+                    newFont[key] = newValue;
 
                     return {
                         font: newFont

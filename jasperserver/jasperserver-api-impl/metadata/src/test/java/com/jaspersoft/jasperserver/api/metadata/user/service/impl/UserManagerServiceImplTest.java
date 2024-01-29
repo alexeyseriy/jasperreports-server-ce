@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -28,6 +28,7 @@ import com.jaspersoft.jasperserver.api.metadata.user.domain.client.UserImpl;
 import com.jaspersoft.jasperserver.api.metadata.user.service.UserAuthorityService;
 import com.jaspersoft.jasperserver.api.metadata.view.domain.FilterCriteria;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,6 +36,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.security.core.Authentication;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -268,6 +270,17 @@ public class UserManagerServiceImplTest {
         verify(userService, times(1)).updateUser(null, eq(demo), eq(demoUser));
     }
 
+    @Test
+    private void getAuthenicatedQualifiedName() {
+        Authentication authenticationToken = mock(Authentication.class);
+        when(authenticationToken.getName()).thenReturn("ABC");
+        when(authenticationToken.getPrincipal()).thenReturn(null);
+        Assert.assertEquals("ABC", UserManagerServiceImpl.getAuthenicatedQualifiedName(authenticationToken));
+        when(authenticationToken.getPrincipal()).thenReturn("123");
+        Assert.assertEquals("ABC|123", UserManagerServiceImpl.getAuthenicatedQualifiedName(authenticationToken));
+        when(authenticationToken.getName()).thenReturn("null");
+        Assert.assertNull(UserManagerServiceImpl.getAuthenicatedQualifiedName(authenticationToken));
+    }
 
     private User clone(User user) {
         UserImpl clone = new UserImpl();

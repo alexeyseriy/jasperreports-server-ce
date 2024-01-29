@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -49,22 +49,26 @@
 		diskExpiryThreadIntervalSeconds="120"/>
 
 <!-- ******************************************************************** NO CLUSTERING *************************************************** -->
-      <cache name="defaultRepoCache"
-                maxElementsInMemory="10000"
-                eternal="false"
-                overflowToDisk="false"
-                timeToIdleSeconds="36000"
-                timeToLiveSeconds="180000"
-                diskPersistent="false"
-                diskExpiryThreadIntervalSeconds="120"
-                statistics="true">
-        </cache>
+
+	<cache name="defaultRepoCache"
+		   maxElementsInMemory="10000"
+		   eternal="false"
+		   overflowToDisk="false"
+		   timeToIdleSeconds="36000"
+		   timeToLiveSeconds="180000"
+		   diskPersistent="false"
+		   diskExpiryThreadIntervalSeconds="120"
+		   statistics="true">
+	</cache>
+
+<!-- ******************************************************************** END of NO CLUSTERING ******************************************** -->
 
 	<cache name="roles"
 		   maxElementsInMemory="1000"
 		   eternal="true"
 		   overflowToDisk="false"
 		   diskPersistent="false"/>
+
 	<cache name="rolesByTenant"
 		   maxElementsInMemory="1000"
 		   eternal="true"
@@ -104,8 +108,6 @@
 		   eternal="true"
 		   overflowToDisk="false"
 		   diskPersistent="false"/>
-
-	<!-- ******************************************************************** END of NO CLUSTERING ******************************************** -->
 
 <!-- ********************************************************************   RMI  ********************************************************** -->
      <!-- START 

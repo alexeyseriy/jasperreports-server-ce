@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -26,8 +26,6 @@
 
 /*global olapPage, viewURI*/
 import jQuery from 'jquery';
-import {isIPad} from "../util/utils.common";
-import TouchController from '../util/touch.controller';
 import webHelpModule from '../components/components.webHelp';
 
 // TODO: center overly dialog
@@ -83,7 +81,7 @@ function click() {
 
 // TODO: Firefox
 // double click for drill-member
-function dblClick(argv) {
+function dblClick(argVal) {
     for (i = 0; i < document.forms.length; i++) {
         nl = document.forms[i].getElementsByTagName("INPUT");
         for (j = 0; j < nl.length; j++) {
@@ -92,7 +90,7 @@ function dblClick(argv) {
             for (k = 0; k < al.length; k++) {
                 a = al.item(k);
                 if (a.nodeName == "name") {
-                    if (a.nodeValue == argv) {
+                    if (a.nodeValue == argVal) {
                         // goto the next <INPUT ... tag
                         n = nl.item(++j);
                         // disable 'onclick' and 'ondblclick'
@@ -196,15 +194,15 @@ function initialize() {
     }
 
     images = jQuery('img');
-    for (var i = 0; i < images.length; i++) {
-        images[i].onclick = function(event){
+    for (var l = 0; l < images.length; l++) {
+        images[l].onclick = function(event){
             window.pageAlert = false;
         }
     }
 
     links = jQuery('a');
-    for (var i = 0; i < links.length; i++) {
-        links[i].onclick = function(event){
+    for (var m = 0; m < links.length; m++) {
+        links[m].onclick = function(event){
             window.pageAlert = false;
         }
     }
@@ -216,29 +214,34 @@ function initialize() {
     }
 
     inputs = jQuery('input.corner');
-    for (var i = 0; i < inputs.length; i++) {
-        inputs[i].onclick = function(event){
+    for (var inputCorner = 0; inputCorner < inputs.length; inputCorner++) {
+        inputs[inputCorner].onclick = function(event){
             window.pageAlert = false;
         }
     }
 
 
     inputs = jQuery('input.nav');
-    for (var i = 0; i < inputs.length; i++) {
-        inputs[i].onclick = function(event){
+    let inputNavClick = function (inputNavigation) {
+        inputs[inputNavigation].onclick = function(){
             window.pageAlert = false;
             t=setTimeout(function() {
                 click();
             }, 250);
-            argv=inputs[i].id;
+            argv=inputs[inputNavigation].id;
             return false;
         }
-
-        inputs[i].ondblclick = function(event){
+    };
+    let inputNavdbClick = function (inputNavigationDb) {
+        inputs[inputNavigationDb].ondblclick = function(){
             clearTimeout(t);
-            dblClick(inputs[i].id);
+            dblClick(inputs[inputNavigationDb].id);
             return false;
         }
+    };
+    for (var inputNav = 0; inputNav < inputs.length; inputNav++) {
+        inputNavClick(inputNav);
+        inputNavdbClick(inputNav)
     }
 }
 
@@ -246,12 +249,6 @@ document.observe('dom:loaded', function() {
     initialize();
 
     webHelpModule.setCurrentContext("analysis");
-    if(isIPad()){
-        var scrollElement = jQuery('#olapViewForm')[0];
-        var touchController = new TouchController(scrollElement, jQuery(scrollElement).parent(), {
-            absolute: true
-        });
-    }
 });
 
 window.ld = ld;

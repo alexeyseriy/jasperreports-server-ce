@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -66,8 +66,8 @@ export default Backbone.Collection.extend({
         return result.jdbcDrivers ? result.jdbcDrivers : result;
     },
     markDriverAsAvailable: function (driverId) {
-        var model = this.models.find(function (model) {
-            return model.id === driverId;
+        var model = this.models.find(function (driverModel) {
+            return driverModel.id === driverId;
         });
         model.set('available', true);
     }

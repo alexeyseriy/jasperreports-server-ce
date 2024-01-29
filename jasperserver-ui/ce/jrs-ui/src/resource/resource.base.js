@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -23,7 +23,7 @@
  */
 import {$break} from 'prototype';
 import TouchController from '../util/touch.controller';
-import {buildActionUrl, isIPad} from "../util/utils.common";
+import {buildActionUrl} from "../util/utils.common";
 import buttonManager from '../core/core.events.bis';
 import dynamicTree from '../dynamicTree/dynamicTree.utils';
 import jQuery from 'jquery';
@@ -98,9 +98,9 @@ var resource = {
             'publicFolderUri',
             'urlGetNode',
             'urlGetChildren'
-        ].inject({}, function (treeOptions, key) {
-            options[key] !== null && (treeOptions[key] = options[key]);
-            return treeOptions;
+        ].inject({}, function (treeOption, key) {
+            options[key] !== null && (treeOption[key] = options[key]);
+            return treeOption;
         });
         this._tree = new dynamicTree.createRepositoryTree(this._treeId, treeOptions);
         this._tree.observe('tree:loaded', function () {

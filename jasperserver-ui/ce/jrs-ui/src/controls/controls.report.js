@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -22,7 +22,6 @@
  * @version: $Id$
  */
 /* global viewer, confirm, alert, Report */
-import {$, $$} from 'prototype';
 import {JRS} from "../namespace/namespace";
 import layoutModule from '../core/core.layout';
 import Controls from './controls.core';
@@ -40,7 +39,6 @@ import '../reportViewer/report.view.base';
 import {isProVersion} from "../namespace/namespace";
 import Report from '../reportViewer/report.view.base';
 import './controls.controller';
-import inputControlsSettings from '../settings/inputControls.settings';
 import jQuery from 'jquery';
 import _ from 'underscore';
 import ConfirmationDialog from 'js-sdk/src/common/component/dialog/ConfirmationDialog';
@@ -52,10 +50,10 @@ const isMandatoryInputControls = () => {
         return !_.contains(_.keys(Report.getAllRequestParameters()), parameterName);
     }));
 
-    // Report.reportParameterValues means that parameters were saved in flow and were put on jsp, we do it when we go drill through.
+    // Report.reportParameterValues will be filled when returning from drill through.
     // _.isEmpty(Report.reportParameterValues) means that we are not returning from drill through.
 
-    return (Report.hasInputControls && (Report.reportForceControls || atLeastOneParameterDoesntHaveDefaultOrUrlValue && _.isEmpty(Report.reportParameterValues)));
+    return (Report.hasInputControls && ((Report.reportForceControls || atLeastOneParameterDoesntHaveDefaultOrUrlValue) && _.isEmpty(Report.reportParameterValues)));
 };
 
 var ControlsReport = function (jQuery, _, Controls, Report) {
@@ -150,16 +148,13 @@ var ControlsReport = function (jQuery, _, Controls, Report) {
                 }
             });
 
-            const mandatoryInputControls = isMandatoryInputControls();
-            const shouldFetchInputControlsOnInitialize = mandatoryInputControls || (Report.hasInputControls &&  Controls.layouts.LAYOUT_IN_PAGE === Report.reportControlsLayout );
-
             if (Report.hasInputControls) {
                 const dfd = this._fetchAndSetInputControlsStateOnce().then(() => {
                     const viewModel = Controls.controller.getViewModel();
                     const isValidSelection = viewModel.areAllControlsValid();
 
                     // when their is wrong URL params show control dailog
-                    if (mandatoryInputControls || !isValidSelection) {
+                    if (isMandatoryInputControls() || !isValidSelection) {
                         Controls.show();
 
                         Controls.controlDialog && Controls.controlDialog.show();
@@ -175,7 +170,7 @@ var ControlsReport = function (jQuery, _, Controls, Report) {
                     const viewModel = Controls.controller.getViewModel();
                     const isValidSelection = viewModel.areAllControlsValid();
 
-                    if (mandatoryInputControls || !isValidSelection) {
+                    if (isMandatoryInputControls() || !isValidSelection) {
                         if (Report && Report.nothingToDisplay) {
                             Report.nothingToDisplay.removeClass(layoutModule.HIDDEN_CLASS);
 
@@ -653,22 +648,39 @@ var ControlsReport = function (jQuery, _, Controls, Report) {
             const dfd = jQuery.Deferred();
 
             if (!this.initialInputControlsFetched) {
-                const allRequestParameters = _.extend(Report.getAllRequestParameters(), Report.reportParameterValues);
-                this.controller.fetchAndSetInputControlsState(allRequestParameters).then(() => {
-                    this.initialInputControlsFetched = true;
 
-                    const viewModel = Controls.controller.getViewModel();
-                    const selection = viewModel.get('selection');
+                const fetchRawValuesDfd = jQuery.Deferred();
+                if (Report.reportExecutionId && Report.reportExecutionId.length) {
+                    this.controller.fetchReportRawParameterValues(Report.reportExecutionId).then(values => {
+                        Report.reportParameterValues = values;
+                        fetchRawValuesDfd.resolve();
+                    }, (...args) => {
+                        fetchRawValuesDfd.reject(...args);
+                    });
+                } else {
+                    fetchRawValuesDfd.resolve();
+                }
 
-                    Controls.lastSelection = selection;
-                    Controls.initialSelection = selection;
+                fetchRawValuesDfd.then(() => {
+                    const allRequestParameters = _.extend(Report.getAllRequestParameters(), Report.reportParameterValues);
+                    this.controller.fetchAndSetInputControlsState(allRequestParameters).then(() => {
+                        this.initialInputControlsFetched = true;
 
-                    return dfd.resolve();
+                        const viewModel = Controls.controller.getViewModel();
+                        const selection = viewModel.get('selection');
+
+                        Controls.lastSelection = selection;
+                        Controls.initialSelection = selection;
+
+                        return dfd.resolve();
+                    }, (...args) => {
+                        dfd.reject(...args);
+                    });
+
+                    Controls.Utils.showLoadingDialogOn(dfd, null, true);
                 }, (...args) => {
                     dfd.reject(...args);
                 });
-
-                Controls.Utils.showLoadingDialogOn(dfd, null, true);
             } else {
                 dfd.resolve();
             }

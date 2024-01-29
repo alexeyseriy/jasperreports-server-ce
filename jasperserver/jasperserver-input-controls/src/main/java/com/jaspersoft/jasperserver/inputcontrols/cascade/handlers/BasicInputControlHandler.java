@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -42,6 +42,7 @@ import com.jaspersoft.jasperserver.inputcontrols.cascade.handlers.validators.Inp
 import com.jaspersoft.jasperserver.inputcontrols.cascade.InputControlValidationException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -74,12 +75,15 @@ public class BasicInputControlHandler implements InputControlHandler {
     protected DataConverterService dataConverterService;
     @Resource
     protected MessageSource messageSource;
-    @Resource(name = "isoCalendarFormatProvider")
+    @Resource(name = "${bean.calendarFormatProvider}")
     protected CalendarFormatProvider calendarFormatProvider;
     @Resource
     protected InputControlPagination inputControlPagination;
 
     protected ToClientConverter<DataType, ClientDataType, ToClientConversionOptions> dataTypeResourceConverter;
+
+    @Value("${inputControl.handler.values.caseSensitive:true}")
+    private boolean isCaseSensitive = true;
 
     @PostConstruct
     public void init(){
@@ -267,7 +271,7 @@ public class BasicInputControlHandler implements InputControlHandler {
             parameters.put(inputControl.getName(), dataConverterService.convertSingleValue(formattedValue, inputControl, info));
 
             inputControlOption.setSelected(null);
-            selectedValues = Arrays.asList(new InputControlOption[]{inputControlOption});
+            selectedValues = Arrays.asList(inputControlOption);
             selectedValueMap.put(inputControl.getName(), selectedValues);
             return selectedValueMap;
         } else {
@@ -282,7 +286,11 @@ public class BasicInputControlHandler implements InputControlHandler {
      * @deprecated this method need to be removed if real nothing substitution is implemented for single value and single select controls.
      */
     protected void internalApplyNothingSubstitution(String controlName, Map<String, Object> parameters) {
-        parameters.put(controlName, null);
+        // JS-65535 and JS 65427
+        // sync behavior of using internalApplyNothingSubstitution() and applyNothingSelected()
+        // if nothing is selected, IC will be removed from IC list instead of setting it to NULL
+        applyNothingSelected(controlName, parameters);
+
     }
 
     protected void doMandatoryValidation(Object typedValue, InputControlState state) {
@@ -351,6 +359,14 @@ public class BasicInputControlHandler implements InputControlHandler {
     }
     protected InputControlOption buildInputControlOption(String label, String value) {
         return new InputControlOption(value, label);
+    }
+
+    public boolean isCaseSensitive() {
+        return isCaseSensitive;
+    }
+
+    public void setCaseSensitive(boolean caseSensitive) {
+        this.isCaseSensitive = caseSensitive;
     }
 }
 

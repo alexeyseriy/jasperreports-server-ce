@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -30,16 +30,14 @@ import java.util.Date;
 
 /**
  * @author Yaroslav.Kovalchyk
- * @version $Id$
  */
 @Service
-public class DateDataConverter implements DataConverter<Date>{
-    @Resource(name = "isoCalendarFormatProvider")
-    protected CalendarFormatProvider calendarFormatProvider;
+public class DateDataConverter extends BaseChronoDataConverter implements DataConverter<Date>{
+
     @Override
     public Date stringToValue(String rawData) throws ParseException {
         try {
-            return StringUtils.isNotEmpty(rawData) ? calendarFormatProvider.getDateFormat().parse(rawData) : null;
+            return StringUtils.isNotEmpty(rawData) ? getDateFormat(rawData).parse(rawData) : null;
         } catch (ParseException initial){
             try {
                 return new Date(Long.parseLong(rawData));
@@ -51,6 +49,6 @@ public class DateDataConverter implements DataConverter<Date>{
 
     @Override
     public String valueToString(Date value) {
-        return value != null ? calendarFormatProvider.getDateFormat().format(value) : "";
+        return value != null ? getDateFormat().format(value) : "";
     }
 }

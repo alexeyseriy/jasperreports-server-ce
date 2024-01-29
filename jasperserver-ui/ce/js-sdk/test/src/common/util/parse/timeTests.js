@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -69,6 +69,10 @@ describe('Time Utils', function () {
         it('should return true in case of valid time string', function () {
             expect(timeUtils.isTime('11:23:48')).toEqual(true);
             expect(timeUtils.isTime('23:56:01')).toEqual(true);
+        });
+        it('should return true in case of valid time string with milliseconds', function () {
+            expect(timeUtils.isTime('11:23:48.123')).toEqual(true);
+            expect(timeUtils.isTime('23:56:01.456')).toEqual(true);
         });
         it('should return false in case of invalid time string', function () {
             expect(timeUtils.isTime('11:83:48')).toEqual(false);

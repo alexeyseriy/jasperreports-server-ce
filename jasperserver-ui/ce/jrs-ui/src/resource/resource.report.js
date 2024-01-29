@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -26,6 +26,7 @@ import resource from './resource.base';
 import resourceLocator from './resource.locate';
 import {ValidationModule, isIE, isIE7, isIE8, isIE9, isIE10} from "../util/utils.common";
 import jQuery from 'jquery';
+import layoutModule from "../core/core.layout";
 
 var resourceReport = {
     SET_UP_PAGE_ID: 'addReport_SetUp',
@@ -53,7 +54,7 @@ var resourceReport = {
         this._setUpPage = jQuery('#' + this.SET_UP_PAGE_ID)[0];
 
         if (this._setUpPage) {
-            this._form = jQuery(document.body).find('form')[0];
+            this._form = jQuery('#' + layoutModule.PAGE_BODY_ID).find('form')[0];
             this._label = jQuery('#' + this.LABEL_ID)[0];
             this._resourceId = jQuery('#' + this.RESOURCE_ID_ID)[0];
             this._description = jQuery('#' + this.DESCRIPTION_ID)[0];

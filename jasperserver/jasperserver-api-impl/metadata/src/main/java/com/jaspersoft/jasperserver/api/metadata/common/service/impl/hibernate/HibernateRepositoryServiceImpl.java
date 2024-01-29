@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -104,6 +104,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.dao.DataAccessException;
 import org.springframework.orm.hibernate5.HibernateCallback;
+import org.springframework.orm.hibernate5.HibernateObjectRetrievalFailureException;
 import org.springframework.orm.hibernate5.HibernateTemplate;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 import org.springframework.security.core.Authentication;
@@ -568,7 +569,7 @@ public class HibernateRepositoryServiceImpl extends HibernateDaoImpl implements 
         if (foldersList.isEmpty()) {
             if (required) {
                 String quotedURI = "\"" + uri + "\"";
-                throw new JSResourceNotFoundException("jsexception.folder.not.found.at", new Object[] {quotedURI});
+                throw new JSResourceNotFoundException("Folder not found at "+quotedURI);
             }
             if(log.isDebugEnabled()){
                 log.debug("Folder not found at \"" + uri + "\"");
@@ -1237,10 +1238,14 @@ public class HibernateRepositoryServiceImpl extends HibernateDaoImpl implements 
 
     protected RepoResource findByName(Class persistentClass, RepoFolder folder, String name, boolean required) {
         DetachedCriteria criteria = resourceNameCriteria(persistentClass, folder, name);
-        List resourceList = findByCriteria(getHibernateTemplate(),criteria,false);
-
+        List resourceList = null;
+        try {
+             resourceList = findByCriteria(getHibernateTemplate(), criteria, false);
+        } catch(HibernateObjectRetrievalFailureException e) {
+            log.error("exception occured while retrieving "+name);
+        }
         RepoResource res;
-        if (resourceList.isEmpty()) {
+        if (resourceList == null || resourceList.isEmpty()) {
             if (required) {
                 String uri = "\"" + folder.getURI() + Folder.SEPARATOR + name + "\"";
                 throw new JSResourceNotFoundException("jsexception.resource.of.type.not.found", new Object[] {uri, persistentClass});

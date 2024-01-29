@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -50,10 +50,6 @@
             <groupId>com.jaspersoft.jasperserver.core.util</groupId>
             <artifactId>jasperserver-core-util</artifactId>
         </dependency>
-        <!--dependency>
-            <groupId>com.jaspersoft.jasperserver.crypto</groupId>
-            <artifactId>js-crypto</artifactId>
-        </dependency -->
         <dependency>
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
@@ -224,19 +220,19 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>asm</groupId>
+            <groupId>org.ow2.asm</groupId>
             <artifactId>asm</artifactId>
             <version>${asm.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>asm</groupId>
+            <groupId>org.ow2.asm</groupId>
             <artifactId>asm-analysis</artifactId>
             <version>${asm.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>asm</groupId>
+            <groupId>org.ow2.asm</groupId>
             <artifactId>asm-tree</artifactId>
             <version>${asm.version}</version>
             <scope>test</scope>
@@ -294,8 +290,16 @@
         <dependency>
             <groupId>org.owasp.esapi</groupId>
             <artifactId>esapi</artifactId>
-            <version>2.1.0.1</version>
+            <version>2.4.0.0</version>
             <exclusions>
+                <exclusion>
+                    <groupId>org.apache-extras.beanshell</groupId>
+                    <artifactId>bsh</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.io7m.xom</groupId>
+                    <artifactId>xom</artifactId>
+                </exclusion>
                 <exclusion>
                     <groupId>xerces</groupId>
                     <artifactId>xmlParserAPIs</artifactId>

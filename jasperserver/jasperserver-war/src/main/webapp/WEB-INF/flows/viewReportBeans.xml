@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -233,6 +233,11 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 		<property name="setResponseContentLength" value="true"/>
 	</bean>
 
+	<bean id="reportXlsxMetadataExporter" class="com.jaspersoft.jasperserver.war.action.ReportXlsxMetadataExporter" parent="baseReportExporter">
+		<property name="exportParameters" ref="xlsExportParameters"/>
+		<property name="setResponseContentLength" value="true"/>
+	</bean>
+
 	<bean id="reportExporter" class="com.jaspersoft.jasperserver.war.action.ReportExporterAction">
 		<property name="configuredExporters" ref="exporterConfigMap"/>
 		<property name="exportParameters">
@@ -353,7 +358,15 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 		<property name="exportParameters" ref="pptxExportParameters"/>
 		<property name="currentExporter" ref="reportPptxExporter"/>
 	</bean>
-	
+
+	<bean id="xlsxMetadataExporterConfiguration"  class="com.jaspersoft.jasperserver.war.action.ExporterConfigurationBean">
+		<property name="descriptionKey" value="jasper.report.view.hint.export.xlsx.metadata"/>
+		<property name="iconSrc" value="/images/xlsx.png"/>
+		<property name="parameterDialogName" value="excelExportParams"/>
+		<property name="exportParameters" ref="xlsExportParameters"/>
+		<property name="currentExporter" ref="reportXlsxMetadataExporter"/>
+	</bean>
+
 	<!-- end specific exporter configurations -->
 	
 	
@@ -364,8 +377,10 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
         	 -->
         	 
         <entry key="pdf" value-ref="pdfExporterConfiguration"/>
+		<!--
         <entry key="xls" value-ref="xlsExporterConfiguration"/>
         <entry key="xlsNoPag" value-ref="xlsNoPaginationExporterConfiguration"/>
+        -->
         <entry key="csv" value-ref="csvExporterConfiguration"/>
         <entry key="docx" value-ref="docxExporterConfiguration"/>
         <entry key="rtf" value-ref="rtfExporterConfiguration"/>
@@ -378,6 +393,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
         <entry key="txt" value-ref="txtExporterConfiguration"/>
         -->
 		<entry key="data_csv" value-ref="csvMetadataExporterConfiguration"/>
+		<entry key="data_xlsx" value-ref="xlsxMetadataExporterConfiguration"/>
     </util:map>
 
     <util:list id="exportersSupportedByiPad">

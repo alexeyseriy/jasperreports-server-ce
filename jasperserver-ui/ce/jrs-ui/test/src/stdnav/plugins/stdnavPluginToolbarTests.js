@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -202,7 +202,7 @@ describe("Stdnav Toolbar Plugin", function() {
         it("should call ToolbarPlugin 'enter' handler when Enter key pressed on BUTTON", function () {
             var enterSpy = spyOn(stdnavPluginToolbar.behavior.enter, 1);
 
-            $('#zoom_in').focus().closest("li").focusin();
+            $('#zoom_in').focus().closest("li").addClass('subfocus');
             $('#zoom_in').simulate("keydown", {keyCode: key.ENTER});
 
             expect(enterSpy).toHaveBeenCalledTimes(1);
@@ -211,7 +211,7 @@ describe("Stdnav Toolbar Plugin", function() {
         it("should call ButtonPlugin 'toggle' handler when Space key pressed on BUTTON", function () {
             var toggleSpy = spyOn(stdnavPluginButton.behavior.toggle, 1);
 
-            $('#zoom_in').focus().closest("li").focusin();
+            $('#zoom_in').focus().closest("li").addClass('subfocus');
             $('#zoom_in').simulate("keydown", {keyCode: key.SPACE});
 
             expect(toggleSpy).toHaveBeenCalledTimes(1);
@@ -226,7 +226,7 @@ describe("Stdnav Toolbar Plugin", function() {
             stdnavPluginButton.activate();
             stdnavPluginToolbar.activate();
 
-            $('#zoom_in').focus().closest("li").focusin();
+            $('#zoom_in').focus().closest("li").addClass('subfocus');
             $('#zoom_in').simulate("keydown", {keyCode: key.ENTER});
             $('#zoom_in').simulate("keydown", {keyCode: key.SPACE});
 
@@ -240,7 +240,7 @@ describe("Stdnav Toolbar Plugin", function() {
 
             spyOn(testButton, "onclick");
 
-            testButtonLi.focus().focusin();
+            testButtonLi.focus().addClass('subfocus');
             testButtonLi.simulate("keydown", {keyCode: key.SPACE});
             testButtonLi.simulate("keydown", {keyCode: key.ENTER});
 

@@ -1,6 +1,6 @@
 <%@ page contentType="text/html; charset=utf-8" %>
 <%--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -88,12 +88,12 @@ components (not for cloning) shared by all/most JasperServer pages
 <%--
 Hidden iframe for ajax downloads
 --%>
-<iframe id="ajax-download-iframe" style="visibility:hidden"></iframe>
+<iframe id="ajax-download-iframe" style="display:none"></iframe>
 
 <%--
 Hidden iframe for ajax uploads
 --%>
-<iframe id="ajax-upload-iframe" style="visibility:hidden" src="about:blank" ></iframe>
+<iframe id="ajax-upload-iframe" style="display:none" src="about:blank" ></iframe>
 
 <%--heat beat info--%>
 <jsp:include page="../jsp/modules/heartbeat/heartbeat.jsp"/>

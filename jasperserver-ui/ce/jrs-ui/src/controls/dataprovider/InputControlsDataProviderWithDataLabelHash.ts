@@ -37,4 +37,4 @@ export default class InputControlsDataProviderWithDataLabelHash implements Input
     getLabelByValue(value: string) {
         return this.dataLabelHash[value];
     }
-};
+}

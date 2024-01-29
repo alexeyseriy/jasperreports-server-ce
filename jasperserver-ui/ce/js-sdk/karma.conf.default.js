@@ -24,6 +24,7 @@ const constants = require("karma/lib/constants");
 const webpackConfigFactory = require("./webpack.config");
 const path = require("path");
 const isCoverageEnabled = require("./util/coverage/isCoverageEnabled");
+const jasmineSeedReporter = require('karma-jasmine-seed-reporter');
 
 module.exports = {
     // base path, that will be used to resolve files and exclude
@@ -41,7 +42,7 @@ module.exports = {
         // https://jasmine.github.io/api/3.6/Configuration
         jasmine: {
             random: process.env.JASMINE_RANDOM === 'true',
-            // seed: null,
+            seed: process.env.JASMINE_RANDOM_SEED || undefined,
             // oneFailurePerSpec: false,
             // failFast: false,
             // hideDisabled: false
@@ -67,7 +68,7 @@ module.exports = {
     // test results reporter to use
     // possible values: 'dots', 'progress', 'junit', 'growl', 'coverage'
     // junit reporter is necessary for CI
-    reporters: ['coverage-istanbul', 'spec' ,'junit'],
+    reporters: ['coverage-istanbul', 'spec' ,'junit', 'jasmine-seed'],
 
     specReporter: {
         suppressFailed: false,
@@ -180,6 +181,7 @@ module.exports = {
         "karma-spec-reporter",
         "karma-jasmine-html-reporter",
         "karma-sourcemap-loader",
-        "karma-webpack"
+        "karma-webpack",
+        jasmineSeedReporter
     ]
 };

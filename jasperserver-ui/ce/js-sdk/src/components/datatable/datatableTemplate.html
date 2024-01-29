@@ -19,7 +19,7 @@
         {{ if (row.type === "detail" && showDetails) { }}
         <tr class="jr-mDatatable-row {{- rowIdx % 2 ? 'jr-mDatatable-rowOdd' : 'jr-mDatatable-rowEven'}} jr">
             {{ _.each(row.data, function (value, idx) { }}
-            <td scope="row" class="jr-mDatatable-cell jr">
+            <td class="jr-mDatatable-cell jr">
                 <div class="jr-mDatatable-cell-wrapper jr" style="width: {{- columns[idx].width + 'px'}}">
                     <div class="jr-mDatatable-cell-text jr">{{- value }}</div>
                 </div>

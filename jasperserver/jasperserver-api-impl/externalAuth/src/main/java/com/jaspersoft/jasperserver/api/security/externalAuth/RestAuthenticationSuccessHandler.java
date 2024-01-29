@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -21,9 +21,17 @@
 
 package com.jaspersoft.jasperserver.api.security.externalAuth;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jaspersoft.jasperserver.api.common.configuration.LoginLockoutConfig;
 import com.jaspersoft.jasperserver.api.security.internalAuth.InternalAuthenticationToken;
+import com.jaspersoft.jasperserver.dto.common.ErrorDescriptor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -32,6 +40,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Locale;
 
 /**
  * @author dlitvak
@@ -39,6 +48,11 @@ import java.io.IOException;
 public class RestAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
     protected final Log logger = LogFactory.getLog(getClass());
     private ExternalDataSynchronizer externalDataSynchronizer;
+
+    @Autowired
+    MessageSource messageSource;
+
+    private static Locale locale;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
@@ -48,7 +62,26 @@ public class RestAuthenticationSuccessHandler implements AuthenticationSuccessHa
             logger.debug("Successful authentication");
 
             //empty-body response
-        } catch (RuntimeException e) {
+        } catch(DisabledException disabledException){
+            logger.debug("User account is disabled");
+            int numberOfAllowedLoginAttempts = Integer.parseInt(LoginLockoutConfig.getNumberOfFailedLoginAttempts());
+            if(numberOfAllowedLoginAttempts > 0 ){ //indicates that Login-Lockout is enabled.
+                locale = LocaleContextHolder.getLocale();
+                ErrorDescriptor errorDescriptor = new ErrorDescriptor();
+                errorDescriptor.setErrorCode(String.valueOf(HttpServletResponse.SC_UNAUTHORIZED));
+                errorDescriptor.setMessage(messageSource.getMessage("jsp.loginError.userLockedMessage",null,locale));
+                final ObjectMapper objectMapper = new ObjectMapper();
+                objectMapper.setDefaultPropertyInclusion(JsonInclude.Value.construct(JsonInclude.Include.NON_NULL,
+                        JsonInclude.Include.ALWAYS));
+                response.setContentType("application/json");
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                objectMapper.writeValue(response.getWriter(), errorDescriptor);
+            }
+            else{
+                throw disabledException;
+            }
+        }
+        catch (RuntimeException e) {
             SecurityContextHolder.getContext().setAuthentication(null);
             throw e;
         }

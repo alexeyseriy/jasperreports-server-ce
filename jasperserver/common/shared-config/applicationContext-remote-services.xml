@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -73,6 +73,26 @@
         <property name="cacheName">
             <value>connection.descriptions</value>
         </property>
+    </bean>
+
+    <bean id="dashboardTasks" class="org.springframework.cache.ehcache.EhCacheFactoryBean">
+        <property name="cacheManager" ref="cacheManager"/>
+        <property name="cacheName" value="dashboardTasks"/>
+    </bean>
+
+    <bean id="dashboardResults" class="org.springframework.cache.ehcache.EhCacheFactoryBean">
+        <property name="cacheManager" ref="cacheManager"/>
+        <property name="cacheName" value="dashboardResults"/>
+    </bean>
+
+    <bean id="dashboardProcesses" class="org.springframework.cache.ehcache.EhCacheFactoryBean">
+        <property name="cacheManager" ref="cacheManager"/>
+        <property name="cacheName" value="dashboardProcesses"/>
+    </bean>
+
+    <bean id="dashboardIDToUsers" class="org.springframework.cache.ehcache.EhCacheFactoryBean">
+        <property name="cacheManager" ref="cacheManager"/>
+        <property name="cacheName" value="dashboardIDToUsers"/>
     </bean>
 </beans>
 <beans profile="engine">
@@ -187,7 +207,6 @@
         <value>sql</value>
         <value>hql</value>
         <value>domain</value>
-        <value>HiveQL</value>
         <value>MongoDbQuery</value>
         <value>cql</value>
         <value>jasperQL</value>
@@ -208,7 +227,7 @@
         <entry key="pdf" value-ref="remotePdfExporter"/>
         <entry key="html" value-ref="remoteHtmlExporter"/>
         <entry key="xlsx" value-ref="remoteXlsxExporter"/>
-        <entry key="xls" value-ref="remoteXlsExporter"/>
+        <entry key="xls" value-ref="remoteXlsxExporter"/>
         <entry key="rtf" value-ref="remoteRtfExporter"/>
         <entry key="csv" value-ref="remoteCsvExporter"/>
         <entry key="xml" value-ref="remoteXmlExporter"/>
@@ -218,6 +237,7 @@
         <entry key="pptx" value-ref="remotePptxExporter"/>
         <entry key="json" value-ref="remoteJsonMetadataExporter"/>
         <entry key="data_csv" value-ref="remoteCsvMetadataExporter"/>
+        <entry key="data_xlsx" value-ref="remoteXlsxMetadataExporter"/>
     </util:map>
 </beans>
 <beans profile="engine">

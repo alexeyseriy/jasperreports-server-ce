@@ -1,7 +1,7 @@
 SNAPTREE LICENSE
 
 Copyright (c) 2009 Stanford University, unless otherwise specified.
-All rights reserved.
+All Rights Reserved.
 
 This software was developed by the Pervasive Parallelism Laboratory of
 Stanford University, California, USA.

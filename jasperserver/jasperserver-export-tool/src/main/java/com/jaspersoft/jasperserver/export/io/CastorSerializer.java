@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -24,8 +24,8 @@ package com.jaspersoft.jasperserver.export.io;
 import com.jaspersoft.jasperserver.api.JSExceptionWrapper;
 import com.jaspersoft.jasperserver.export.modules.ExporterModuleContext;
 import com.jaspersoft.jasperserver.export.modules.ImporterModuleContext;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exolab.castor.mapping.Mapping;
 import org.exolab.castor.mapping.MappingException;
 import org.exolab.castor.xml.Marshaller;
@@ -44,14 +44,14 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.net.URL;
 
 /**
  * @author Lucian Chirita (lucianc@users.sourceforge.net)
  * @version $Id$
  */
 public class CastorSerializer implements ObjectSerializer, InitializingBean {
-
-	private static final Log log = LogFactory.getLog(CastorSerializer.class);
+	private static final Logger log = LogManager.getLogger(CastorSerializer.class);
 
 	private XMLContext context = new XMLContext();
 
@@ -76,15 +76,16 @@ public class CastorSerializer implements ObjectSerializer, InitializingBean {
 
 		if (castorMappings != null) {
 			try {
+				log.debug("Create castor mappings");
+
 				for (int i = 0; i < castorMappings.length; i++) {
 					Resource mappingRes = castorMappings[i];
-					castorMapping.loadMapping(mappingRes.getURL());
+					final URL url = mappingRes.getURL();
+					log.debug("Load mapping: {}", url);
+					castorMapping.loadMapping(url);
 				}
 				context.addMapping(castorMapping);
-			} catch (IOException e) {
-				log.error(e);
-				throw new JSExceptionWrapper(e);
-			} catch (MappingException e) {
+			} catch (IOException | MappingException e) {
 				log.error(e);
 				throw new JSExceptionWrapper(e);
 			}
@@ -106,10 +107,7 @@ public class CastorSerializer implements ObjectSerializer, InitializingBean {
             Marshaller marshaller = context.createMarshaller();
             marshaller.setWriter(writer);
             marshaller.marshal(object);
-		} catch (UnsupportedEncodingException e) {
-			log.error(e);
-			throw new JSExceptionWrapper(e);
-		} catch (XMLException e) {
+		} catch (UnsupportedEncodingException | XMLException e) {
 			log.error(e);
 			throw new JSExceptionWrapper(e);
 		}

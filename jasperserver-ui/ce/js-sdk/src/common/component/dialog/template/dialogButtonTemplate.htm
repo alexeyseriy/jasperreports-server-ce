@@ -1,4 +1,4 @@
-<button class="button action up {{- primary ? 'primary' : ''}} {{- (typeof float !== 'undefined' ? 'right' : '') }}">
+<button class="button action up {{- primary ? 'primary' : ''}} {{- (typeof float !== 'undefined' ? 'right' : '') }}" data-name="{{- (typeof dataName !== 'undefined' ? dataName: '')}}">
 
     <js-templateNonce></js-templateNonce>
     <span class="wrap">{{- label }}<span class="icon"></span></span>

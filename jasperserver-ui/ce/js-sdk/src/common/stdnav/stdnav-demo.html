@@ -3,7 +3,6 @@
 <head>
   <title>Standard Navigation Demo (jQuery + Require)</title>
   <link rel="stylesheet" type="text/css" href="css/test.css">
-  </script>
   <script src="../lib/require-2.1.15.js"></script>
   <script>
     require.config(
@@ -43,7 +42,7 @@
   <div class="navtype-section">
     <h2 class="navtype-header">Standard HTML Lists</h2>
     <div class="navtype-example">
-      <i style="font-size:75%">Keyboard scrolling in this list will NOT wrap:</i>
+      <em style="font-size:75%">Keyboard scrolling in this list will NOT wrap:</em>
       <ul tabindex="0" style="font-size:80%; padding:4px 4px 4px 32px; margin:4px;">
         <li id="yadda" class="infobubble navigable">Mary had a little lamb</li>
         <li class="infobubble navigable">its fleece was white as snow</li>
@@ -54,7 +53,7 @@
     </div>
 
     <div class="navtype-example" js-stdnav=false>
-      <i style="font-size:75%">Keyboard scrolling in this list WILL wrap:</i>
+      <em style="font-size:75%">Keyboard scrolling in this list WILL wrap:</em>
       <ul js-stdnav-wrap="wrap" tabindex="0" style="font-size:80%; padding:4px 4px 4px 32px; margin:4px;">
         <li class="infobubble navigable">Jack and Jill went up the hill</li>
         <li class="infobubble navigable">to fetch a pail of water.</li>
@@ -65,10 +64,10 @@
     </div>
 
     <div class="navtype-example">
-      <i style="font-size:75%">
+      <em style="font-size:75%">
         This list doesn't wrap, but the last entry explicitly refocuses the first<br>
         list if you press DOWN-ARROW in the last entry.  Try ENTER and<br>
-        ESCAPE on the sublist.</i>
+        ESCAPE on the sublist.</em>
       <ol tabindex="0" style="font-size:80%; padding:4px 4px 4px 32px; margin:4px;">
         <li class="infobubble navigable">Hey diddle diddle
           <ol>

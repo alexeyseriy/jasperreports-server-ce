@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -100,6 +100,7 @@
                 <!--value>LOCAL TEMPORARY</value-->
                 <value>ALIAS</value>
                 <value>SYNONYM</value>
+                <value>PARTITIONED TABLE</value>
                 <!--Table Types for AWS Athena-->
                 <value>EXTERNAL_TABLE</value>                
                 <value>MANAGED_TABLE</value>

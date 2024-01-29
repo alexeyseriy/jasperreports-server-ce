@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -531,6 +531,7 @@ dynamicTree.Tree.addMethod('_deselectAllNodes', function (event) {
 });
 dynamicTree.Tree.addMethod('_selectOrEditNode', function (evt, node, ctrlHeld, shiftHeld, isContextMenuBtn, options) {
     var min, max, parent;
+    var shouldFocus = options && options.shouldFocus;
     var isContextMenu = node.isSelected() && isContextMenuBtn;
     var isDeselect = this.multiSelectEnabled && node.isSelected() && ctrlHeld && !isContextMenu;
     var isEdit = node.isSelected() && dynamicTree.treeNodeEdited !== node && !this.multiSelectEnabled && !ctrlHeld && !isContextMenu;
@@ -538,7 +539,8 @@ dynamicTree.Tree.addMethod('_selectOrEditNode', function (evt, node, ctrlHeld, s
     var isRangeSelect = this.multiSelectEnabled && !node.isSelected() && shiftHeld && isNotNullORUndefined(this._lastSelectedNode) && this._lastSelectedNode.parent === node.parent;
     var isRangeReduce = this.multiSelectEnabled && node.isSelected() && shiftHeld && isNotNullORUndefined(this._lastSelectedNode) && this._lastSelectedNode.parent === node.parent;
     var isDeselectAll = !this.multiSelectEnabled && !node.isSelected() || this.multiSelectEnabled && !ctrlHeld && !node.isSelected();
-    var isSelect = !node.isSelected() || isDeselectAll && this.selectedNodes.length > 1;
+    var isSelect = !node.isSelected() || isDeselectAll && this.selectedNodes.length > 1 || shouldFocus;
+
     if (!shiftHeld || !this._lastSelectedNode) {
         this._lastSelectedNode = node;
     }
@@ -548,7 +550,7 @@ dynamicTree.Tree.addMethod('_selectOrEditNode', function (evt, node, ctrlHeld, s
     if (isDeselectAll) {
         this._deselectAllNodes(evt);
     }
-    if (isEdit) {
+    if (isEdit && !shouldFocus) {
         node.edit(evt);
         return;
     }
@@ -573,11 +575,11 @@ dynamicTree.Tree.addMethod('_selectOrEditNode', function (evt, node, ctrlHeld, s
         return;
     }
     if (isRangeReduce) {
-        for (var i = 0; i < min; i++) {
-            parent.childs[i].deselect(evt);
+        for (var j = 0; j < min; j++) {
+            parent.childs[j].deselect(evt);
         }
-        for (var i = max + 1; i < parent.childs.length; i++) {
-            parent.childs[i].deselect(evt);
+        for (var k = max + 1; k < parent.childs.length; k++) {
+            parent.childs[k].deselect(evt);
         }
         return;
     }
@@ -600,17 +602,17 @@ dynamicTree.Tree.addMethod('_deselectOthers', function (evt, node, ctrlHeld, shi
  */
 dynamicTree.Tree.addMethod('_selectNextNode', function (node, event) {
     //recurse up the parent chain until we get a parent with a next sibling
-    function getNextUncle(node) {
-        node = node.parent;
-        if (!node) {
+    function getNextUncle(currentNode) {
+        currentNode = currentNode.parent;
+        if (!currentNode) {
             return null;
-        } else if (node.nextSibling) {
-            return node.nextSibling;
+        } else if (currentNode.nextSibling) {
+            return currentNode.nextSibling;
         }
-        return getNextUncle(node);
+        return getNextUncle(currentNode);
     }
     var nextNode = node.isOpen() && node.getFirstChild() || node.nextSibling || getNextUncle(node);
-    nextNode && (node.deselect() && nextNode.select(event));
+    nextNode && (node.deselect() && nextNode.select(event, null, { shouldFocus: true }));
 });    /**
  * find the previous node in the tree (ignoring hierachy) and select it
  * @param {Object} node - current node
@@ -620,11 +622,11 @@ dynamicTree.Tree.addMethod('_selectNextNode', function (node, event) {
  * @param {Object} node - current node
  */
 dynamicTree.Tree.addMethod('_selectPreviousNode', function (node, event) {
-    function getLastVisibleDescendant(node) {
-        return !(node.isOpen() && node.hasChilds()) && node || getLastVisibleDescendant(node.getLastChild());
+    function getLastVisibleDescendant(currentNode) {
+        return !(currentNode.isOpen() && currentNode.hasChilds()) && currentNode || getLastVisibleDescendant(currentNode.getLastChild());
     }
     var prevNode = node.prevSibling && getLastVisibleDescendant(node.prevSibling) || node.parent;
-    prevNode && (node.deselect() && prevNode.select(event));
+    prevNode && prevNode.name && (node.deselect() && prevNode.select(event, null, { shouldFocus: true }));
 });    /**
  * if open go to first child node, otherwise open node
  * @param {Object} node
@@ -634,8 +636,12 @@ dynamicTree.Tree.addMethod('_selectPreviousNode', function (node, event) {
  * @param {Object} node
  */
 dynamicTree.Tree.addMethod('_selectInwards', function (node, event) {
-    var inNode = node.isOpen() && node.getFirstChild();
-    inNode ? node.deselect() && inNode.select(event) : node.handleNode(event);
+    if (node.isOpen()) {
+        var inNode = node.getFirstChild();
+        inNode && node.deselect() && inNode.select(event, null, { shouldFocus: true })
+    } else {
+        node.handleNode(event)
+    }
 });    /**
  * if closed or leaf go to parent, otherwise close node
  * @param {Object} node
@@ -646,10 +652,45 @@ dynamicTree.Tree.addMethod('_selectInwards', function (node, event) {
  */
 dynamicTree.Tree.addMethod('_selectOutwards', function (node, event) {
     if (!node.isHiddenRootNode()) {
-        var outNode = node.isOpen() ? null : node.parent;
-        outNode ? node.deselect() && outNode.select(event) : node.handleNode(event);
+        if (node.isOpen()) {
+            node.handleNode(event);
+        } else {
+            var outNode = node.parent;
+            outNode && outNode.name && node.deselect() && outNode.select(event, null, { shouldFocus: true });
+        }
     }
-});    /*
+});
+
+dynamicTree.Tree.addMethod('_expandOrCollapse', function (node, event) {
+    node.handleNode(event)
+});
+
+dynamicTree.Tree.addMethod('_selectFirstVisibleNode', function (node, event) {
+    node.deselect();
+    while (node.parent) {
+        node = node.parent;
+    }
+    if (!node.name) {
+        node = node.childs[0];
+    }
+    node.select(event, null, { shouldFocus: true });
+});
+
+dynamicTree.Tree.addMethod('_selectLastVisibleNode', function (node, event) {
+    node.deselect();
+    while (node.parent) {
+        node = node.parent;
+    }
+
+    while (node.isOpen() && node.childs.length > 0) {
+        node = node.childs[node.childs.length - 1]
+    }
+    node.select(event, null, { shouldFocus: true });
+});
+
+
+
+/*
  * Sorter by order value assigned to nodes.
  * Order has to be a number. Node that has some order is considered to be
  * LESS than node that does not have any order (order=null)

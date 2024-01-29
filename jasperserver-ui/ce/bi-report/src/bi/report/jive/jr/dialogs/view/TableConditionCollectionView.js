@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved. Confidentiality & Proprietary.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved. Confidentiality & Proprietary.
  * Licensed pursuant to commercial TIBCO End User License Agreement.
  */
 
@@ -244,16 +244,16 @@ export default Epoxy.View.extend({
         }));
     },
     removeSubview: function (model) {
-        var subview = this.getSubviewByModel(model);
-        if (subview) {
-            var index = _.indexOf(this._subviews, subview);
-            this._subviews.splice(index, 1);
-            subview.remove();
+        var subviewModel = this.getSubviewByModel(model);
+        if (subviewModel) {
+            var getIndex = _.indexOf(this._subviews, subviewModel);
+            this._subviews.splice(getIndex, 1);
+            subviewModel.remove();
 
             // recalculate the condition index for the remaining subviews
             if (this._subviews.length) {
-                _.each(this._subviews, function(subview, index) {
-                    subview.viewModel.set('conditionIndex', index + 1);
+                _.each(this._subviews, function(currentSubview, index) {
+                    currentSubview.viewModel.set('conditionIndex', index + 1);
                 });
             }
         }

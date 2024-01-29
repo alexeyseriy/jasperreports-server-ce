@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -21,7 +21,7 @@
 
 import $ from 'jquery';
 import _ from 'underscore';
-import ListWithSelectionModel from '../model/ListWithSelectionModel';
+import ListWithSelectionModel from '../../../../components/scalableList/model/ListWithSelectionModel';
 import ScalableList from './ScalableList';
 var MOUSE_MOVE_MIN_PIXELS = 1;
 var BUTTONS = {
@@ -52,7 +52,7 @@ var ListWithSelection = ScalableList.extend({
     },
     _initSelection: function (selection) {
         selection = _.extend({ allowed: {} }, selection);
-        var selectionAllowed = selection.allowed, leftButtonSelection = !_.isObject(selectionAllowed) ? selectionAllowed : selectionAllowed.left;
+        var selectionAllowed = selection.allowed ?? {}, leftButtonSelection = !_.isObject(selectionAllowed) ? selectionAllowed : selectionAllowed.left;
         this.selection = {
             allowed: {
                 left: typeof leftButtonSelection !== 'undefined' ? leftButtonSelection : true,
@@ -267,7 +267,7 @@ var ListWithSelection = ScalableList.extend({
     },
     setValue: function (selection, options) {
         options = options || {};
-        if ((!options || !options.silent) && (!options.modelOptions || !options.modelOptions.silent)) {
+        if (!options.silent && (!options.modelOptions || !options.modelOptions.silent)) {
             this.model.once('selection:change', this._triggerSelectionChanged, this);
         }
         options = options.modelOptions;

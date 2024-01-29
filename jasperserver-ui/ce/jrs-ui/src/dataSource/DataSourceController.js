@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -252,7 +252,7 @@ export default Backbone.View.extend({
             this.saveDialog.close();
             this.saveDialog.remove();
         }
-        var self = this, errors = false, msg;
+        var self = this, errors = false;
         var handled = false;
         try {
             errors = JSON.parse(xhr.responseText);

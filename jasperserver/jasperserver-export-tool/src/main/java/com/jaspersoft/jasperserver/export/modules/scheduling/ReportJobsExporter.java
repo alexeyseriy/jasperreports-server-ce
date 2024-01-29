@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -36,6 +36,8 @@ import com.jaspersoft.jasperserver.export.modules.scheduling.beans.ReportJobBean
 import com.jaspersoft.jasperserver.export.modules.scheduling.beans.ReportUnitJobsIndexBean;
 import com.jaspersoft.jasperserver.export.service.impl.ImportExportServiceImpl;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.dom4j.Element;
 
 import java.util.ArrayList;
@@ -49,6 +51,7 @@ import java.util.Set;
  * @version $Id$
  */
 public class ReportJobsExporter extends BaseExporterModule {
+	private static final Logger log = LogManager.getLogger(ReportJobsExporter.class);
 
 	protected class OutputFolderCreator {
 		private String uri;
@@ -94,6 +97,8 @@ public class ReportJobsExporter extends BaseExporterModule {
 	}
 	
 	public void process() {
+		log.debug("Process reports jobs");
+
 		mkdir(configuration.getReportJobsDir());
                                             
 		exportedURIs = new HashSet();
@@ -112,6 +117,7 @@ public class ReportJobsExporter extends BaseExporterModule {
 	}
 
 	private void processUri(final String uri) {
+		log.debug("Process report uri: {}", uri);
 		Folder folder = configuration.getRepository().getFolder(executionContext, uri);
 		if (folder == null) {
 			doInExceptionHandlingContext(new ExceptionHandlingCallback() {
@@ -168,21 +174,29 @@ public class ReportJobsExporter extends BaseExporterModule {
 	}
 
 	protected void processReportUnit(String uri) {
-		if (exportedURIs.contains(uri)) {
+		if (exportedURIs != null && exportedURIs.contains(uri)) {
 			return;
 		}
 
+		log.debug("Getting all jobs for the report: {}", uri);
 		List jobs = configuration.getReportScheduler().getScheduledJobSummaries(executionContext, uri);
 		if (jobs != null && !jobs.isEmpty()) {
 			if (exportJobs(uri, jobs)) {
 				writeIndexReportUnitEntry(uri);
 			}
-			
+
+			if (exportedURIs == null) {
+				exportedURIs = new HashSet<>();
+			}
 			exportedURIs.add(uri);
 
-			commandOut.info("Exported " + jobs.size() + " job(s) for the " + uri + " report unit");
+			final String msg = "Exported " + jobs.size() + " job(s) for the " + uri + " report unit";
+			commandOut.info(msg);
+			log.debug(msg);
 		} else {
-			commandOut.debug("Report " + uri + " does not have any scheduled jobs");
+			final String msg = "Report " + uri + " does not have any scheduled jobs";
+			commandOut.debug(msg);
+			log.debug(msg);
 		}
 	}
 
@@ -202,6 +216,7 @@ public class ReportJobsExporter extends BaseExporterModule {
 			boolean ok = doInExceptionHandlingContext(new ExceptionHandlingCallback() {
 				@Override
 				public void execute() {
+					log.debug("Process report job: {}", jobId);
 					ReportJob job = configuration.getReportScheduler().getScheduledJob(executionContext, jobId);
 					exportJob(folderCreator.getFolderPath(), job, jobSummary.getRuntimeInformation());
 
@@ -221,6 +236,7 @@ public class ReportJobsExporter extends BaseExporterModule {
 
 		// Export dependent resources
 		if (!exportParams.hasParameter(ImportExportServiceImpl.SKIP_DEPENDENT_RESOURCES)) {
+			log.debug("Export dependent resources");
 			exportResources(sshKeysQueue);
 		}
 
@@ -250,6 +266,7 @@ public class ReportJobsExporter extends BaseExporterModule {
 
 			// Create the Resource Module index element when exporting only jobs
 			if (resourceExporter.getIndexElement() == null) {
+				log.debug("Create resource module index element");
 				Element reportJobsModuleIndexElement = getIndexElement();
 				Element rootIndexElement = reportJobsModuleIndexElement.getParent();
 				String indexModuleElementName = "module"; // TODO: resolve this value from baseExporterImporter bean

@@ -1,6 +1,6 @@
 <%@ page contentType="text/html; charset=utf-8" %>
 <%--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -53,6 +53,7 @@ Usage:
 <t:insertTemplate template="/WEB-INF/jsp/templates/container.jsp">
     <t:putAttribute name="containerClass">panel dialog overlay standardConfirm moveable centered_horz centered_vert ${containerClass}</t:putAttribute>
     <t:putAttribute name="containerID" value="standardConfirm"/>
+    <t:putAttribute name="containerAttributes" value="role='dialog' aria-describedby='standardConfirm' aria-modal='true'"/>
     <t:putAttribute name="containerElements">${containerElements}</t:putAttribute>
     <t:putAttribute name="containerTitle">
         <c:choose>

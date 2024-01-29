@@ -1,6 +1,6 @@
 GNU AFFERO GENERAL PUBLIC LICENSE
 Version 3, 19 November 2007
-Copyright © 2007 Free Software Foundation, Inc. <http://fsf.org/> 
+Copyright � 2007 Free Software Foundation, Inc. <http://fsf.org/> 
 Everyone is permitted to copy and distribute verbatim copies of this license document, but changing it is not allowed.
 
 Preamble
@@ -134,7 +134,7 @@ You should also get your employer (if you work as a programmer) or school, if an
 Addenda:
 
 
-These Terms incorporate by reference as if fully set forth herein the terms contained in the document entitled "TIB_js-jrs-ce_8.0.0_license" and delivered with the Licensor Software; accordingly, by accepting these Terms, you also hereby agree to be bound by and accept the terms contained in "TIB_js-jrs-ce_8.0.0_license". 
+These Terms incorporate by reference as if fully set forth herein the terms contained in the document entitled "TIB_js-jrs-ce_8.2.0_license" and delivered with the Licensor Software; accordingly, by accepting these Terms, you also hereby agree to be bound by and accept the terms contained in "TIB_js-jrs-ce_8.2.0_license". 
 
 
 

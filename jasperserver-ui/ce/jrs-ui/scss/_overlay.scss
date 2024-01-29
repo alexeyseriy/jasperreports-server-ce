@@ -38,6 +38,10 @@
   z-index: $zindex-overlay;
 }
 
+.jr-mOverlayLight.jr {
+  background-color: rgba(190, 190, 190, 0.6);
+}
+
 .jr-mOverlay-wrapper.jr {
   height: 100%;
   text-align: center;

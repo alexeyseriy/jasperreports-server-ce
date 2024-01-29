@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -21,6 +21,8 @@
 
 package com.jaspersoft.jasperserver.remote.resources.converters;
 
+import com.jaspersoft.jasperserver.remote.connection.ContextsManager;
+
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Map;
@@ -39,6 +41,7 @@ public class ToServerConversionOptions {
     private Map<String, String[]> additionalProperties;
     private Class<?>[] validationGroups;
     public static final String SKIP_DATA_BASE_METADATA_CHECK = "skipDataBaseMetadataCheck";
+    public ContextsManager contextsManager;
 
     public boolean isEnableDecryption() {
         return enableDecryption;
@@ -52,6 +55,12 @@ public class ToServerConversionOptions {
 
     public static ToServerConversionOptions getDefault() {
         return new ToServerConversionOptions();
+    }
+
+    public static ToServerConversionOptions getDefault(ContextsManager contextsManager) {
+        ToServerConversionOptions toServerConversionOptions = new ToServerConversionOptions();
+        toServerConversionOptions.contextsManager = contextsManager;
+        return toServerConversionOptions;
     }
 
     public boolean isSkipRepoFieldsValidation() {

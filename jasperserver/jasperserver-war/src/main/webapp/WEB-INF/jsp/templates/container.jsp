@@ -1,6 +1,6 @@
 <%@ page contentType="text/html; charset=utf-8" %>
 <%--
-  ~ Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+  ~ Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
   ~ http://www.jaspersoft.com.
   ~
   ~ Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -120,9 +120,6 @@ NOTES:
 
     <js:xssNonce/>
 
-    <c:if test="${param['nui'] == '1'}">
-	    <t:insertTemplate template="/WEB-INF/jsp/templates/utility_cosmetic.jsp"/>
-	</c:if>
 	${containerElements}
     <c:if test="${footerContent != null}">
         <div <c:if test="${contentID != null}">id="${contentID}"</c:if> class="content hasFooter ${contentClass}" ${contentAttributes}>
@@ -133,7 +130,7 @@ NOTES:
     <c:if test="${(containerTitle != null) || (headerContent != null) || (headerClass != null)|| (headerID != null)|| (headerAttributes != null)}">
 		<div <c:if test="${headerID != null}">id="${headerID}"</c:if> class="header ${headerClass}" ${headerAttributes}>
             <c:if test="${(containerTitleEmpty != true)}">
-                <div class="title">
+                <div role="heading" aria-level="2" class="title">
                     ${containerTitle}
                 </div>
             </c:if>

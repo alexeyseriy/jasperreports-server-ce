@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -46,6 +46,21 @@ describe('New serialize parameter', function () {
         expect(scheduleStub).toHaveBeenCalled();
         scheduleStub.restore();
     });
+
+    it('should resists to XSS attacks', function () {
+
+        const paramsMap = {
+            'reportUnitURI': '%2Fpublic%2FSamples%2FReports%2F01._Geographic_Results_by_Segment_Report',
+            'key': '<script>alert("xss")</script>'
+        };
+        const schedulerPageUrl = '/abc/def';
+
+        const url = schedulerUtils._getIframeUrl(paramsMap, schedulerPageUrl);
+        const expectedUrl = '/jasperserver-pro/abc/def?reportUnitURI=%252Fpublic%252FSamples%252FReports%252F01._Geographic_Results_by_Segment_Report&key=%3Cscript%3Ealert(%22xss%22)%3C%2Fscript%3E';
+
+        expect(url).toBe(expectedUrl);
+    });
+
     it('should open scheduler page in overlay', function () {
         var addDimmerSpy = sinon.spy(schedulerUtils, '_addDimmer');
         schedulerUtils._scheduleDashboard(paramsMap, true);

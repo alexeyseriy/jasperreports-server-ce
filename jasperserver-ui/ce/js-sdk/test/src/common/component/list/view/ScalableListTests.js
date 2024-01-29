@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -22,7 +22,7 @@
 import sinon from 'sinon';
 import $ from 'jquery';
 import ScalableList from 'src/common/component/list/view/ScalableList';
-import ScalableListModel from 'src/common/component/list/model/ScalableListModel';
+import ScalableListModel from 'src/components/scalableList/model/ScalableListModel';
 import itemsTemplate from 'src/common/component/list/templates/itemsTemplate.htm';
 
 var clock;

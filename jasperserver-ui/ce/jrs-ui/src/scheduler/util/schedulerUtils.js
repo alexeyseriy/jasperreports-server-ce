@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -22,7 +22,8 @@
 import $ from 'jquery';
 import config from 'js-sdk/src/jrs.configs';
 import _ from 'underscore';
-import {redirectToUrl} from "../../util/utils.common";
+import { redirectToUrl } from "../../util/utils.common";
+import xssUtil from 'js-sdk/src/common/util/xssUtil';
 import schedulerOverlayIframeTemplate from "../template/schedulerOverlayIframeTemplate.htm";
 import schedulerConstants from './schedulerConstants';
 import i18n from '../../i18n/all.properties';
@@ -77,21 +78,18 @@ export default {
         // in bad scenario, we need to get to the standard URL
         redirectToUrl(config.contextPath + '/flow.html?_flowId=searchFlow');
     },
-    _scheduleDashboard: function _scheduleDashboard(paramsMap, schedulerPage) {
+    _scheduleDashboard: function _scheduleDashboard(paramsMap, schedulerPageUrl) {
         _.bindAll(this, '_onWindowResize');
         $(window).on('resize', this._onWindowResize);
-        let link = config.contextPath + schedulerPage,
-            encode = true,
-            encodeParams = this._serializeParams(paramsMap, encode) ? '?' + this._serializeParams(paramsMap, encode) : '';
 
-        let Url = link + ($.isEmptyObject(paramsMap) ? '' : encodeParams);
+        let url = this._getIframeUrl(paramsMap, schedulerPageUrl);
 
-        if (schedulerPage) {
+        if (schedulerPageUrl) {
             let body = $('body'),
                 bannerHeight = $("body").find("> #banner").outerHeight(true) || 0;
 
             this._addDimmer();
-            this.el.attr('src', Url).css({
+            this.el.attr('src', url).css({
                 'width': '100%',
                 'height':body.find('> #frame').height() - bannerHeight,
                 'z-index': schedulerConstants.DASHBOARD_SCHEDULAR_IFRAME_Z_INDEX,
@@ -101,6 +99,18 @@ export default {
             body.append(this.el);
         }
     },
+
+    _getIframeUrl: function (paramsMap, schedulerPageUrl) {
+
+        const encode = true;
+        const encodeParams = this._serializeParams(paramsMap, encode) ? '?' + this._serializeParams(paramsMap, encode) : '';
+        const link = config.contextPath + schedulerPageUrl;
+
+        const url = link + ($.isEmptyObject(paramsMap) ? '' : encodeParams);
+
+        return xssUtil.softHtmlEscape(url);
+    },
+
     _serializeParams: function _serializeParams(paramsMap, encode) {
         let result = schedulerConstants.SCHEDULER_EMPTY;
 

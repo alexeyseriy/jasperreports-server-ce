@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -25,8 +25,13 @@ import java.util.List;
 
 import com.jaspersoft.jasperserver.api.metadata.common.domain.InputControl;
 import com.jaspersoft.jasperserver.api.metadata.common.domain.Resource;
+import com.jaspersoft.jasperserver.api.metadata.common.domain.client.QueryImpl;
 import com.jaspersoft.jasperserver.api.metadata.common.service.ResourceFactory;
 import com.jaspersoft.jasperserver.api.metadata.common.service.impl.hibernate.ReferenceResolver;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import javax.management.Query;
 
 
 /**
@@ -54,6 +59,7 @@ public class RepoInputControl extends RepoResource
 	private Object defaultValue = null;
 	private List defaultValues = null;
 
+	protected static final Log log = LogFactory.getLog(RepoInputControl.class);
 
 	/**
 	 * @hibernate.property
@@ -302,7 +308,18 @@ public class RepoInputControl extends RepoResource
 			case InputControl.TYPE_MULTI_SELECT_QUERY:
 			case InputControl.TYPE_SINGLE_SELECT_QUERY_RADIO:
 			case InputControl.TYPE_MULTI_SELECT_QUERY_CHECKBOX:
-				setQuery((RepoQuery) getReference(control.getQuery(), RepoQuery.class, referenceResolver));
+				if ((control.getQuery() != null && control.getQuery().isLocal() &&
+						control.getQuery().getLocalResource() != null &&
+						control.getQuery().getLocalResource() instanceof QueryImpl) &&
+						(((QueryImpl)(control.getQuery().getLocalResource())).getDataSource() != null) &&
+						!(((QueryImpl)(control.getQuery().getLocalResource())).getDataSource().isLocal()) &&
+						(((QueryImpl)(control.getQuery().getLocalResource())).getDataSource().getReferenceURI() == null)) {
+					// skip setQuery: data source can be null if adhoc is using data adapter from JR studio
+					// see JIRA issue:  61768
+					log.warn("Input Cotnrol cantains non local data source with no reference uri.");
+				} else {
+					setQuery((RepoQuery) getReference(control.getQuery(), RepoQuery.class, referenceResolver));
+				}
 				setDataType(null);
 				setListOfValues(null);
 				break;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -22,14 +22,18 @@
 package com.jaspersoft.jasperserver.api.metadata.jasperreports.service;
 
 import java.util.Map;
-import com.jaspersoft.jasperserver.api.metadata.common.service.RepositoryService;
-import net.sf.jasperreports.data.DataAdapter;
-import net.sf.jasperreports.data.DataAdapterService;
-import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.data.DefaultDataAdapterServiceFactory;
-import net.sf.jasperreports.engine.JasperReportsContext;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import com.jaspersoft.jasperserver.api.metadata.common.service.RepositoryService;
+
+import net.sf.jasperreports.data.DataAdapter;
+import net.sf.jasperreports.data.DataAdapterService;
+import net.sf.jasperreports.data.DefaultDataAdapterServiceFactory;
+import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JasperReportsContext;
+import net.sf.jasperreports.engine.ParameterContributorContext;
 
 
 /**
@@ -127,7 +131,11 @@ public class ReportDataAdapterService implements ReportDataSourceService {
     }
 
     public static DataAdapterService getDataAdapterService(JasperReportsContext jasperReportsContext, DataAdapter dataAdapter) {
-        DataAdapterService dataAdapterService = DefaultDataAdapterServiceFactory.getInstance().getDataAdapterService(jasperReportsContext, dataAdapter);
+        DataAdapterService dataAdapterService = 
+            DefaultDataAdapterServiceFactory.getInstance().getDataAdapterService(
+                new ParameterContributorContext(jasperReportsContext, null, null), 
+                dataAdapter
+                );
         return dataAdapterService;
     }
 

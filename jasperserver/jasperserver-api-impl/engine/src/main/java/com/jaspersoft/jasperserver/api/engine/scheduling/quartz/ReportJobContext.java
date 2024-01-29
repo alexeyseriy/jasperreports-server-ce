@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -30,6 +30,7 @@ import com.jaspersoft.jasperserver.api.metadata.common.domain.DataContainer;
 import com.jaspersoft.jasperserver.api.metadata.common.service.RepositoryService;
 import com.jaspersoft.jasperserver.api.metadata.jasperreports.domain.ReportUnit;
 
+import net.sf.jasperreports.engine.JRPropertiesHolder;
 import net.sf.jasperreports.engine.JasperReportsContext;
 import net.sf.jasperreports.engine.export.JRHyperlinkProducerFactory;
 
@@ -44,6 +45,8 @@ public interface ReportJobContext {
 	String getCharacterEncoding();
 	
 	String getBaseFilename();
+	
+	String getBaseFilename(ReportJob jobDetails);
 	
 	JRHyperlinkProducerFactory getHyperlinkProducerFactory();
 	
@@ -65,6 +68,8 @@ public interface ReportJobContext {
 
 	ReportJob getReportJob();
 
+	ReportJob getJobDetails(JRPropertiesHolder outputProperties);
+
 	ReportExecutionJob getReportExecutionJob();
 
 	JasperReportsContext getJasperReportsContext();
@@ -73,6 +78,8 @@ public interface ReportJobContext {
 
 	void checkCancelRequested();
 
+	String getMessage(String key, Object[] arguments);
+	
 	void handleException(String message, Exception e);
 	
 }

@@ -1,5 +1,6 @@
-jasperserver.war/scripts
-jasperserver.war/optimized-scripts
 buildomatic/conf_source/ieCe
 buildomatic/conf_source/standAloneJS
 buildomatic/conf_source/templates
+buildomatic/install_resources/extra-jars-jdk17
+jasperserver.war/optimized-scripts
+jasperserver.war/scripts

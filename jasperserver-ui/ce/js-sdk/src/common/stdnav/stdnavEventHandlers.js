@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005 - 2022 TIBCO Software Inc. All rights reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -108,7 +108,7 @@ export default {
 
     _onKeydown: function (ev) {
         // Determine precisely what had browser focus when keyboard input was received.
-        var elFocus = ev.target;
+        // var elFocus = ev.target;
 
         // If nothing has subfocus, we cannot presume stdnav is safe
         // to use; bail out.
@@ -458,14 +458,10 @@ export default {
     basicExit: function (element, args) {
         logger.debug("stdnav.basicExit(" + element.nodeName + "#" + element.id + ")");
         var target = this.closestNavigableAncestor($('.superfocus'));
-        if (!target) {
-            // Something's gotten confused.  Refocus to the global entry-point
-            target = $('#searchInput'); //TODO: get rid of dependency on JRS mark-up
-        }
         if (target !== undefined) {
             this.runAction('rejoined', target[0]);
         }
-        return target[0];
+        return target && target[0];
     },
 
     // "rejoined" behavior is run when a child element is being exited due to

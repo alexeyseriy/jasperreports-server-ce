@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 - 2020 TIBCO Software Inc. All rights reserved.
+ * Copyright (C) 2005-2023. Cloud Software Group, Inc. All Rights Reserved.
  * http://www.jaspersoft.com.
  *
  * Unless you have purchased a commercial license agreement from Jaspersoft,
@@ -34,24 +34,15 @@ import org.apache.commons.collections.Predicate;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.jaspersoft.jasperserver.api.security.externalAuth.processors.ProcessorData.Key.EXTERNAL_AUTHORITIES;
-import static com.jaspersoft.jasperserver.api.security.externalAuth.processors.ProcessorData.Key.EXTERNAL_AUTH_DETAILS;
-import static com.jaspersoft.jasperserver.api.security.externalAuth.processors.ProcessorData.Key.EXTERNAL_JRS_USER_TENANT_ID;
+import static com.jaspersoft.jasperserver.api.security.externalAuth.processors.ProcessorData.Key.*;
 
 
 /**
@@ -61,7 +52,6 @@ import static com.jaspersoft.jasperserver.api.security.externalAuth.processors.P
 public class ExternalUserSetupProcessor extends AbstractExternalUserProcessor implements InternalUserService {
     private static final Logger logger = LogManager.getLogger(ExternalUserSetupProcessor.class);
 	private static final String ROLE_SUFFIX = "|*";
-
     // roles that will be created automatically for each user once he is authenticated.
     private List defaultInternalRoles;
 	private ExternalAuthProperties externalAuthProperties = new ExternalAuthProperties();
@@ -143,10 +133,6 @@ public class ExternalUserSetupProcessor extends AbstractExternalUserProcessor im
 			if ( user==null ) {
 				user = createNewExternalUser(userName);
 			}
-			else if (!user.isEnabled()) {
-				throw new JSException("External user " + user.getUsername() + " was disabled on jasperserver. Please contact an admin user to re-enable. " +
-						(logoutUrl != null && logoutUrl.length() > 0 ?  "Click <a href=\"" + logoutUrl + "\">logout</a> to exit from external system." : ""));
-			}
 			else if (!user.isExternallyDefined()) {
 				throw new JSException("Internally defined user " + user.getUsername() + " already exists. Please contact an admin user to resolve the issue. " +
 						(logoutUrl != null && logoutUrl.length() > 0 ?  "Click <a href=\"" + logoutUrl + "\">logout</a> to exit from external system." : ""));
@@ -163,6 +149,15 @@ public class ExternalUserSetupProcessor extends AbstractExternalUserProcessor im
 				logger.debug("External user " + userName + " has been synchronized.");
 
             ((ExternalUserService)getUserAuthorityService()).makeUserLoggedIn(user);
+
+			if (!user.isEnabled()) {
+				logger.error("User "+user.getUsername()+" is disabled.");
+				throw new DisabledException("User Account is Disabled.");
+			}
+
+		}
+		catch(DisabledException disabledException){
+			throw disabledException;
 		}
 		catch (RuntimeException e) {
 			String userName = (userDetails != null ? userDetails.getUsername() : "");
